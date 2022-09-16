@@ -4,7 +4,7 @@
   "scripts": {
     "clean": "lerna clean",
     "boot": "lerna bootstrap",
-    "format": "prettier '**/*.{js,jsx,ts,tsx,json,md}' --write",
+    "format": "prettier '**/*.{js,jsx,ts,tsx,json}' --write",
     "prepare": "husky install"
   },
   "workspaces": [
