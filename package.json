@@ -3,12 +3,14 @@
   "private": true,
   "scripts": {
     "clean": "lerna clean",
-    "boot": "lerna bootstrap"
+    "boot": "lerna bootstrap",
+    "format": "prettier '**/*.{js,jsx,ts,tsx,json,md}' --write"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "lerna": "^5.5.1"
+    "lerna": "^5.5.1",
+    "prettier": "2.7.1"
   }
 }
