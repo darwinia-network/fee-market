@@ -2,7 +2,7 @@
   "name": "fee-market",
   "private": true,
   "scripts": {
-    "clean": "lerna clean",
+    "clean": "lerna clean --yes",
     "boot": "lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
     "stylelint": "stylelint '**/*.{css,less,scss}' --fix",
