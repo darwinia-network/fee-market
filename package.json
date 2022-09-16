@@ -2,6 +2,8 @@
   "name": "fee-market",
   "private": true,
   "scripts": {
+    "dev:app-demo": "lerna run dev --scope=app-demo",
+    "build:app-demo": "lerna run build --scope=app-demo",
     "clean": "lerna clean --yes",
     "boot": "lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
