@@ -1,0 +1,14 @@
+{
+  "name": "fee-market",
+  "private": true,
+  "scripts": {
+    "clean": "lerna clean",
+    "boot": "lerna bootstrap"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "lerna": "^5.5.1"
+  }
+}
