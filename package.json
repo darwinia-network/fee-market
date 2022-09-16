@@ -2,6 +2,7 @@
   "name": "fee-market",
   "private": true,
   "scripts": {
+    "build": "yarn build:app-demo",
     "dev:app-demo": "lerna run dev --scope=app-demo",
     "build:app-demo": "lerna run build --scope=app-demo",
     "clean": "lerna clean --yes",
