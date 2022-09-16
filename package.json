@@ -4,13 +4,15 @@
   "scripts": {
     "clean": "lerna clean",
     "boot": "lerna bootstrap",
-    "format": "prettier '**/*.{js,jsx,ts,tsx,json,md}' --write"
+    "format": "prettier '**/*.{js,jsx,ts,tsx,json,md}' --write",
+    "prepare": "husky install"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
     "lerna": "^5.5.1",
-    "prettier": "2.7.1"
+    "prettier": "2.7.1",
+    "husky": "^8.0.0"
   }
 }
