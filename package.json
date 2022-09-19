@@ -2,9 +2,9 @@
   "name": "fee-market",
   "private": true,
   "scripts": {
-    "build": "yarn build:app-demo",
-    "dev:app-demo": "lerna run dev --scope=app-demo",
-    "build:app-demo": "lerna run build --scope=app-demo",
+    "build": "yarn build:app-base",
+    "dev:app-base": "lerna run dev --scope=app-base",
+    "build:app-base": "lerna run build --scope=app-base",
     "clean": "lerna clean --yes",
     "boot": "lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
