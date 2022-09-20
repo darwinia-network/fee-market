@@ -5,7 +5,7 @@ function App() {
   return (
     <div className={"flex"}>
       <SideBar />
-      <div>
+      <div className={"ml-[80px]"}>
         <Outlet />
       </div>
     </div>
