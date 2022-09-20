@@ -1,17 +1,13 @@
-import HelloWorld from "./components/HelloWorld";
-import AppRoutes from "./routes";
-import { NavLink } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import SideBar from "./components/SideBar";
 
 function App() {
   return (
-    <div>
+    <div className={"flex"}>
+      <SideBar />
       <div>
-        <NavLink to={"/"}>Home</NavLink>
-        <NavLink to={"/about"}>About</NavLink>
-        <NavLink to={"/contact"}>Contact</NavLink>
+        <Outlet />
       </div>
-      <AppRoutes />
-      <HelloWorld />
     </div>
   );
 }

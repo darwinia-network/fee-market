@@ -1,44 +1,43 @@
 import { lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import { Suspense } from "react";
+import App from "../App";
+import NotFound from "../pages/NotFound";
 
-const routeList = [
-  {
-    id: 99,
-    path: "/",
-    component: lazy(() => import("../pages/Home")),
-  },
-  {
-    id: 100,
-    path: "about",
-    component: lazy(() => import("../pages/About")),
-  },
-  {
-    id: 101,
-    path: "contact",
-    component: lazy(() => import("../pages/Contact")),
-  },
-];
-
-const AppRoutes = () => {
+const LazyLoader = ({ importLink }: { importLink: string }) => {
+  const Component = lazy(() => import(/* @vite-ignore */ importLink));
   return (
-    <Routes>
-      {routeList.map((item) => {
-        const Component = item.component;
-        return (
-          <Route
-            key={item.id}
-            path={item.path}
-            element={
-              <Suspense>
-                <Component />
-              </Suspense>
-            }
-          />
-        );
-      })}
-    </Routes>
+    <Suspense fallback={"Loading..."}>
+      <Component />
+    </Suspense>
   );
 };
 
-export default AppRoutes;
+/* Add all the app routes in here */
+const browserRouter = createHashRouter([
+  {
+    path: "/",
+    element: App(),
+    // errorElement: NotFound(),
+    children: [
+      {
+        index: true,
+        element: <LazyLoader importLink={"../pages/Home"} />,
+      },
+      {
+        path: "about",
+        element: <LazyLoader importLink={"../pages/About"} />,
+      },
+      {
+        path: "contact",
+        element: <LazyLoader importLink={"../pages/Contact"} />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: NotFound(),
+  },
+]);
+
+export default browserRouter;

@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import "./assets/styles/index.scss";
-import { HashRouter } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
+import browserRouter from "./routes";
 
 if (process.env.NODE_ENV === "production") {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -17,8 +17,6 @@ if (process.env.NODE_ENV === "production") {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <RouterProvider router={browserRouter} />
   </React.StrictMode>
 );
