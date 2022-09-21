@@ -1,5 +1,14 @@
+import { useTranslation } from "react-i18next";
+import localeKeys from "../locale/localeKeys";
+
 const Home = () => {
-  return <div>This is the homepage</div>;
+  const { t } = useTranslation();
+  return (
+    <div>
+      <div>This is the homepage</div>
+      <div>{t(localeKeys.welcomeToReact)}</div>
+    </div>
+  );
 };
 
 export default Home;

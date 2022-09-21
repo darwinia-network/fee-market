@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import SideBar from "./components/SideBar";
 
-function App() {
+const App = () => {
   return (
     <div className={"flex"}>
       <SideBar />
@@ -10,6 +10,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
 export default App;
