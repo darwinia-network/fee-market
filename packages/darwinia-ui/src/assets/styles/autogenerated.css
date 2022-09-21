@@ -604,22 +604,8 @@ body {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-.mt-\[300px\] {
-  margin-top: 300px;
-}
-
 .mt-\[30px\] {
   margin-top: 30px;
-}
-
-.mt-\[60px\] {
-  margin-top: 60px;
-}
-
-.bg-darwinia {
-  --tw-bg-opacity: 1;
-
-  background-color: rgb(255 255 0 / var(--tw-bg-opacity));
 }
 
 @font-face {

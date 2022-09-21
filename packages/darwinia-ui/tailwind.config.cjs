@@ -15,7 +15,6 @@ module.exports = {
       danger: "#FF4B4B",
       success:"#42FF00",
       warning: "#FFB732",
-      darwinia: "yellow"
     },
     extend: {},
   },

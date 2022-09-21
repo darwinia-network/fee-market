@@ -1,5 +1,4 @@
 import { DetailedHTMLProps, ButtonHTMLAttributes } from "react";
-import "./styles.scss";
 /*interface Props extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
   title: string;
 }*/
@@ -7,7 +6,7 @@ type Props = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButt
 
 const Button = ({ children, className, ...rest }: Props) => {
   return (
-    <button className={`bg-darwinia ${className} mt-[30px]`} {...rest}>
+    <button className={`${className} mt-[30px]`} {...rest}>
       {children}
     </button>
   );
