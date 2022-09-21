@@ -1,20 +1,14 @@
-interface Props {
+import { DetailedHTMLProps, ButtonHTMLAttributes } from "react";
+import "./styles.scss";
+/*interface Props extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
   title: string;
-  onClick: (value: any) => void;
-}
-const Button = ({ title, onClick }: Props) => {
-  const clickHandler = () => {
-    alert("it works...yeeeey!BUILT");
-    onClick({ name: "Nas", age: 35 });
-    console.log("you clicked me");
-  };
+}*/
+type Props = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
+
+const Button = ({ children, className, ...rest }: Props) => {
   return (
-    <button
-      onClick={() => {
-        clickHandler();
-      }}
-    >
-      {title}
+    <button className={`bg-darwinia ${className} mt-[30px]`} {...rest}>
+      {children}
     </button>
   );
 };

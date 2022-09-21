@@ -9,12 +9,13 @@ const Home = () => {
       <div>This is the homepage</div>
       <div>{t(localeKeys.welcomeToReact)}</div>
       <Button
-        title={"Btn Title BuiltQQ"}
-        onClick={(val) => {
-          alert(JSON.stringify(val));
-          alert("DONERR====");
+        onClick={() => {
+          alert("it works====");
         }}
-      />
+        className={"bg-danger ml-[20px]"}
+      >
+        Btn Title BuiltQQ
+      </Button>
     </div>
   );
 };
