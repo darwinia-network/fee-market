@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
+import { Scrollbars } from "react-custom-scrollbars";
 
 const App = () => {
   return (
@@ -11,10 +12,12 @@ const App = () => {
       {/*Main Content*/}
       <div className={"h-screen flex-1 bg-gray flex flex-col"}>
         <div className={"h-[3.125rem] lg:h-[4.75rem] bg-black shrink-0"}>Page Title</div>
-        <div className={"flex-1 bg-danger overflow-auto"}>
-          <div>mobile page title</div>
-          <Outlet />
-        </div>
+        <Scrollbars className={"flex-1"}>
+          <div className={"bg-danger"}>
+            <div>mobile page title</div>
+            <Outlet />
+          </div>
+        </Scrollbars>
       </div>
     </div>
   );
