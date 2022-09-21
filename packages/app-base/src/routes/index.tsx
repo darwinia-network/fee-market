@@ -3,9 +3,12 @@ import { createHashRouter } from "react-router-dom";
 import { Suspense } from "react";
 import App from "../App";
 import NotFound from "../pages/NotFound";
+import ErrorCatcher from "../pages/ErrorCatcher";
 
-const LazyLoader = ({ importLink }: { importLink: string }) => {
-  const Component = lazy(() => import(/* @vite-ignore */ importLink));
+const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
+  /* rollup is strict to dynamic imports
+   refer https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations */
+  const Component = lazy(() => import(`../pages/${componentFileName}.tsx`));
   return (
     <Suspense fallback={"Loading..."}>
       <Component />
@@ -18,19 +21,19 @@ const browserRouter = createHashRouter([
   {
     path: "/",
     element: App(),
-    // errorElement: NotFound(),
+    errorElement: ErrorCatcher(),
     children: [
       {
         index: true,
-        element: <LazyLoader importLink={"../pages/Home"} />,
+        element: <LazyLoader componentFileName={"Home"} />,
       },
       {
         path: "about",
-        element: <LazyLoader importLink={"../pages/About"} />,
+        element: <LazyLoader componentFileName={"About"} />,
       },
       {
         path: "contact",
-        element: <LazyLoader importLink={"../pages/Contact"} />,
+        element: <LazyLoader componentFileName={"Contact"} />,
       },
     ],
   },
