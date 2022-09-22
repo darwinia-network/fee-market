@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./packages"
+  },
+  "include": ["packages/**/src/**/*"],
+  "exclude": ["**/node_modules/**/*"]
+}

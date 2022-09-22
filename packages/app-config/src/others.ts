@@ -1,4 +1,4 @@
-import type { FeeMarketApiSection, FeeMarketPolkadotChain } from "@feemarket/app-model";
+import type { FeeMarketApiSection, FeeMarketPolkadotChain } from "@feemarket/app-types";
 
 export const MARKET_API_SECTIONS = {
   Crab: {
