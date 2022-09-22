@@ -52,3 +52,8 @@ a {
     @apply leading-[1.5rem] capitalize text-white;
   }
 }
+
+/* Navigation highlight */
+.active {
+  background-color: #ff0083;
+}

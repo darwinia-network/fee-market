@@ -1,9 +1,9 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo.svg";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import Drawer from "../Drawer";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
@@ -13,14 +13,26 @@ import NetworkSwitchButton from "../NetworkSwitchButton";
   be the page title container on the PC */
 const Header = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const selectedMenuPath = useRef("");
+
+  useEffect(() => {
+    setDrawerVisibility(false);
+  }, [location]);
+
   const toggleMobileNavigation = () => {
     setDrawerVisibility((isVisible) => !isVisible);
   };
+
   const onToggleSubMenu = (menuPath: string) => {
     selectedMenuPath.current = menuPath;
   };
+
+  const onNetworkSwitchButtonClicked = () => {
+    setDrawerVisibility(false);
+  };
+
   return (
     <div className={"h-[3.125rem] lg:h-[4.75rem] bg-black shrink-0"}>
       {/*mobile navigation bar*/}
@@ -61,7 +73,11 @@ const Header = () => {
             </div>
             {/*Nav footer*/}
             <div className={"shrink-0 px-[0.875rem] py-[1.5rem]"}>
-              <NetworkSwitchButton />
+              <NetworkSwitchButton
+                onButtonClicked={() => {
+                  onNetworkSwitchButtonClicked();
+                }}
+              />
             </div>
           </div>
         </Drawer>

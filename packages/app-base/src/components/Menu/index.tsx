@@ -11,7 +11,7 @@ interface Props {
 const Menu = ({ selectedMenuPath, ...rest }: Props) => {
   const [openedMenuPath, setOpenedMenuPath] = useState<string>("");
   const { menuList } = useMenuList();
-  const location = useLocation();
+
   const onToggleSubMenu = (clickedMenuPath: string) => {
     const isSubMenuOpen = openedMenuPath === clickedMenuPath;
     const menuPath = isSubMenuOpen ? "" : clickedMenuPath;
@@ -22,55 +22,21 @@ const Menu = ({ selectedMenuPath, ...rest }: Props) => {
       return menuPath;
     });
   };
-  useEffect(() => {
-    console.log("location changed");
-  }, [location]);
 
   useEffect(() => {
     setOpenedMenuPath(selectedMenuPath ?? "");
   }, []);
 
-  return (
-    <div>
-      {generateMenu(menuList, onToggleSubMenu, openedMenuPath)}
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3</div>
-      <div>Nav1</div>
-      <div>Nav2</div>
-      <div>Nav3-end</div>
-    </div>
-  );
+  return <div>{generateMenu(menuList, onToggleSubMenu, openedMenuPath)}</div>;
 };
 
 const generateMenu = (
   menuList: MenuObject[],
   onToggleSubMenu: (menuIndex: string) => void,
-  openedMenuIndex: string
+  openedMenuIndex: string,
+  isChildMenu = false
 ): JSX.Element[] => {
+  const isItChildMenu = isChildMenu;
   return menuList.map((menuObject, index) => {
     if (!menuObject.children || menuObject.children.length === 0) {
       return (
@@ -80,6 +46,7 @@ const generateMenu = (
           hasSubMenu={false}
           icon={menuObject.icon}
           text={menuObject.text}
+          isChildMenu={isItChildMenu}
         />
       );
     }
@@ -102,9 +69,9 @@ const generateMenu = (
         />
         <div
           style={{ height: isOpen ? `${subMenuHeight}px` : "0px", transitionProperty: "height" }}
-          className={`transition overflow-hidden pl-[2.8125rem] bg-black`}
+          className={`transition overflow-hidden bg-black`}
         >
-          {generateMenu(menuObject.children, onToggleSubMenu, openedMenuIndex)}
+          {generateMenu(menuObject.children, onToggleSubMenu, openedMenuIndex, true)}
         </div>
       </div>
     );

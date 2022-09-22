@@ -8,8 +8,9 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
   text: string;
   path?: string;
   isOpen?: boolean;
+  isChildMenu?: boolean;
 }
-const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, ...rest }: Props) => {
+const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }: Props) => {
   if (typeof path === "undefined") {
     return (
       <div className={"flex px-[1rem] py-[1.125rem] gap-[0.625rem]"} {...rest}>
@@ -18,9 +19,14 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, ...rest }: Props) => {
     );
   }
 
+  const linkSpecialClasses = isChildMenu ? "pl-[2.8125rem] pr-[1rem]" : "px-[1rem]";
   return (
-    <div className={"flex px-[1rem] py-[1.125rem]"} {...rest}>
-      <NavLink className={"flex gap-[0.625rem]"} to={"/"}>
+    <div className={"flex"} {...rest}>
+      <NavLink
+        end={true}
+        className={`max-w-full flex flex-1 ${linkSpecialClasses} py-[1.125rem] gap-[0.625rem]`}
+        to={path}
+      >
         {getNavItem(text, icon, hasSubMenu)}
       </NavLink>
     </div>
@@ -33,7 +39,7 @@ const getNavItem = (text: string, icon?: string, hasSubMenu?: boolean, isOpen?: 
   return (
     <>
       {icon && <img className={"shrink-0 self-center"} src={icon} alt="image" />}
-      <div className={"flex-1 text-14-bold truncate"}>{text}</div>
+      <div className={"flex-1 text-14 truncate"}>{text}thi s is gonna be long</div>
       <img
         className={`transition shrink-0 self-center ${caretClass} ${caretRotationClass}`}
         src={caretDownIcon}

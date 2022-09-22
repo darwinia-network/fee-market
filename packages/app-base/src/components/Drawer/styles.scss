@@ -58,6 +58,8 @@ $translateEase: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .drawer-exit-done {
+  z-index: -10;
+
   .mask {
     opacity: 0;
   }

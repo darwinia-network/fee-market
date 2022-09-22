@@ -1,11 +1,23 @@
 import caretIcon from "../../assets/images/caret-down.svg";
 import pointerRoundIcon from "../../assets/images/pointer-round.svg";
 
-const NetworkSwitchButton = () => {
+interface Props {
+  onButtonClicked?: () => void;
+}
+
+const NetworkSwitchButton = ({ onButtonClicked }: Props) => {
+  const onClickHandler = () => {
+    if (onButtonClicked) {
+      onButtonClicked();
+    }
+  };
   return (
     <div
+      onClick={() => {
+        onClickHandler();
+      }}
       className={
-        "bg-primary rounded-[0.3125rem] px-[1.25rem] py-[0.625rem] text-14-bold flex justify-between align-center gap-[0.625rem]"
+        "bg-primary lg:hover:opacity-80 active:opacity-50 rounded-[0.3125rem] px-[1.25rem] py-[0.625rem] text-14-bold flex justify-between align-center gap-[0.625rem]"
       }
     >
       {/*Network names*/}

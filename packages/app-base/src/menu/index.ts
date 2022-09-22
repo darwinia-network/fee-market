@@ -26,7 +26,7 @@ const getMenu = (t: TFunction<"translation">): MenuItem[] => {
       id: "1",
       text: t([localeKeys.overview]),
       icon: overviewIcon,
-      path: "",
+      path: "/",
     },
     {
       id: "2",
@@ -36,12 +36,12 @@ const getMenu = (t: TFunction<"translation">): MenuItem[] => {
         {
           id: "2-1",
           text: t([localeKeys.relayersOverview]),
-          path: "",
+          path: "contact",
         },
         {
           id: "2-2",
           text: t([localeKeys.relayerDashboard]),
-          path: "",
+          path: "about",
         },
       ],
     },

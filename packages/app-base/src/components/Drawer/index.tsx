@@ -24,6 +24,7 @@ const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible, drawerStyles, childre
   const childNodeRef = useRef(null);
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const drawerTimeout = 300; //time in milliseconds
+
   const toggleDrawer = () => {
     setDrawerVisibility((isVisible) => !isVisible);
   };
@@ -44,7 +45,8 @@ const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible, drawerStyles, childre
       nodeRef={childNodeRef}
       in={isDrawerVisible}
       classNames={"drawer"}
-      unmountOnExit={true}
+      unmountOnExit={false}
+      mountOnEnter={true}
       timeout={drawerTimeout}
     >
       <div ref={childNodeRef} className={"fixed right-0 left-0 top-0 bottom-0 w-full h-full z-[99]"}>
