@@ -2,10 +2,11 @@
   "name": "fee-market",
   "private": true,
   "scripts": {
-    "build": "yarn build:app-base && yarn build:app-model",
+    "build": "lerna run build",
     "dev:app-base": "lerna run dev --scope=app-base",
     "build:app-base": "lerna run build --scope=app-base",
-    "build:app-model": "lerna run build --scope=app-model",
+    "build:app-model": "lerna run build --scope @feemarket/app-model",
+    "build:app-config": "lerna run build --scope @feemarket/app-config",
     "clean": "lerna clean --yes",
     "boot": "lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
