@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@feemarket/app-types": ["app-types/src"],
+      "@feemarket/app-types/*": ["app-types/src/*"],
+      "@feemarket/app-config": ["app-config/src"],
+      "@feemarket/app-config/*": ["app-config/src/*"],
+      "@feemarket/app-utils": ["app-utils/src"],
+      "@feemarket/app-utils/*": ["app-utils/src/*"]
+    }
+  }
+}
