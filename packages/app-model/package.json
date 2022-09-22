@@ -1,0 +1,19 @@
+{
+  "name": "app-model",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist && rollup --config",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rollup": "^2.79.0",
+    "rollup-plugin-typescript2": "^0.34.0",
+    "typescript": "^4.8.3"
+  }
+}

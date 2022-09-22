@@ -5,6 +5,7 @@
     "build": "yarn build:app-base",
     "dev:app-base": "lerna run dev --scope=app-base",
     "build:app-base": "lerna run build --scope=app-base",
+    "build:app-model": "lerna run build --scope=app-model",
     "clean": "lerna clean --yes",
     "boot": "lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
@@ -32,5 +33,8 @@
     "stylelint": "^14.11.0",
     "stylelint-config-standard": "^28.0.0",
     "tailwindcss": "^3.1.8"
+  },
+  "dependencies": {
+    "@polkadot/api": "^9.4.1"
   }
 }
