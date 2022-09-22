@@ -1,20 +1,21 @@
-import { Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { Scrollbars } from "react-custom-scrollbars";
+import Header from "./components/Header";
 
 const App = () => {
   return (
     <div className={"flex"}>
       {/*Sidebar*/}
-      <div className={"w-[12.5rem]"}>
+      <div className={"hidden lg:flex w-[12.5rem]"}>
         <Sidebar />
       </div>
       {/*Main Content*/}
       <div className={"h-screen flex-1 bg-gray flex flex-col"}>
-        <div className={"h-[3.125rem] lg:h-[4.75rem] bg-black shrink-0"}>Page Title</div>
+        <Header />
         <Scrollbars className={"flex-1"}>
           <div className={"bg-danger"}>
-            <div>mobile page title</div>
+            <div className={"lg:hidden"}>mobile page title</div>
             <Outlet />
           </div>
         </Scrollbars>

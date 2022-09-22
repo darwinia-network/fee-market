@@ -1,0 +1,68 @@
+$opacityTransitionDuration: 300ms;
+$opacityEase: ease-in-out;
+$translateTransitionDuration: 300ms;
+$translateEase: cubic-bezier(0.23, 1, 0.32, 1);
+
+.drawer-enter {
+  .mask {
+    opacity: 0;
+  }
+
+  .drawer-content {
+    transform: translate3d(101%, 0.1px, 0.1px);
+  }
+}
+
+.drawer-enter-active {
+  .mask {
+    opacity: 0.8;
+    transition: opacity $opacityTransitionDuration $opacityEase;
+  }
+
+  .drawer-content {
+    transform: translate3d(0, 0.1px, 0.1px);
+    transition: transform $translateTransitionDuration $translateEase;
+  }
+}
+
+.drawer-enter-done {
+  .mask {
+    opacity: 0.8;
+  }
+
+  .drawer-content {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.drawer-exit {
+  .mask {
+    opacity: 0.8;
+  }
+
+  .drawer-content {
+    transform: translate3d(0, 0.1px, 0.1px);
+  }
+}
+
+.drawer-exit-active {
+  .mask {
+    opacity: 0;
+    transition: opacity $opacityTransitionDuration $opacityEase;
+  }
+
+  .drawer-content {
+    transform: translate3d(101%, 0.1px, 0.1px);
+    transition: transform $translateTransitionDuration $translateEase;
+  }
+}
+
+.drawer-exit-done {
+  .mask {
+    opacity: 0;
+  }
+
+  .drawer-content {
+    transform: translate3d(101%, 0.1px, 0.1px);
+  }
+}

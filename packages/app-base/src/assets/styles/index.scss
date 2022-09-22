@@ -16,6 +16,11 @@ html {
   @apply bg-black;
 }
 
+/* removes the blue background when tapping links on iOS devices  */
+a {
+  -webkit-tap-highlight-color: rgb(255 255 255 / 0%);
+}
+
 @layer components {
   .text-10 {
     @apply font-[JetBrainsMono-Light] text-[0.625rem] leading-[0.9375rem] box-border;
@@ -38,7 +43,7 @@ html {
   }
 
   .text-18-bold {
-    @apply font-[JetBrainsMono-Light] text-[1.125rem] leading-[1.5rem] box-border;
+    @apply font-[JetBrainsMono-Bold] text-[1.125rem] leading-[1.5rem] box-border;
   }
 
   body {
