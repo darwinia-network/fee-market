@@ -60,4 +60,9 @@ a {
 /* Navigation highlight */
 .active {
   background-color: #ff0083;
+
+  .parent-menu,
+  .child-menu {
+    font-family: JetBrainsMono-Bold, serif !important;
+  }
 }

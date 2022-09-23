@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
 import NetworkSwitchButton from "../NetworkSwitchButton";
+import CustomPopper from "../CustomPopper";
 
 interface Props {
   title: string;
@@ -20,6 +21,11 @@ const Header = ({ title }: Props) => {
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const selectedMenuPath = useRef("");
+  const [popperTriggerRef, setPopperTriggerRef] = useState<HTMLElement | null>(null);
+  const networkSelection = {
+    from: "darwinia",
+    to: "ethereum",
+  };
 
   useEffect(() => {
     setDrawerVisibility(false);
@@ -35,6 +41,10 @@ const Header = ({ title }: Props) => {
 
   const onNetworkSwitchButtonClicked = () => {
     setDrawerVisibility(false);
+  };
+
+  const onPCNetworkSwitchButtonClicked = () => {
+    console.log("PC button clicked====");
   };
 
   return (
@@ -78,7 +88,9 @@ const Header = ({ title }: Props) => {
             {/*Nav footer*/}
             <div className={"shrink-0 px-[0.875rem] py-[1.5rem]"}>
               <NetworkSwitchButton
-                onButtonClicked={() => {
+                from={networkSelection.from}
+                to={networkSelection.to}
+                onClick={() => {
                   onNetworkSwitchButtonClicked();
                 }}
               />
@@ -87,8 +99,28 @@ const Header = ({ title }: Props) => {
         </Drawer>
       </div>
       {/*PC Page title, this content will be fixed to the top*/}
-      <div className={"hidden lg:flex items-center h-full px-[1.875rem]"}>
+      <div className={"hidden lg:flex items-center h-full px-[1.875rem] justify-between"}>
         <div className={"page-title"}>{title}</div>
+        <div ref={setPopperTriggerRef}>
+          <NetworkSwitchButton
+            from={networkSelection.from}
+            to={networkSelection.to}
+            isEqualSized={false}
+            onClick={() => {
+              onPCNetworkSwitchButtonClicked();
+            }}
+          />
+        </div>
+
+        <CustomPopper triggerEvent={"click"} triggerRef={popperTriggerRef}>
+          <div>
+            <div className={"w-[200px] bg-white text-black"}>
+              Popper element Lorem ipsum dolor sit amet, consectetur adipisicing elit. Animi beatae dolorem ducimus est
+              explicabo incidunt, mollitia omnis placeat. Ab ea harum id impedit in ipsum placeat quos totam velit
+              voluptatum!
+            </div>
+          </div>
+        </CustomPopper>
       </div>
     </div>
   );

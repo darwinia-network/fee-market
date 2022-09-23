@@ -36,7 +36,7 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }
 const getNavItem = (text: string, icon?: string, hasSubMenu?: boolean, isOpen?: boolean, isChildMenu?: boolean) => {
   const caretClass = hasSubMenu ? "" : "invisible";
   const caretRotationClass = isOpen ? "-rotate-180" : "";
-  const textSize = isChildMenu ? "text-12" : "text-14-bold";
+  const textSize = isChildMenu ? "text-12 child-menu" : "text-14 parent-menu";
   return (
     <>
       {icon && <img className={"shrink-0 self-center"} src={icon} alt="image" />}
