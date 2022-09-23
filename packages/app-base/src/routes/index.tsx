@@ -25,15 +25,19 @@ const browserRouter = createHashRouter([
     children: [
       {
         index: true,
-        element: <LazyLoader componentFileName={"Home"} />,
+        element: <LazyLoader componentFileName={"Overview"} />,
       },
       {
-        path: "about",
-        element: <LazyLoader componentFileName={"About"} />,
+        path: "relayers-overview",
+        element: <LazyLoader componentFileName={"RelayersOverview"} />,
       },
       {
-        path: "contact",
-        element: <LazyLoader componentFileName={"Contact"} />,
+        path: "relayer-dashboard",
+        element: <LazyLoader componentFileName={"RelayerDashboard"} />,
+      },
+      {
+        path: "orders",
+        element: <LazyLoader componentFileName={"Orders"} />,
       },
     ],
   },

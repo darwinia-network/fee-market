@@ -1,7 +1,6 @@
 import MenuItem from "../MenuItem";
 import useMenuList, { MenuItem as MenuObject } from "../../menu";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 
 interface Props {
   onToggleSubMenu?: (openedMenuPath: string) => void;
@@ -27,7 +26,7 @@ const Menu = ({ selectedMenuPath, ...rest }: Props) => {
     setOpenedMenuPath(selectedMenuPath ?? "");
   }, []);
 
-  return <div>{generateMenu(menuList, onToggleSubMenu, openedMenuPath)}</div>;
+  return <div className={"w-full"}>{generateMenu(menuList, onToggleSubMenu, openedMenuPath)}</div>;
 };
 
 const generateMenu = (

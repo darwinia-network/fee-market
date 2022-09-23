@@ -1,9 +1,10 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { Scrollbars } from "react-custom-scrollbars";
 import Header from "./components/Header";
 
 const App = () => {
+  const pageTitle = "Overview";
   return (
     <div className={"flex"}>
       {/*Sidebar*/}
@@ -12,10 +13,12 @@ const App = () => {
       </div>
       {/*Main Content*/}
       <div className={"h-screen flex-1 bg-gray flex flex-col"}>
-        <Header />
+        {/*The fixed page title that displays on the PC version is rendered in the Header component */}
+        <Header title={pageTitle} />
         <Scrollbars className={"flex-1"}>
-          <div className={"bg-danger"}>
-            <div className={"lg:hidden"}>mobile page title</div>
+          <div className={"bg-danger px-[0.9375rem] lg:px-[1.875rem]"}>
+            {/*The mobile phone page title that scrolls with the page content*/}
+            <div className={"lg:hidden page-title"}>{pageTitle}</div>
             <Outlet />
           </div>
         </Scrollbars>

@@ -46,6 +46,10 @@ a {
     @apply font-[JetBrainsMono-Bold] text-[1.125rem] leading-[1.5rem] box-border;
   }
 
+  .page-title {
+    @apply font-[JetBrainsMono-Bold] text-[1.125rem] leading-[1.5rem] lg:text-[1.5rem] lg:leading-[1.975rem] box-border;
+  }
+
   body {
     @extend .text-14;
 

@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo.svg";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
@@ -9,9 +9,13 @@ import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
 import NetworkSwitchButton from "../NetworkSwitchButton";
 
+interface Props {
+  title: string;
+}
+
 /*This will be the nav bar container on mobile devices BUT will
   be the page title container on the PC */
-const Header = () => {
+const Header = ({ title }: Props) => {
   const { t } = useTranslation();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
@@ -39,9 +43,9 @@ const Header = () => {
       <div className={"lg:hidden bg-primary flex flex-1 h-full shrink-0 items-center justify-between pl-[0.625rem]"}>
         {/*Logo*/}
         <div className={"shrink-0 h-full"}>
-          <NavLink className={"h-full flex"} to={"/"}>
+          <Link className={"h-full flex"} to={"/"}>
             <img className={"self-center w-[9.25rem]"} src={logo} alt="image" />
-          </NavLink>
+          </Link>
         </div>
         {/*Navigation toggle*/}
         <div
@@ -82,8 +86,10 @@ const Header = () => {
           </div>
         </Drawer>
       </div>
-      {/*PC Page title*/}
-      <div className={"hidden lg:flex"}>PC Page title</div>
+      {/*PC Page title, this content will be fixed to the top*/}
+      <div className={"hidden lg:flex items-center h-full px-[1.875rem]"}>
+        <div className={"page-title"}>{title}</div>
+      </div>
     </div>
   );
 };

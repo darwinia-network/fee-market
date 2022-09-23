@@ -36,12 +36,12 @@ const getMenu = (t: TFunction<"translation">): MenuItem[] => {
         {
           id: "2-1",
           text: t([localeKeys.relayersOverview]),
-          path: "contact",
+          path: "/relayers-overview",
         },
         {
           id: "2-2",
           text: t([localeKeys.relayerDashboard]),
-          path: "about",
+          path: "/relayer-dashboard",
         },
       ],
     },
@@ -49,19 +49,7 @@ const getMenu = (t: TFunction<"translation">): MenuItem[] => {
       id: "3",
       text: t([localeKeys.orders]),
       icon: ordersIcon,
-      // path: "",
-      children: [
-        {
-          id: "3-1",
-          text: t([localeKeys.relayersOverview]),
-          path: "",
-        },
-        {
-          id: "3-2",
-          text: t([localeKeys.relayerDashboard]),
-          path: "",
-        },
-      ],
+      path: "/orders",
     },
   ];
 };
