@@ -1,30 +1,13 @@
-import { Outlet } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import { Scrollbars } from "react-custom-scrollbars";
-import Header from "./components/Header";
+import Root from "./Root";
 
+/* WEIRD BUG FIX 🐛🔧
+ * For some reasons the App component rejects all React's hooks,
+ * it says that App component isn't a functional component.
+ * A quick fix was to move all the code in here to a separate Root
+ * component
+ * */
 const App = () => {
-  const pageTitle = "Overview";
-  return (
-    <div className={"flex"}>
-      {/*Sidebar*/}
-      <div className={"hidden lg:flex w-[12.5rem]"}>
-        <Sidebar />
-      </div>
-      {/*Main Content*/}
-      <div className={"h-screen flex-1 bg-gray flex flex-col"}>
-        {/*The fixed page title that displays on the PC version is rendered in the Header component */}
-        <Header title={pageTitle} />
-        <Scrollbars className={"flex-1"}>
-          <div className={"bg-danger px-[0.9375rem] lg:px-[1.875rem]"}>
-            {/*The mobile phone page title that scrolls with the page content*/}
-            <div className={"lg:hidden page-title"}>{pageTitle}</div>
-            <Outlet />
-          </div>
-        </Scrollbars>
-      </div>
-    </div>
-  );
+  return <Root />;
 };
 
 export default App;

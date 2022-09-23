@@ -1,8 +1,9 @@
 import caretIcon from "../../assets/images/caret-down.svg";
 import pointerRoundIcon from "../../assets/images/pointer-round.svg";
+import { Button } from "@darwinia/ui";
 
 interface Props {
-  onClick: () => void;
+  onClick?: () => void;
   from?: string;
   to?: string;
   isEqualSized?: boolean;
@@ -18,13 +19,11 @@ const NetworkSwitchButton = ({ onClick, from = "", to = "", isEqualSized = true 
   const networkNameSizeClass = isEqualSized ? "flex-1" : "";
 
   return (
-    <div
+    <Button
       onClick={() => {
         onClickHandler();
       }}
-      className={
-        "cursor-pointer select-none bg-primary lg:hover:opacity-80 lg:active:opacity-50 active:opacity-50 rounded-[0.3125rem] px-[1.25rem] py-[0.625rem] text-14-bold flex justify-between align-center gap-[0.625rem]"
-      }
+      className={"text-14-bold flex justify-between align-center gap-[0.625rem]"}
     >
       {/*Network names*/}
       <div className={"shrink-0 flex-1 overflow-hidden flex gap-[0.625rem] justify-between"}>
@@ -38,7 +37,7 @@ const NetworkSwitchButton = ({ onClick, from = "", to = "", isEqualSized = true 
       <div className={"shrink-0 self-center"}>
         <img className={"w-[1rem] h-[1rem]"} src={caretIcon} alt="image" />
       </div>
-    </div>
+    </Button>
   );
 };
 

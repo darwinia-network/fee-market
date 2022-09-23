@@ -8,7 +8,9 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
 import NetworkSwitchButton from "../NetworkSwitchButton";
-import CustomPopper from "../CustomPopper";
+
+import NetworkSwitchDialog from "../NetworkSwitchDialog";
+import { CustomPopper } from "@darwinia/ui";
 
 interface Props {
   title: string;
@@ -40,6 +42,7 @@ const Header = ({ title }: Props) => {
   };
 
   const onNetworkSwitchButtonClicked = () => {
+    console.log("mobile network switch=====");
     setDrawerVisibility(false);
   };
 
@@ -102,23 +105,20 @@ const Header = ({ title }: Props) => {
       <div className={"hidden lg:flex items-center h-full px-[1.875rem] justify-between"}>
         <div className={"page-title"}>{title}</div>
         <div ref={setPopperTriggerRef}>
-          <NetworkSwitchButton
-            from={networkSelection.from}
-            to={networkSelection.to}
-            isEqualSized={false}
-            onClick={() => {
-              onPCNetworkSwitchButtonClicked();
-            }}
-          />
+          {/* Don't bind an onClick event here since the onclick event is already implemented in the
+          CustomPopper component */}
+          <NetworkSwitchButton from={networkSelection.from} to={networkSelection.to} isEqualSized={false} />
         </div>
 
-        <CustomPopper triggerEvent={"click"} triggerRef={popperTriggerRef}>
+        <CustomPopper
+          onPopperTrigger={() => {
+            onPCNetworkSwitchButtonClicked();
+          }}
+          triggerEvent={"click"}
+          triggerRef={popperTriggerRef}
+        >
           <div>
-            <div className={"w-[200px] bg-white text-black"}>
-              Popper element Lorem ipsum dolor sit amet, consectetur adipisicing elit. Animi beatae dolorem ducimus est
-              explicabo incidunt, mollitia omnis placeat. Ab ea harum id impedit in ipsum placeat quos totam velit
-              voluptatum!
-            </div>
+            <NetworkSwitchDialog />
           </div>
         </CustomPopper>
       </div>
