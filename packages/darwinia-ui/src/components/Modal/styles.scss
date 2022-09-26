@@ -1,0 +1,57 @@
+$opacityTransitionDuration: 300ms;
+$opacityEase: cubic-bezier(0.645, 0.045, 0.355, 1);
+$translateTransitionDuration: 300ms;
+$scaleEase: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+.dw-modal-enter {
+  opacity: 0;
+
+  .modal-content {
+    transform: scale3d(0.5, 0.5, 0.5);
+  }
+}
+
+.dw-modal-enter-active {
+  opacity: 1;
+  transition: opacity $opacityTransitionDuration $opacityEase;
+
+  .modal-content {
+    transform: scale3d(1, 1, 1);
+    transition: transform $translateTransitionDuration $scaleEase;
+  }
+}
+
+.dw-modal-enter-done {
+  opacity: 1;
+
+  .modal-content {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.dw-modal-exit {
+  opacity: 1;
+
+  .modal-content {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.dw-modal-exit-active {
+  opacity: 0;
+  transition: opacity $opacityTransitionDuration $opacityEase;
+
+  .modal-content {
+    transform: scale3d(0.5, 0.5, 0.5);
+    transition: transform $translateTransitionDuration $scaleEase;
+  }
+}
+
+.dw-modal-exit-done {
+  z-index: -10;
+  opacity: 0;
+
+  .modal-content {
+    transform: scale3d(0.5, 0.5, 0.5);
+  }
+}

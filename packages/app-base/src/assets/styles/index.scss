@@ -46,14 +46,20 @@ a {
     @apply font-[JetBrainsMono-Bold] text-[1.125rem] leading-[1.5rem] box-border;
   }
 
+  .text-24-bold {
+    @apply font-[JetBrainsMono-Bold] text-[1.5rem] leading-[1.975rem] box-border;
+  }
+
   .page-title {
     @apply font-[JetBrainsMono-Bold] text-[1.125rem] leading-[1.5rem] lg:text-[1.5rem] lg:leading-[1.975rem] box-border;
   }
 
-  body {
-    @extend .text-14;
+  .divider {
+    @apply border-[rgba(255,255,255,0.2)] box-border;
+  }
 
-    @apply leading-[1.5rem] capitalize text-white;
+  body {
+    @apply font-[JetBrainsMono-Light] text-[0.875rem] leading-[1.375rem] leading-[1.5rem] capitalize text-white;
   }
 }
 

@@ -12,6 +12,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
 }
 const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }: Props) => {
   if (typeof path === "undefined") {
+    // this is a parent menu, not a navigation link
     return (
       <div className={"cursor-default flex px-[1rem] h-[3.75rem] items-center gap-[0.625rem]"} {...rest}>
         {getNavItem(text, icon, hasSubMenu, isOpen, isChildMenu)}
@@ -19,12 +20,13 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }
     );
   }
 
-  const linkSpecialClasses = isChildMenu ? "pl-[2.8125rem] pr-[1rem]" : "px-[1rem]";
+  // this is a link by itself
+  const linkSpecialClasses = isChildMenu ? "pl-[2.8125rem] pr-[1rem] h-[3.125rem]" : "px-[1rem] h-[3.75rem]";
   return (
     <div className={"flex"} {...rest}>
       <NavLink
         end={true}
-        className={`max-w-full flex flex-1 ${linkSpecialClasses}  h-[3.75rem] items-center gap-[0.625rem]`}
+        className={`max-w-full flex flex-1 ${linkSpecialClasses} items-center gap-[0.625rem]`}
         to={path}
       >
         {getNavItem(text, icon, hasSubMenu, isOpen, isChildMenu)}

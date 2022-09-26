@@ -1,0 +1,33 @@
+$transitionDuration: 300ms;
+
+.popover-enter {
+  transform: translate3d(0.1px, -100px, 0.1px);
+  opacity: 0;
+}
+
+.popover-enter-active {
+  transform: translate3d(0.1px, 0.1px, 0.1px);
+  opacity: 1;
+  transition: transform $transitionDuration ease-in-out, opacity $transitionDuration ease-in;
+}
+
+.popover-enter-done {
+  transform: translate3d(0.1px, 0.1px, 0.1px);
+  opacity: 1;
+}
+
+.popover-exit {
+  transform: translate3d(0.1px, 0.1px, 0.1px);
+  opacity: 1;
+}
+
+.popover-exit-active {
+  transform: translate3d(0.1px, -100px, 0.1px);
+  opacity: 0;
+  transition: transform $transitionDuration ease-in-out, opacity $transitionDuration ease-in;
+}
+
+.popover-exit-done {
+  transform: translate3d(0.1px, -100px, 0.1px);
+  opacity: 0;
+}

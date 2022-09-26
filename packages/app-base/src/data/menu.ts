@@ -3,14 +3,7 @@ import localeKeys from "../locale/localeKeys";
 import overviewIcon from "../assets/images/overview.svg";
 import avatarIcon from "../assets/images/avatar.svg";
 import ordersIcon from "../assets/images/orders.svg";
-
-export interface MenuItem {
-  id: string;
-  icon?: string;
-  text: string;
-  children?: MenuItem[];
-  path?: string;
-}
+import { MenuItem } from "./types";
 
 const useMenuList = () => {
   const { t } = useTranslation();

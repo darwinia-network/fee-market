@@ -27,11 +27,11 @@ const NetworkSwitchButton = ({ onClick, from = "", to = "", isEqualSized = true 
     >
       {/*Network names*/}
       <div className={"shrink-0 flex-1 overflow-hidden flex gap-[0.625rem] justify-between"}>
-        <div className={`shrink-0 capitalize truncate ${networkNameSizeClass}`}>{from}</div>
+        <div className={`shrink-0 truncate ${networkNameSizeClass}`}>{from}</div>
         <div className={"shrink-0 self-center"}>
           <img className={"w-[0.75rem] h-[0.75rem]"} src={pointerRoundIcon} alt="image" />
         </div>
-        <div className={`shrink-0 capitalize truncate ${networkNameSizeClass}`}>{to}</div>
+        <div className={`shrink-0 truncate ${networkNameSizeClass}`}>{to}</div>
       </div>
       {/*Caret Icon*/}
       <div className={"shrink-0 self-center"}>

@@ -1,11 +1,30 @@
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { Scrollbars } from "react-custom-scrollbars";
-import { Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import localeKeys from "./locale/localeKeys";
 
 const Root = () => {
-  const pageTitle = "Overview";
+  const { t } = useTranslation();
+  const [pageTitle, setPageTitle] = useState("");
+  const pagesPathTitleMap = {
+    "/": t(localeKeys.overview),
+    "/relayers-overview": t(localeKeys.relayersOverview),
+    "/relayer-dashboard": t(localeKeys.relayerDashboard),
+    "/orders": t(localeKeys.orders),
+  };
+  const location = useLocation();
+  useEffect(() => {
+    const pathname = location.pathname as keyof typeof pagesPathTitleMap;
+    setPageTitle(pagesPathTitleMap[pathname] ?? t(localeKeys.overview));
+  }, [location]);
+  /* Set this value to control the minimum content width on PC to avoid the
+   * UI from collapsing on PC when the browser size is small */
+  // const mainContentMinWidth = "lg:min-w-[1000px]";
+  const mainContentMinWidth = "";
+
   return (
     <div className={"flex"}>
       {/*Sidebar*/}
@@ -17,10 +36,15 @@ const Root = () => {
         {/*The fixed page title that displays on the PC version is rendered in the Header component */}
         <Header title={pageTitle} />
         <Scrollbars className={"flex-1"}>
-          <div className={"px-[0.9375rem] lg:px-[1.875rem]"}>
-            {/*The mobile phone page title that scrolls with the page content*/}
-            <div className={"lg:hidden page-title"}>{pageTitle}</div>
-            <Outlet />
+          <div className={"overflow-x-hidden p-[0.9375rem] pt-0 lg:p-[1.875rem] lg:pt-0"}>
+            {/*This is the section that can be scrolled horizontally*/}
+            <div className={"lg:overflow-x-auto"}>
+              <div className={mainContentMinWidth}>
+                {/*The mobile phone page title that scrolls with the page content*/}
+                <div className={"lg:hidden page-title py-[0.9375rem] lg:mt-0"}>{pageTitle}</div>
+                <Outlet />
+              </div>
+            </div>
           </div>
         </Scrollbars>
       </div>

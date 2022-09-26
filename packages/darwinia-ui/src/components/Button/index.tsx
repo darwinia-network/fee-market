@@ -10,7 +10,7 @@ const Button = ({ children, style, className, size = "large", ...rest }: Props) 
   return (
     <button
       style={{ ...style }}
-      className={`disabled:!opacity-60 disabled:cursor-default cursor-pointer select-none bg-primary lg:hover:opacity-80 lg:active:opacity-50 active:opacity-50 rounded-[0.3125rem] ${sizeClass}  ${className}`}
+      className={`w-full capitalize disabled:!opacity-60 disabled:cursor-default cursor-pointer select-none bg-primary lg:hover:opacity-80 lg:active:opacity-50 active:opacity-50 rounded-[0.3125rem] ${sizeClass}  ${className}`}
       {...rest}
     >
       {children}

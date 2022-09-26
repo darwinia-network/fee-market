@@ -1,8 +1,8 @@
 import {
-  ButtonHTMLAttributes,
   CSSProperties,
   DetailedHTMLProps,
   forwardRef,
+  HTMLAttributes,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -10,15 +10,16 @@ import {
 } from "react";
 import { CSSTransition } from "react-transition-group";
 import "./styles.scss";
+import { createPortal } from "react-dom";
 export interface DrawerRefs {
-  toggleDrawer: () => void;
+  toggle: () => void;
 }
-interface Props extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
+interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   isVisible: boolean;
   drawerStyles?: CSSProperties;
 }
 
-const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible, drawerStyles, children }, ref) => {
+const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible = false, drawerStyles, children }, ref) => {
   /* This dummyNodeRef resolves the node reference bug in react-transition-group library,
    refer https://github.com/reactjs/react-transition-group/issues/668 */
   const childNodeRef = useRef(null);
@@ -30,17 +31,20 @@ const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible, drawerStyles, childre
   };
 
   useEffect(() => {
-    toggleDrawer();
+    setDrawerVisibility(isVisible);
   }, [isVisible]);
 
   //Expose some child methods to the parent
   useImperativeHandle(ref, () => {
     return {
-      toggleDrawer,
+      toggle: toggleDrawer,
     };
   });
 
-  return (
+  /*set unmountOnExit to false inorder to avoid repetitive children animation (if any)
+   * every time the drawer opens, the drawer z-index is set to -10 on exit to make it
+   * un-clickable or untouchable*/
+  return createPortal(
     <CSSTransition
       nodeRef={childNodeRef}
       in={isDrawerVisible}
@@ -63,7 +67,8 @@ const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible, drawerStyles, childre
           {children}
         </div>
       </div>
-    </CSSTransition>
+    </CSSTransition>,
+    document.body
   );
 });
 

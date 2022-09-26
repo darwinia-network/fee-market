@@ -1,6 +1,7 @@
 import MenuItem from "../MenuItem";
-import useMenuList, { MenuItem as MenuObject } from "../../menu";
-import { useEffect, useState } from "react";
+import useMenuList from "../../data/menu";
+import { MenuItem as MenuObject } from "../../data/types";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   onToggleSubMenu?: (openedMenuPath: string) => void;
@@ -26,17 +27,33 @@ const Menu = ({ selectedMenuPath, ...rest }: Props) => {
     setOpenedMenuPath(selectedMenuPath ?? "");
   }, []);
 
-  return <div className={"w-full"}>{generateMenu(menuList, onToggleSubMenu, openedMenuPath)}</div>;
+  //return <div className={"w-full"}>{generateMenu(menuList, onToggleSubMenu, openedMenuPath)}</div>;
+  return (
+    <div className={"w-full"}>
+      <MenuRoot
+        menuList={menuList}
+        onToggleSubMenu={onToggleSubMenu}
+        openedMenuIndex={openedMenuPath}
+        isChildMenu={false}
+      />
+    </div>
+  );
 };
 
-const generateMenu = (
-  menuList: MenuObject[],
-  onToggleSubMenu: (menuIndex: string) => void,
-  openedMenuIndex: string,
-  isChildMenu = false
-): JSX.Element[] => {
-  const isItChildMenu = isChildMenu;
-  return menuList.map((menuObject, index) => {
+const MenuRoot = ({
+  menuList,
+  onToggleSubMenu,
+  openedMenuIndex,
+  isChildMenu = false,
+}: {
+  menuList: MenuObject[];
+  onToggleSubMenu: (menuIndex: string) => void;
+  openedMenuIndex: string;
+  isChildMenu: boolean;
+}) => {
+  const rootMenuRef = useRef<HTMLDivElement>(null);
+
+  const menu = menuList.map((menuObject, index) => {
     if (!menuObject.children || menuObject.children.length === 0) {
       return (
         <MenuItem
@@ -45,15 +62,16 @@ const generateMenu = (
           hasSubMenu={false}
           icon={menuObject.icon}
           text={menuObject.text}
-          isChildMenu={isItChildMenu}
+          isChildMenu={isChildMenu}
         />
       );
     }
-    /* The menu item has sub menu */
+
     const currentParentPath = `${index}`;
-    const singleMenuItemHeight = 60;
-    const subMenuHeight = menuObject.children.length * singleMenuItemHeight;
     const isOpen = openedMenuIndex === `${currentParentPath}`;
+
+    const subMenuHeight = rootMenuRef.current?.scrollHeight ?? 0;
+
     return (
       <div key={menuObject.id}>
         <MenuItem
@@ -67,14 +85,23 @@ const generateMenu = (
           isOpen={isOpen}
         />
         <div
-          style={{ height: isOpen ? `${subMenuHeight}px` : "0px", transitionProperty: "height" }}
+          style={{ maxHeight: isOpen ? `${subMenuHeight}px` : "0px", transitionProperty: "max-height" }}
           className={`transition overflow-hidden bg-black`}
         >
-          {generateMenu(menuObject.children, onToggleSubMenu, openedMenuIndex, true)}
+          <div ref={rootMenuRef}>
+            <MenuRoot
+              menuList={menuObject.children}
+              onToggleSubMenu={onToggleSubMenu}
+              openedMenuIndex={openedMenuIndex}
+              isChildMenu={true}
+            />
+          </div>
         </div>
       </div>
     );
   });
+
+  return <>{menu}</>;
 };
 
 export default Menu;
