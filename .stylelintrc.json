@@ -4,7 +4,6 @@
     "at-rule-no-unknown": null,
     "max-line-length": null,
     "no-duplicate-selectors": null,
-    "selector-class-pattern": null,
-    "font-family-no-missing-generic-family-keyword": null
+    "selector-class-pattern": null
   }
 }
