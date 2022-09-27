@@ -22,6 +22,7 @@ const Input = ({
   ...rest
 }: InputProps) => {
   const hasCustomLeftIcon = typeof leftIcon !== "undefined";
+  console.log("=====");
   if (clearButton && !onClear) {
     console.log("onClear callback is needed on Input component");
   }
