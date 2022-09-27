@@ -59,7 +59,7 @@ a {
   }
 
   .divider {
-    @apply border-[rgba(255,255,255,0.2)] box-border;
+    @apply border-divider box-border;
   }
 
   body {
