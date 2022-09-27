@@ -6,7 +6,7 @@ import resolve from "@rollup/plugin-node-resolve";
  */
 const config = [
   {
-    input: "src/index.ts",
+    input: "src/index.tsx",
     output: [
       {
         dir: "dist",
@@ -15,7 +15,7 @@ const config = [
       },
     ],
     plugins: [typescript(), resolve()],
-    external: (id) => /@polkadot|app-model/.test(id),
+    external: (id) => /react/.test(id),
   },
 ];
 
