@@ -75,6 +75,10 @@ const Header = ({ title }: Props) => {
     setMobileNetworkSelectionModalVisibility(true);
   };
 
+  const onDrawerClosed = () => {
+    setDrawerVisibility(false);
+  };
+
   const onMobileNetworkSelectionModalClosed = () => {
     setMobileNetworkSelectionModalVisibility(false);
   };
@@ -115,7 +119,12 @@ const Header = ({ title }: Props) => {
       </div>
 
       {/*Navigation drawer only shows on mobile devices*/}
-      <Drawer isVisible={isDrawerVisible}>
+      <Drawer
+        onClose={() => {
+          onDrawerClosed();
+        }}
+        isVisible={isDrawerVisible}
+      >
         <div className={"flex flex-col h-full"}>
           {/*Nav header*/}
           <div className={"h-[3.125rem] p-[0.9375rem] pr-0 bg-black flex justify-between items-center shrink-0"}>
