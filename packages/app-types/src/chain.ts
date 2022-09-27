@@ -8,7 +8,11 @@ export type FeeMarketPolkadotChain =
   | "Darwinia Parachain"
   | "Pangolin Parachain";
 
-// TODO
-export type FeeMarketEthChain = "";
+export type FeeMarketEthChain =
+  | "Ethereum"
+  | "Crab Smart Chain"
+  | "Darwinia Smart Chain"
+  | "Pangolin Smart Chain"
+  | "Pangoro Smart Chain";
 
 export type FeeMarketChain = FeeMarketPolkadotChain | FeeMarketEthChain;
