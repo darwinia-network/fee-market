@@ -1,5 +1,5 @@
 import sorterDefault from "../../assets/images/sorter-default.svg";
-type Order = "ascend" | "descend";
+export type Order = "ascend" | "descend";
 export interface Column<T> {
   id: string;
   title: JSX.Element;
@@ -33,11 +33,11 @@ const Table = <T extends object>({ dataSource, columns }: TableProps<T>) => {
               className={`${columnFlexClass} shrink-0 text-14-bold bg-black flex items-center justify-between`}
               key={column.id}
             >
-              <div className={"py-[0.9375rem] px-[0.625rem] flex"}>
+              <div className={"py-[0.9375rem] px-[0.625rem] flex items-center gap-[0.3125rem]"}>
                 <div className={"flex-1"}>{column.title}</div>
-                {/*<div className={"shrink-0 w-[1rem] h-[1rem]"}>
-                <img className={"w-[1rem] h-[1rem]"} src={sorterDefault} alt="image" />
-              </div>*/}
+                <div className={"cursor-pointer shrink-0 w-[1rem] h-[1rem]"}>
+                  <img className={"w-[1rem] h-[1rem]"} src={sorterDefault} alt="image" />
+                </div>
               </div>
             </div>
           );

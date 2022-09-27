@@ -37,7 +37,7 @@ const RelayersOverview = () => {
     {
       id: "2",
       key: "count",
-      title: <div>Count(Orders)</div>,
+      title: <div>Count (Orders)</div>,
     },
     {
       id: "3",
@@ -52,12 +52,12 @@ const RelayersOverview = () => {
     {
       id: "5",
       key: "reward",
-      title: <div>Sum(Reward)</div>,
+      title: <div>Sum (Reward)</div>,
     },
     {
       id: "6",
       key: "slash",
-      title: <div>Sum(Slash)</div>,
+      title: <div>Sum (Slash)</div>,
     },
   ];
 
