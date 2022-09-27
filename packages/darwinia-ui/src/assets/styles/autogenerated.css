@@ -593,6 +593,13 @@ video {
   --tw-backdrop-sepia: ;
 }
 
+.text-14-bold {
+  box-sizing: border-box;
+  font-family: JetBrainsMono-Bold;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
 body {
   text-transform: capitalize;
   line-height: 1.5rem;
@@ -654,6 +661,14 @@ body {
   z-index: 56;
 }
 
+.ml-\[0\.625rem\] {
+  margin-left: 0.625rem;
+}
+
+.block {
+  display: block;
+}
+
 .flex {
   display: flex;
 }
@@ -668,6 +683,18 @@ body {
 
 .h-\[0\.875rem\] {
   height: 0.875rem;
+}
+
+.h-\[0\.625rem\] {
+  height: 0.625rem;
+}
+
+.h-\[1rem\] {
+  height: 1rem;
+}
+
+.h-\[1\.25rem\] {
+  height: 1.25rem;
 }
 
 .w-full {
@@ -688,6 +715,18 @@ body {
 
 .w-\[0\.875rem\] {
   width: 0.875rem;
+}
+
+.w-\[0\.625rem\] {
+  width: 0.625rem;
+}
+
+.w-\[1rem\] {
+  width: 1rem;
+}
+
+.w-\[1\.25rem\] {
+  width: 1.25rem;
 }
 
 .max-w-\[21\.5625rem\] {
@@ -716,12 +755,22 @@ body {
   user-select: none;
 }
 
+.appearance-none {
+  appearance: none;
+  appearance: none;
+  appearance: none;
+}
+
 .items-center {
   align-items: center;
 }
 
 .justify-center {
   justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
 }
 
 .gap-\[0\.9375rem\] {
@@ -732,6 +781,14 @@ body {
   gap: 0.625rem;
 }
 
+.self-stretch {
+  align-self: stretch;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
 .rounded-\[0\.3125rem\] {
   border-radius: 0.3125rem;
 }
@@ -740,8 +797,44 @@ body {
   border-radius: 9999px;
 }
 
+.rounded-\[0\.625rem\] {
+  border-radius: 0.625rem;
+}
+
+.rounded-br-none {
+  border-bottom-right-radius: 0;
+}
+
+.rounded-tr-none {
+  border-top-right-radius: 0;
+}
+
+.rounded-tl-none {
+  border-top-left-radius: 0;
+}
+
+.rounded-bl-none {
+  border-bottom-left-radius: 0;
+}
+
 .border-\[2\.5px\] {
   border-width: 2.5px;
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-r-0 {
+  border-right-width: 0;
+}
+
+.border-l-0 {
+  border-left-width: 0;
+}
+
+.border-none {
+  border-style: none;
 }
 
 .border-white {
@@ -752,6 +845,10 @@ body {
 
 .border-halfWhite {
   border-color: rgb(255 255 255 / 50%);
+}
+
+.border-divider {
+  border-color: rgb(255 255 255 / 20%);
 }
 
 .bg-primary {
@@ -772,6 +869,20 @@ body {
   background-color: rgb(36 42 46 / var(--tw-bg-opacity));
 }
 
+.bg-\[transparent\] {
+  background-color: transparent;
+}
+
+.bg-\[yellow\] {
+  --tw-bg-opacity: 1;
+
+  background-color: rgb(255 255 0 / var(--tw-bg-opacity));
+}
+
+.p-\[0\.625rem\] {
+  padding: 0.625rem;
+}
+
 .px-\[1\.25rem\] {
   padding-left: 1.25rem;
   padding-right: 1.25rem;
@@ -782,6 +893,35 @@ body {
   padding-bottom: 0.625rem;
 }
 
+.px-\[0\.625rem\] {
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+}
+
+.py-\[0\.5625rem\] {
+  padding-top: 0.5625rem;
+  padding-bottom: 0.5625rem;
+}
+
+.py-\[0\.5rem\] {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.py-\[0\.4375rem\] {
+  padding-top: 0.4375rem;
+  padding-bottom: 0.4375rem;
+}
+
+.py-\[0\.9375rem\] {
+  padding-top: 0.9375rem;
+  padding-bottom: 0.9375rem;
+}
+
+.pl-\[0\.625rem\] {
+  padding-left: 0.625rem;
+}
+
 .text-left {
   text-align: left;
 }
@@ -790,8 +930,29 @@ body {
   text-transform: capitalize;
 }
 
+.placeholder-white::placeholder {
+  --tw-placeholder-opacity: 1;
+
+  color: rgb(255 255 255 / var(--tw-placeholder-opacity));
+}
+
+.placeholder-white::placeholder {
+  --tw-placeholder-opacity: 1;
+
+  color: rgb(255 255 255 / var(--tw-placeholder-opacity));
+}
+
 .opacity-80 {
   opacity: 0.8;
+}
+
+.outline-none {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.outline-0 {
+  outline-width: 0;
 }
 
 .transition {
@@ -816,10 +977,31 @@ body {
   font-family: JetBrainsMono-Light, serif;
 }
 
+.placeholder\:capitalize::placeholder {
+  text-transform: capitalize;
+}
+
+.placeholder\:capitalize::placeholder {
+  text-transform: capitalize;
+}
+
 .hover\:border-white:hover {
   --tw-border-opacity: 1;
 
   border-color: rgb(255 255 255 / var(--tw-border-opacity));
+}
+
+.focus\:outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus\:outline-0:focus {
+  outline-width: 0;
+}
+
+.focus\:\!outline-0:focus {
+  outline-width: 0 !important;
 }
 
 .active\:opacity-50:active {
@@ -835,6 +1017,16 @@ body {
 }
 
 @media (min-width: 1024px) {
+  .lg\:px-\[1\.875rem\] {
+    padding-left: 1.875rem;
+    padding-right: 1.875rem;
+  }
+
+  .lg\:py-\[1\.875rem\] {
+    padding-top: 1.875rem;
+    padding-bottom: 1.875rem;
+  }
+
   .lg\:hover\:opacity-80:hover {
     opacity: 0.8;
   }
