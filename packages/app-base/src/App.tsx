@@ -1,15 +1,13 @@
-import { Outlet } from "react-router-dom";
-import SideBar from "./components/SideBar";
+import Root from "./Root";
 
+/* WEIRD BUG FIX 🐛🔧
+ * For some reasons the App component rejects all React's hooks,
+ * it says that App component isn't a functional component.
+ * A quick fix was to move all the code in here to a separate Root
+ * component
+ * */
 const App = () => {
-  return (
-    <div className={"flex"}>
-      <SideBar />
-      <div className={"ml-[80px]"}>
-        <Outlet />
-      </div>
-    </div>
-  );
+  return <Root />;
 };
 
 export default App;

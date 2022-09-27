@@ -16,8 +16,4 @@ if (process.env.NODE_ENV === "production") {
   console.dir = () => {};
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <RouterProvider router={browserRouter} />
-  </React.StrictMode>
-);
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<RouterProvider router={browserRouter} />);

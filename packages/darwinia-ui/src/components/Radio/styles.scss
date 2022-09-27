@@ -1,0 +1,39 @@
+$scaleTransitionDuration: 150ms;
+$scaleTransitionDurationSmall: 250ms;
+$scaleTransitionEase: ease-in-out;
+
+.radio-enter {
+  transform: scale3d(0, 0, 0);
+}
+
+.radio-enter-active {
+  transform: scale3d(1, 1, 1);
+  transform-origin: center;
+  transition: transform $scaleTransitionDuration $scaleTransitionEase;
+
+  &.small {
+    transition-duration: $scaleTransitionDurationSmall;
+  }
+}
+
+.radio-enter-done {
+  transform: scale3d(1, 1, 1);
+}
+
+.radio-exit {
+  transform: scale3d(1, 1, 1);
+}
+
+.radio-exit-active {
+  transform: scale3d(0, 0, 0);
+  transform-origin: center;
+  transition: transform $scaleTransitionDuration $scaleTransitionEase;
+
+  &.small {
+    transition-duration: $scaleTransitionDurationSmall;
+  }
+}
+
+.radio-exit-done {
+  transform: scale3d(0, 0, 0);
+}
