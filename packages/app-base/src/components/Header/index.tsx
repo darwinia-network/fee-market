@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import logo from "../../assets/images/logo.svg";
+import logoIcon from "../../assets/images/logo.svg";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { Drawer, Modal } from "@darwinia/ui";
@@ -75,6 +75,10 @@ const Header = ({ title }: Props) => {
     setMobileNetworkSelectionModalVisibility(true);
   };
 
+  const onDrawerClosed = () => {
+    setDrawerVisibility(false);
+  };
+
   const onMobileNetworkSelectionModalClosed = () => {
     setMobileNetworkSelectionModalVisibility(false);
   };
@@ -100,7 +104,7 @@ const Header = ({ title }: Props) => {
         {/*Logo*/}
         <div className={"shrink-0 h-full"}>
           <Link className={"h-full flex"} to={"/"}>
-            <img className={"self-center w-[9.25rem]"} src={logo} alt="image" />
+            <img className={"self-center w-[9.25rem]"} src={logoIcon} alt="image" />
           </Link>
         </div>
         {/*Navigation toggle*/}
@@ -115,7 +119,12 @@ const Header = ({ title }: Props) => {
       </div>
 
       {/*Navigation drawer only shows on mobile devices*/}
-      <Drawer isVisible={isDrawerVisible}>
+      <Drawer
+        onClose={() => {
+          onDrawerClosed();
+        }}
+        isVisible={isDrawerVisible}
+      >
         <div className={"flex flex-col h-full"}>
           {/*Nav header*/}
           <div className={"h-[3.125rem] p-[0.9375rem] pr-0 bg-black flex justify-between items-center shrink-0"}>

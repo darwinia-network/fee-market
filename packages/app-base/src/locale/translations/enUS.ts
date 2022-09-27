@@ -33,6 +33,7 @@ const enUs = {
   [localeKeys.days]: "{{daysNumber}}D",
   [localeKeys.all]: "all",
   [localeKeys.freeHistory]: `free history <span style="text-transform: uppercase;">{{currency}}</span>`,
+  [localeKeys.searchByRelayerAddress]: "search by relayer address",
 };
 
 export default enUs;

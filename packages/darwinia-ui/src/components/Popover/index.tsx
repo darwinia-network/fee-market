@@ -5,13 +5,13 @@ import { Placement } from "@popperjs/core";
 import { CSSTransition } from "react-transition-group";
 import "./style.scss";
 
-type PopoverTriggerEvents = "click" | "hover";
+export type PopoverTriggerEvents = "click" | "hover";
 export interface PopoverReport {
   isVisible: boolean;
   isCausedByTrigger: boolean;
 }
 
-interface Props {
+export interface PopoverProps {
   triggerEvent?: PopoverTriggerEvents;
   triggerRef: HTMLElement | null;
   children: JSX.Element;
@@ -24,7 +24,7 @@ const Popover = ({
   triggerEvent = "click",
   onPopoverTrigger,
   placement = "bottom-end",
-}: Props) => {
+}: PopoverProps) => {
   const popperContentRef = useRef(null);
   const [isPopoverVisible, setPopoverVisible] = useState(false);
   const [popoverRef, setPopoverRef] = useState<HTMLElement | null>(null);
