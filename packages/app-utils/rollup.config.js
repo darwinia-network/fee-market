@@ -15,7 +15,7 @@ const config = [
       },
     ],
     plugins: [typescript(), resolve()],
-    external: (id) => /@polkadot/.test(id),
+    external: (id) => /@polkadot|ethers|date-fns/.test(id),
   },
 ];
 

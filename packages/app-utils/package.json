@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@feemarket/app-config": "^1.0.0",
-    "@feemarket/app-types": "^1.0.0"
+    "@feemarket/app-types": "^1.0.0",
+    "date-fns": "^2.29.3",
+    "ethers": "^5.7.1"
   }
 }
