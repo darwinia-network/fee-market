@@ -4,6 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "main": "src/index.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
     "@types/react-transition-group": "^4.4.5",
