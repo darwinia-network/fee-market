@@ -18,7 +18,10 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "@apollo/client": "^3.6.9",
+    "@feemarket/app-config": "^1.0.0",
     "@feemarket/app-types": "^1.0.0",
+    "graphql": "^16.6.0",
     "react": "^18.2.0"
   }
 }

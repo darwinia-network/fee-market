@@ -15,7 +15,7 @@ const config = [
       },
     ],
     plugins: [typescript(), resolve()],
-    external: (id) => /react/.test(id),
+    external: (id) => /react|@apollo|@polkadot/.test(id),
   },
 ];
 

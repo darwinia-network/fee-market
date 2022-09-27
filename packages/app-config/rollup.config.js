@@ -1,5 +1,6 @@
 import typescript from "rollup-plugin-typescript2";
 import resolve from "@rollup/plugin-node-resolve";
+import image from "@rollup/plugin-image";
 
 /**
  * @type {import('rollup').RollupOptions}
@@ -14,8 +15,8 @@ const config = [
         exports: "named",
       },
     ],
-    plugins: [typescript(), resolve()],
-    external: (id) => /@polkadot|app-model/.test(id),
+    plugins: [typescript(), resolve(), image()],
+    external: (id) => /@polkadot/.test(id),
   },
 ];
 

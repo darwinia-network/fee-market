@@ -1,4 +1,4 @@
 import { useContext } from "react";
-import { FeeMarketContext, FeeMarketCtx } from "@feemarket/app-provider";
+import { FeeMarketContext } from "@feemarket/app-provider";
 
-export const useFeeMarket = () => useContext(FeeMarketContext) as FeeMarketCtx;
+export const useFeeMarket = () => useContext(FeeMarketContext);
