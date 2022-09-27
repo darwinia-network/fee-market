@@ -1,6 +1,6 @@
 import { Button, Radio } from "@darwinia/ui";
 import { useEffect, useRef, useState } from "react";
-import useNetworkList from "../../data/networkList";
+import useNetworkList from "../../data/useNetworkList";
 import { Destination, Network, NetworkOption } from "../../data/types";
 import { Scrollbars } from "react-custom-scrollbars";
 import { useTranslation } from "react-i18next";

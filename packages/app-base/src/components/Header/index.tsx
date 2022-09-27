@@ -11,7 +11,7 @@ import NetworkSwitchButton from "../NetworkSwitchButton";
 
 import NetworkSwitchDialog, { TransferSelection } from "../NetworkSwitchDialog";
 import { Popover } from "@darwinia/ui";
-import useNetworkList from "../../data/networkList";
+import useNetworkList from "../../data/useNetworkList";
 import { NetworkOption } from "../../data/types";
 
 interface Props {
