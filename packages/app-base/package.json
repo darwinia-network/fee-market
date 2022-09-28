@@ -10,6 +10,11 @@
   },
   "dependencies": {
     "@darwinia/ui": "^0.0.1",
+    "@feemarket/app-config": "^1.0.0",
+    "@feemarket/app-hooks": "^1.0.0",
+    "@feemarket/app-provider": "^1.0.0",
+    "@feemarket/app-types": "^1.0.0",
+    "@feemarket/app-utils": "^1.0.0",
     "@popperjs/core": "^2.11.6",
     "@types/react-transition-group": "^4.4.5",
     "i18next": "^21.9.2",

@@ -1,1 +1,1 @@
-export { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
+export { ApolloProvider, ApolloClient, InMemoryCache, useApolloClient, useQuery } from "@apollo/client";
