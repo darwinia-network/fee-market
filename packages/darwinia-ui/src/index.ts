@@ -8,8 +8,9 @@ import Drawer from "./components/Drawer";
 import Input from "./components/Input";
 import Table from "./components/Table";
 import Tabs from "./components/Tabs";
+import Pagination from "./components/Pagination";
 
-export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs };
+export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination };
 
 /*Types*/
 import { PopoverReport, PopoverProps, PopoverTriggerEvents } from "./components/Popover";

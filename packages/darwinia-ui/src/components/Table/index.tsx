@@ -4,6 +4,7 @@ import sortDescendIcon from "../../assets/images/sort-descend.svg";
 import { useState } from "react";
 import "./styles.scss";
 import Scrollbars from "react-custom-scrollbars";
+import Pagination from "../Pagination";
 
 export type Order = "ascend" | "descend";
 export interface Column<T> {
@@ -98,6 +99,7 @@ const Table = <T extends TableRow>({
           </div>
         </div>
       </Scrollbars>
+      <Pagination />
     </div>
   );
 };
