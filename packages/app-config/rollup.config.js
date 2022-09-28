@@ -1,5 +1,6 @@
 import typescript from "rollup-plugin-typescript2";
 import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import image from "@rollup/plugin-image";
 
 /**
@@ -15,8 +16,8 @@ const config = [
         exports: "named",
       },
     ],
-    plugins: [typescript(), resolve(), image()],
-    external: (id) => /@polkadot/.test(id),
+    plugins: [commonjs(), resolve(), typescript(), image()],
+    external: ["/node_modules/"],
   },
 ];
 
