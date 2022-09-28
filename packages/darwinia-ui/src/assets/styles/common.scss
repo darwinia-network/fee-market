@@ -1,0 +1,44 @@
+@import "theme";
+@import "mixins";
+
+.dw-text-10 {
+  font-family: DW-JetBrainsMono-Light;
+  font-size: var(--10px);
+  line-height: var(--15px);
+}
+
+.dw-text-12 {
+  font-family: DW-JetBrainsMono-Light;
+  font-size: var(--12px);
+  line-height: var(--16px);
+}
+
+.dw-text-12-bold {
+  font-family: DW-JetBrainsMono-Bold;
+  font-size: var(--12px);
+  line-height: var(--16px);
+}
+
+.dw-text-14 {
+  font-family: DW-JetBrainsMono-Light;
+  font-size: var(--14px);
+  line-height: var(--22px);
+}
+
+.dw-text-14-bold {
+  font-family: DW-JetBrainsMono-Bold;
+  font-size: var(--14px);
+  line-height: var(--22px);
+}
+
+.dw-text-18-bold {
+  font-family: DW-JetBrainsMono-Bold;
+  font-size: var(--18px);
+  line-height: var(--24px);
+}
+
+.dw-text-24-bold {
+  font-family: DW-JetBrainsMono-Bold;
+  font-size: var(--24px);
+  line-height: var(--32px);
+}

@@ -17,7 +17,7 @@ import { InputProps } from "./components/Input";
 import { ButtonProps, ButtonSize } from "./components/Button";
 import { RadioGroupProps, RadioButtonExtensionProps, RadioButtonProps } from "./components/Radio";
 import { DrawerRefs, DrawerProps } from "./components/Drawer";
-import { TableProps, Column, Order } from "./components/Table";
+import { TableProps, Column, Order, SortEvent } from "./components/Table";
 
 export type {
   PopoverReport,
@@ -36,4 +36,5 @@ export type {
   TableProps,
   Column,
   Order,
+  SortEvent,
 };

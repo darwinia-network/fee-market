@@ -1,0 +1,58 @@
+@mixin clear-float {
+  &::after {
+    content: "";
+    clear: both;
+    display: block;
+  }
+}
+
+/* example usage */
+
+/* @include mediaQuery(992px){
+    width: 300px;
+} */
+@mixin mediaQuery($width) {
+  @media (min-width: $width) {
+    @content;
+  }
+}
+
+@mixin dwMd() {
+  @media (min-width: 768px) {
+    @content;
+  }
+}
+
+@mixin dwLg() {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin dwScale($x,$y,$z) {
+  transform: scale3d($x, $y, $z);
+}
+
+@mixin dwTranslate($x,$y,$z) {
+  transform: translate3d($x, $y, $z);
+}
+
+/* @include absoluteCenter; */
+@mixin absoluteCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin absoluteXCenter {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@mixin absoluteYCenter {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}

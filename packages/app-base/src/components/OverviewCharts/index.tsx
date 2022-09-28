@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useState } from "react";
 import Chart from "../Chart";
 
 const OverviewCharts = () => {
