@@ -7,8 +7,9 @@ import Modal from "./components/Modal";
 import Drawer from "./components/Drawer";
 import Input from "./components/Input";
 import Table from "./components/Table";
+import Tabs from "./components/Tabs";
 
-export { Button, Radio, Popover, Modal, Drawer, Input, Table };
+export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs };
 
 /*Types*/
 import { PopoverReport, PopoverProps, PopoverTriggerEvents } from "./components/Popover";
@@ -18,6 +19,7 @@ import { ButtonProps, ButtonSize } from "./components/Button";
 import { RadioGroupProps, RadioButtonExtensionProps, RadioButtonProps } from "./components/Radio";
 import { DrawerRefs, DrawerProps } from "./components/Drawer";
 import { TableProps, Column, Order, SortEvent } from "./components/Table";
+import { Tab, TabsProps } from "./components/Tabs";
 
 export type {
   PopoverReport,
@@ -37,4 +39,6 @@ export type {
   Column,
   Order,
   SortEvent,
+  Tab,
+  TabsProps,
 };

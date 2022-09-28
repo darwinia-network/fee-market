@@ -34,6 +34,16 @@ const enUs = {
   [localeKeys.all]: "all",
   [localeKeys.freeHistory]: `free history <span style="text-transform: uppercase;">{{currency}}</span>`,
   [localeKeys.searchByRelayerAddress]: "search by relayer address",
+  [localeKeys.allRelayers]: "all relayers",
+  [localeKeys.assignedRelayers]: "assigned relayers",
+  [localeKeys.relayer]: "relayer",
+  [localeKeys.count]: "count",
+  [localeKeys.order]: "order",
+  [localeKeys.collateral]: "collateral",
+  [localeKeys.quote]: "quote",
+  [localeKeys.sum]: "sum",
+  [localeKeys.reward]: "reward",
+  [localeKeys.slash]: "slash",
 };
 
 export default enUs;

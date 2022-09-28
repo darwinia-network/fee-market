@@ -25,6 +25,7 @@ export interface TableProps<T> {
   columns: Column<T>[];
   minWidth?: string;
   onSort?: (sortEvent: SortEvent<T>) => void;
+  headerSlot?: JSX.Element;
 }
 
 export interface TableRow extends Object {
@@ -36,6 +37,7 @@ const Table = <T extends TableRow>({
   columns = [],
   onSort: onTableSort,
   minWidth = "1200px",
+  headerSlot,
 }: TableProps<T>) => {
   const maxAutoHeight = "9999px";
   const [sortKey, setSortKey] = useState<keyof T | undefined>();
@@ -60,6 +62,7 @@ const Table = <T extends TableRow>({
   };
   return (
     <div className={"dw-table"}>
+      {headerSlot}
       <Scrollbars autoHeight={true} autoHeightMax={maxAutoHeight} className={"dw-table-scrollview"}>
         <div style={{ minWidth: minWidth }}>
           {/*Table header*/}

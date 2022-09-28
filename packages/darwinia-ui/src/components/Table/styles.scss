@@ -5,6 +5,7 @@
   padding: var(--15px) var(--10px);
   background-color: var(--blackSecondary);
   display: flex;
+  flex-direction: column;
 
   @include dwLg() {
     padding: var(--30px);

@@ -1,6 +1,6 @@
 import localeKeys from "../locale/localeKeys";
 import { useTranslation } from "react-i18next";
-import { Column, Input, Table, SortEvent } from "@darwinia/ui";
+import { Column, Input, Table, SortEvent, Tabs, Tab } from "@darwinia/ui";
 import { ChangeEvent, FormEvent, useState } from "react";
 import relayerAvatar from "../assets/images/relayer-avatar.svg";
 
@@ -20,6 +20,18 @@ const RelayersOverview = () => {
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
   };
+  const [activeTabId, setActiveTabId] = useState("1");
+
+  const tabs: Tab[] = [
+    {
+      id: "1",
+      title: `${t([localeKeys.allRelayers])} (105)`,
+    },
+    {
+      id: "2",
+      title: `${t([localeKeys.assignedRelayers])} (3)`,
+    },
+  ];
 
   const [dataSource, setDataSource] = useState<Relayer[]>([
     {
@@ -60,7 +72,7 @@ const RelayersOverview = () => {
     {
       id: "1",
       key: "relayer",
-      title: <div>Relayer</div>,
+      title: <div>{t([localeKeys.relayer])}</div>,
       render: (column) => {
         return getRelayerColumn(column.relayer, relayerAvatar);
       },
@@ -68,31 +80,43 @@ const RelayersOverview = () => {
     {
       id: "2",
       key: "count",
-      title: <div>Count (Orders)</div>,
+      title: (
+        <div>
+          {t([localeKeys.count])}({t([localeKeys.order])})
+        </div>
+      ),
       sortable: true,
     },
     {
       id: "3",
       key: "collateral",
-      title: <div>Collateral</div>,
+      title: <div>{t([localeKeys.collateral])}</div>,
       sortable: true,
     },
     {
       id: "4",
       key: "quote",
-      title: <div>Quote</div>,
+      title: <div>{t([localeKeys.quote])}</div>,
       sortable: true,
     },
     {
       id: "5",
       key: "reward",
-      title: <div>Sum (Reward)</div>,
+      title: (
+        <div>
+          {t([localeKeys.sum])}({t([localeKeys.reward])})
+        </div>
+      ),
       sortable: true,
     },
     {
       id: "6",
       key: "slash",
-      title: <div>Sum (Slash)</div>,
+      title: (
+        <div>
+          {t([localeKeys.sum])}({t([localeKeys.slash])})
+        </div>
+      ),
       sortable: true,
     },
   ];
@@ -124,6 +148,25 @@ const RelayersOverview = () => {
     setDataSource(output);
   };
 
+  const onTabChange = (tab: Tab) => {
+    setActiveTabId(tab.id);
+    console.log("tab changed=====", tab);
+  };
+
+  const getTableTabs = () => {
+    return (
+      <div className={"pb-[1rem]"}>
+        <Tabs
+          activeTabId={activeTabId}
+          tabs={tabs}
+          onChange={(tab) => {
+            onTabChange(tab);
+          }}
+        />
+      </div>
+    );
+  };
+
   return (
     <div className={"flex flex-col gap-[1.875rem]"}>
       <div className={"lg:max-w-[18.625rem]"}>
@@ -141,7 +184,14 @@ const RelayersOverview = () => {
           />
         </form>
       </div>
-      <Table onSort={onSort} minWidth={"1120px"} dataSource={dataSource} columns={columns} />
+
+      <Table
+        headerSlot={getTableTabs()}
+        onSort={onSort}
+        minWidth={"1120px"}
+        dataSource={dataSource}
+        columns={columns}
+      />
 
       <div dangerouslySetInnerHTML={{ __html: t(localeKeys.messagesCounter, { user: "John Doe", counter: "100" }) }} />
     </div>
