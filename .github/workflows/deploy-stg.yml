@@ -1,0 +1,41 @@
+name: Deploy staging
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/checkout@v2
+        with:
+          repository: itering/actions
+          path: .github/actions
+          persist-credentials: false
+          ssh-key: "${{ secrets.ITERING_ACTIONS_DEPLOY_KEY }}"
+
+      - name: Install dependencies
+        run: |
+          yarn install
+          yarn boot
+
+      - name: Build
+        run: yarn build:app-base
+
+      - uses: ./.github/actions/smart-vercel
+        name: Deploy to Vercel
+        with:
+          vercel_token: ${{ secrets.VERCEL_TOKEN }}
+          vercel_group: itering
+          preview_output: true
+          project_name: feemarket
+          dist_path: packages/app-base/dist
+          script_run: false
+          enable_cache: true
+          enable_notify_slack: false
+          slack_channel: website
+          slack_webhook: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
