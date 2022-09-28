@@ -1,11 +1,11 @@
 import { DetailedHTMLProps, ButtonHTMLAttributes } from "react";
 
-type ButtonSize = "small" | "large";
-interface Props extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
+export type ButtonSize = "small" | "large";
+export interface ButtonProps extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
   size?: ButtonSize;
 }
 
-const Button = ({ children, style, className, size = "large", ...rest }: Props) => {
+const Button = ({ children, style, className, size = "large", ...rest }: ButtonProps) => {
   const sizeClass = size === "large" ? "px-[1.25rem] py-[0.625rem]" : "px-[1.25rem] py-[0.625rem]";
   return (
     <button

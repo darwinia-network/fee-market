@@ -1,0 +1,82 @@
+@import "../../assets/styles/common";
+
+.dw-table {
+  border-radius: var(--10px);
+  padding: var(--15px) var(--10px);
+  background-color: var(--blackSecondary);
+  display: flex;
+  flex-direction: column;
+
+  @include dwLg() {
+    padding: var(--30px);
+  }
+
+  .dw-table-scrollview {
+    flex: 1;
+  }
+
+  .dw-table-header {
+    @extend .dw-text-14-bold;
+
+    display: flex;
+    background-color: var(--black);
+    padding: var(--15px) 0;
+    flex-shrink: 0;
+
+    &.flexed {
+      flex: 1;
+      flex-shrink: 0;
+    }
+  }
+
+  .dw-table-body {
+    @extend .dw-text-14;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dw-table-row {
+    display: flex;
+    border-top: 1px solid var(--divider);
+    padding: var(--15px) 0;
+  }
+
+  .dw-table-column {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    &.flexed {
+      flex: 1;
+      flex-shrink: 0;
+    }
+
+    .column-wrapper {
+      display: flex;
+      gap: var(--5px);
+      align-items: center;
+      padding: 0 var(--10px);
+      max-width: 100%;
+
+      .content {
+        flex: 1;
+        max-width: 100%;
+      }
+
+      .sorter {
+        cursor: pointer;
+        flex-shrink: 0;
+        width: var(--16px);
+        height: var(--16px);
+        overflow: hidden;
+
+        .icon {
+          width: var(--16px);
+          height: var(--16px);
+        }
+      }
+    }
+  }
+}

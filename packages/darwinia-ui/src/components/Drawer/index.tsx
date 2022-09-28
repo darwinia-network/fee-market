@@ -14,12 +14,13 @@ import { createPortal } from "react-dom";
 export interface DrawerRefs {
   toggle: () => void;
 }
-interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
+export interface DrawerProps extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   isVisible: boolean;
   drawerStyles?: CSSProperties;
+  onClose: () => void;
 }
 
-const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible = false, drawerStyles, children }, ref) => {
+const Drawer = forwardRef<DrawerRefs, DrawerProps>(({ isVisible = false, drawerStyles, children, onClose }, ref) => {
   /* This dummyNodeRef resolves the node reference bug in react-transition-group library,
    refer https://github.com/reactjs/react-transition-group/issues/668 */
   const childNodeRef = useRef(null);
@@ -28,6 +29,13 @@ const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible = false, drawerStyles,
 
   const toggleDrawer = () => {
     setDrawerVisibility((isVisible) => !isVisible);
+  };
+
+  const closeDrawer = () => {
+    setDrawerVisibility(false);
+    if (onClose) {
+      onClose();
+    }
   };
 
   useEffect(() => {
@@ -56,7 +64,7 @@ const Drawer = forwardRef<DrawerRefs, Props>(({ isVisible = false, drawerStyles,
       <div ref={childNodeRef} className={"fixed right-0 left-0 top-0 bottom-0 w-full h-full z-[99]"}>
         <div
           onClick={() => {
-            toggleDrawer();
+            closeDrawer();
           }}
           className={"mask absolute left-0 right-0 top-0 bottom-0 w-full h-full bg-black opacity-80 z-[50]"}
         />

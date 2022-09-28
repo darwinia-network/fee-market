@@ -10,9 +10,9 @@ import {
 import { CSSTransition } from "react-transition-group";
 import "./styles.scss";
 
-type RadioSize = "small" | "large";
+export type RadioSize = "small" | "large";
 
-interface RadioGroupProps {
+export interface RadioGroupProps {
   children: JSX.Element | JSX.Element[];
   onChange: (value: string) => void;
   value: string;

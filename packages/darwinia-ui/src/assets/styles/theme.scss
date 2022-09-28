@@ -1,0 +1,56 @@
+@font-face {
+  font-family: DW-JetBrainsMono-Light;
+  src: url("../fonts/JetBrainsMono-Light.woff2");
+}
+
+@font-face {
+  font-family: DW-JetBrainsMono-Bold;
+  src: url("../fonts/JetBrainsMono-Bold.woff2");
+}
+
+:root {
+  --primary: #ff0083;
+  --black: #1a1d1f;
+  --blackSecondary: #242a2e;
+  --gray: #c6c6c6;
+  --white: #fff;
+  --halfWhite: rgb(255 255 255 / 50%);
+  --divider: rgb(255 255 255 / 20%);
+  --link: #0094ff;
+  --danger: #ff4b4b;
+  --success: #42ff00;
+  --warning: #ffb732;
+  --1px: 0.0625rem;
+  --5px: 0.3125rem;
+  --10px: 0.625rem;
+  --12px: 0.75rem;
+  --14px: 0.875rem;
+  --15px: 0.9375rem;
+  --16px: 1rem;
+  --18px: 1.125rem;
+  --22px: 1.375rem;
+  --24px: 1.5rem;
+  --30px: 1.875rem;
+  --32px: 2rem;
+  --40px: 2.5rem;
+  --60px: 3.75rem;
+}
+
+/* override the variables for your theme here */
+.theme-light {
+  /*
+  --primary: "#FF0083";
+  --black: "#1A1D1F";
+  --blackSecondary: "#242A2E";
+  --gray: "#C6C6C6";
+  --white: "#FFFFFF";
+  --halfWhite: "rgba(255, 255, 255, 0.5)";
+  --divider: "rgba(255, 255, 255, 0.2)";
+  --link: "#0094FF";
+  --danger: "#FF4B4B";
+  --success:"#42FF00";
+  --warning: "#FFB732";
+  */
+}
+
+/* Define other styles here */

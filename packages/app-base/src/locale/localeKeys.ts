@@ -33,6 +33,17 @@ const localeKeys = {
   days: "days",
   all: "all",
   freeHistory: "freeHistory",
+  searchByRelayerAddress: "searchByRelayerAddress",
+  allRelayers: "allRelayers",
+  assignedRelayers: "assignedRelayers",
+  relayer: "relayer",
+  count: "count",
+  order: "order",
+  collateral: "collateral",
+  quote: "quote",
+  sum: "sum",
+  reward: "reward",
+  slash: "slash",
 };
 
 export default localeKeys;

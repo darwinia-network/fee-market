@@ -1,5 +1,5 @@
 import MenuItem from "../MenuItem";
-import useMenuList from "../../data/menu";
+import useMenuList from "../../data/useMenuList";
 import { MenuItem as MenuObject } from "../../data/types";
 import { useEffect, useRef, useState } from "react";
 

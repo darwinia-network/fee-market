@@ -1,0 +1,43 @@
+@import "../../assets/styles/common";
+
+.dw-tabs-wrapper {
+  width: 100%;
+  overflow: hidden;
+
+  .dw-tabs-scrollview {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .dw-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider);
+    gap: var(--40px);
+    position: relative;
+    white-space: nowrap;
+
+    .dw-tab-rail {
+      position: absolute;
+      background-color: var(--primary);
+      height: 2px;
+      left: 0;
+      width: 0;
+      bottom: -1px;
+      transition: all 150ms ease-in-out;
+    }
+
+    @extend .dw-text-14;
+
+    .dw-tab {
+      cursor: pointer;
+      height: var(--40px);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .dw-active-tab {
+      @extend .dw-text-14-bold;
+    }
+  }
+}
