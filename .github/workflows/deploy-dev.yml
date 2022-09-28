@@ -39,4 +39,3 @@ jobs:
           enable_notify_slack: false
           slack_channel: website
           slack_webhook: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
-
