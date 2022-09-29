@@ -1,7 +1,7 @@
 import { PropsWithChildren, useMemo } from "react";
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@feemarket/app-utils";
-import { useFeeMarket } from "@feemarket/app-hooks";
 import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { useFeeMarket } from "./feemarket";
 
 export const GraphqlProvider = ({ children }: PropsWithChildren<unknown>) => {
   const { market } = useFeeMarket();
@@ -9,11 +9,13 @@ export const GraphqlProvider = ({ children }: PropsWithChildren<unknown>) => {
   const client = useMemo(
     () =>
       new ApolloClient({
-        uri: POLKADOT_CHAIN_CONF[market.source].graphql.endpoint,
+        uri: market?.source ? POLKADOT_CHAIN_CONF[market.source].graphql.endpoint : "",
         cache: new InMemoryCache(),
       }),
-    [market]
+    [market?.source]
   );
 
   return <ApolloProvider client={client}>{children}</ApolloProvider>;
 };
+
+export { useApolloClient, useQuery } from "@feemarket/app-utils";

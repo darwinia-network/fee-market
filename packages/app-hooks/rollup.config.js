@@ -15,7 +15,7 @@ const config = [
         exports: "named",
       },
     ],
-    plugins: [commonjs(), resolve(), typescript()],
+    plugins: [resolve(), commonjs(), typescript({ clean: true })],
     external: (id) => /node_modules/.test(id),
   },
 ];

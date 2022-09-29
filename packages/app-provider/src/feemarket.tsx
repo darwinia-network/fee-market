@@ -1,5 +1,5 @@
 import type { FeeMarketPolkadotChain } from "@feemarket/app-types";
-import { createContext, PropsWithChildren, useState } from "react";
+import { createContext, PropsWithChildren, useState, useContext } from "react";
 
 interface Market {
   source: Extract<FeeMarketPolkadotChain, "Crab" | "Darwinia" | "Pangolin" | "Pangoro">;
@@ -39,3 +39,5 @@ export const FeeMarketProvider = ({ children }: PropsWithChildren<unknown>) => {
     </FeeMarketContext.Provider>
   );
 };
+
+export const useFeeMarket = () => useContext(FeeMarketContext);
