@@ -17,7 +17,7 @@ const config = [
       },
     ],
     plugins: [commonjs(), resolve(), typescript(), image()],
-    external: ["/node_modules/"],
+    external: (id) => /node_modules/.test(id),
   },
 ];
 
