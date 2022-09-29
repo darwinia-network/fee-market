@@ -20,6 +20,7 @@
   --danger: #ff4b4b;
   --success: #42ff00;
   --warning: #ffb732;
+  --dialogMask: rgb(26 29 31 / 80%);
   --1px: 0.0625rem;
   --5px: 0.3125rem;
   --10px: 0.625rem;
@@ -33,7 +34,11 @@
   --30px: 1.875rem;
   --32px: 2rem;
   --40px: 2.5rem;
+  --50px: 3.125rem;
   --60px: 3.75rem;
+  --100px: 6.25rem;
+  --220px: 13.75rem;
+  --250px: 15.625rem;
 }
 
 /* override the variables for your theme here */

@@ -1,7 +1,7 @@
 import localeKeys from "../locale/localeKeys";
 import { useTranslation } from "react-i18next";
-import { Column, Input, Table, SortEvent, Tabs, Tab } from "@darwinia/ui";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
+import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import relayerAvatar from "../assets/images/relayer-avatar.svg";
 
 interface Relayer {
@@ -16,11 +16,34 @@ interface Relayer {
 
 const RelayersOverview = () => {
   const { t } = useTranslation();
+  const [isLoading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState("");
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
   };
   const [activeTabId, setActiveTabId] = useState("1");
+
+  const onPageChange = useCallback((pageNumber: number) => {
+    setTablePagination((oldValues) => {
+      return {
+        ...oldValues,
+        currentPage: pageNumber,
+      };
+    });
+    setLoading(true);
+    // TODO this has to  be deleted
+    setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+    console.log("page number changed=====", pageNumber);
+  }, []);
+
+  const [tablePagination, setTablePagination] = useState<PaginationProps>({
+    currentPage: 1,
+    pageSize: 10,
+    totalPages: 1000,
+    onChange: onPageChange,
+  });
 
   const tabs: Tab[] = [
     {
@@ -68,13 +91,17 @@ const RelayersOverview = () => {
     console.log("Searched keywords...", keywords);
   };
 
+  const onRelayerClicked = useCallback((relayer: Relayer) => {
+    console.log("You clicked relayer:====", relayer);
+  }, []);
+
   const columns: Column<Relayer>[] = [
     {
       id: "1",
       key: "relayer",
       title: <div>{t([localeKeys.relayer])}</div>,
-      render: (column) => {
-        return getRelayerColumn(column.relayer, relayerAvatar);
+      render: (row) => {
+        return getRelayerColumn(row, relayerAvatar, onRelayerClicked);
       },
     },
     {
@@ -122,6 +149,7 @@ const RelayersOverview = () => {
   ];
 
   const onSort = (sortEvent: SortEvent<Relayer>) => {
+    console.log("sortEvent======", sortEvent);
     if (sortEvent.order === "ascend") {
       const output = dataSource.sort((a, b) => {
         if (typeof a[sortEvent.key] === "number" && typeof b[sortEvent.key] === "number") {
@@ -186,25 +214,30 @@ const RelayersOverview = () => {
       </div>
 
       <Table
+        isLoading={isLoading}
         headerSlot={getTableTabs()}
         onSort={onSort}
         minWidth={"1120px"}
         dataSource={dataSource}
         columns={columns}
+        pagination={tablePagination}
       />
-
-      <div dangerouslySetInnerHTML={{ __html: t(localeKeys.messagesCounter, { user: "John Doe", counter: "100" }) }} />
     </div>
   );
 };
 
-const getRelayerColumn = (relayer: string, avatar: string) => {
+const getRelayerColumn = (row: Relayer, avatar: string, onRelayerClick: (row: Relayer) => void) => {
   return (
-    <div className={"flex items-center gap-[0.3125rem]"}>
+    <div
+      onClick={() => {
+        onRelayerClick(row);
+      }}
+      className={"flex items-center gap-[0.3125rem] clickable"}
+    >
       <div className={"w-[1.375rem] h-[1.375rem] shrink-0"}>
         <img className={"w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
       </div>
-      <div className={"flex-1 text-primary text-14-bold truncate"}>{relayer}</div>
+      <div className={"flex-1 text-primary text-14-bold truncate"}>{row.relayer}</div>
     </div>
   );
 };
