@@ -1,0 +1,66 @@
+@import "../../assets/styles/common";
+
+.dw-pagination {
+  display: flex;
+  flex-direction: row;
+  gap: var(--5px);
+  user-select: none;
+
+  .dw-pagination-btn {
+    background-color: var(--black);
+    border-radius: var(--5px);
+    padding: var(--5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--32px);
+    height: var(--32px);
+    color: var(--halfWhite);
+
+    &.dw-active-page {
+      color: var(--white);
+
+      &:hover,
+      &:active {
+        opacity: 1 !important;
+        cursor: default;
+      }
+    }
+
+    &.dw-previous,
+    &.dw-next {
+      width: var(--32px);
+      padding: 0;
+    }
+
+    &:hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    &:active {
+      opacity: 0.5 !important;
+    }
+
+    &.dots {
+      width: 32px;
+      padding: var(--5px) 0;
+      opacity: 1 !important;
+      cursor: default !important;
+    }
+
+    &.dw-disabled {
+      cursor: default !important;
+      opacity: 1 !important;
+
+      img {
+        opacity: 0.5;
+      }
+    }
+
+    .dw-nav-icon {
+      width: var(--16px);
+      height: var(--16px);
+    }
+  }
+}

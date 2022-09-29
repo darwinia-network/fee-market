@@ -21,6 +21,7 @@ import { RadioGroupProps, RadioButtonExtensionProps, RadioButtonProps } from "./
 import { DrawerRefs, DrawerProps } from "./components/Drawer";
 import { TableProps, Column, Order, SortEvent } from "./components/Table";
 import { Tab, TabsProps } from "./components/Tabs";
+import { PaginationProps } from "./components/Pagination";
 
 export type {
   PopoverReport,
@@ -42,4 +43,5 @@ export type {
   SortEvent,
   Tab,
   TabsProps,
+  PaginationProps,
 };

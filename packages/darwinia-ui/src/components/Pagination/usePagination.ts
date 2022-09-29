@@ -12,15 +12,15 @@ const range = (start: number, end: number) => {
 export const DOTS = "...";
 
 export interface PageOptions {
-  totalCount: number;
+  totalPages: number;
   pageSize: number;
-  siblingCount: number;
+  siblingCount?: number;
   currentPage: number;
 }
 
-export const usePagination = ({ totalCount, pageSize, siblingCount = 1, currentPage }: PageOptions) => {
+export const usePagination = ({ totalPages, pageSize, siblingCount = 1, currentPage }: PageOptions) => {
   return useMemo(() => {
-    const totalPageCount = Math.ceil(totalCount / pageSize);
+    const totalPageCount = Math.ceil(totalPages / pageSize);
 
     // Pages count is determined as siblingCount + firstPage + lastPage + currentPage + 2*DOTS
     const totalPageNumbers = siblingCount + 5;
@@ -43,8 +43,8 @@ export const usePagination = ({ totalCount, pageSize, siblingCount = 1, currentP
     /*
       We do not show dots just when there is just one page number to be inserted between the extremes of sibling and the page limits i.e 1 and totalPageCount. Hence we are using leftSiblingIndex > 2 and rightSiblingIndex < totalPageCount - 2
     */
-    const shouldShowLeftDots = leftSiblingIndex > 2;
-    const shouldShowRightDots = rightSiblingIndex < totalPageCount - 2;
+    const shouldShowLeftDots = leftSiblingIndex >= 2;
+    const shouldShowRightDots = rightSiblingIndex <= totalPageCount - 2;
 
     const firstPageIndex = 1;
     const lastPageIndex = totalPageCount;
@@ -75,5 +75,5 @@ export const usePagination = ({ totalCount, pageSize, siblingCount = 1, currentP
       const middleRange = range(leftSiblingIndex, rightSiblingIndex);
       return [firstPageIndex, DOTS, ...middleRange, DOTS, lastPageIndex];
     }
-  }, [totalCount, pageSize, siblingCount, currentPage]);
+  }, [totalPages, pageSize, siblingCount, currentPage]);
 };

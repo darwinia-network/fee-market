@@ -4,7 +4,7 @@ import sortDescendIcon from "../../assets/images/sort-descend.svg";
 import { useState } from "react";
 import "./styles.scss";
 import Scrollbars from "react-custom-scrollbars";
-import Pagination from "../Pagination";
+import Pagination, { PaginationProps } from "../Pagination";
 
 export type Order = "ascend" | "descend";
 export interface Column<T> {
@@ -12,7 +12,7 @@ export interface Column<T> {
   title: JSX.Element;
   key: keyof T;
   width?: string;
-  render?: (column: T) => JSX.Element;
+  render?: (row: T) => JSX.Element;
   sortable?: boolean;
 }
 
@@ -27,6 +27,7 @@ export interface TableProps<T> {
   minWidth?: string;
   onSort?: (sortEvent: SortEvent<T>) => void;
   headerSlot?: JSX.Element;
+  pagination?: PaginationProps;
 }
 
 export interface TableRow extends Object {
@@ -39,6 +40,7 @@ const Table = <T extends TableRow>({
   onSort: onTableSort,
   minWidth = "1200px",
   headerSlot,
+  pagination,
 }: TableProps<T>) => {
   const maxAutoHeight = "9999px";
   const [sortKey, setSortKey] = useState<keyof T | undefined>();
@@ -99,7 +101,11 @@ const Table = <T extends TableRow>({
           </div>
         </div>
       </Scrollbars>
-      <Pagination />
+      {pagination && (
+        <div className={"dw-table-pagination"}>
+          <Pagination {...pagination} />
+        </div>
+      )}
     </div>
   );
 };

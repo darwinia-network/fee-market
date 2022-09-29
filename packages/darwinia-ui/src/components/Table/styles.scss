@@ -79,4 +79,10 @@
       }
     }
   }
+
+  .dw-table-pagination {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--15px);
+  }
 }
