@@ -1,5 +1,5 @@
 import { DOTS, usePagination } from "./usePagination";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./styles.scss";
 import previousIcon from "../../assets/images/caret-left.svg";
 import nextIcon from "../../assets/images/caret-right.svg";
@@ -19,7 +19,8 @@ interface PaginationState {
   totalPages: number;
 }
 
-const Pagination = ({ currentPage = 1, pageSize = 10, siblingCount = 1, totalPages, onChange }: PaginationProps) => {
+const Pagination = (paginationProps: PaginationProps) => {
+  const { currentPage = 1, pageSize = 10, siblingCount = 1, totalPages, onChange } = paginationProps;
   const [paginationState, setPaginationState] = useState<PaginationState>({
     currentPage,
     pageSize,
@@ -74,6 +75,19 @@ const Pagination = ({ currentPage = 1, pageSize = 10, siblingCount = 1, totalPag
     }
     onPaginationChange(pageNumber);
   };
+
+  useEffect(() => {
+    const { currentPage, pageSize, siblingCount, totalPages } = paginationProps;
+    setPaginationState((oldState) => {
+      return {
+        ...oldState,
+        currentPage,
+        pageSize,
+        siblingCount,
+        totalPages,
+      };
+    });
+  }, [paginationProps]);
 
   return (
     <div className={"dw-pagination"}>
