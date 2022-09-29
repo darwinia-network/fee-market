@@ -9,8 +9,9 @@ import Input from "./components/Input";
 import Table from "./components/Table";
 import Tabs from "./components/Tabs";
 import Pagination from "./components/Pagination";
+import Spinner from "./components/Spinner";
 
-export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination };
+export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination, Spinner };
 
 /*Types*/
 import { PopoverReport, PopoverProps, PopoverTriggerEvents } from "./components/Popover";
@@ -22,6 +23,7 @@ import { DrawerRefs, DrawerProps } from "./components/Drawer";
 import { TableProps, Column, Order, SortEvent } from "./components/Table";
 import { Tab, TabsProps } from "./components/Tabs";
 import { PaginationProps } from "./components/Pagination";
+import { SpinnerProps } from "./components/Spinner";
 
 export type {
   PopoverReport,
@@ -44,4 +46,5 @@ export type {
   Tab,
   TabsProps,
   PaginationProps,
+  SpinnerProps,
 };

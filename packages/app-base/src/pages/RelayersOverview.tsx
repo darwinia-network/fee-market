@@ -16,6 +16,7 @@ interface Relayer {
 
 const RelayersOverview = () => {
   const { t } = useTranslation();
+  const [isLoading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState("");
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
@@ -29,6 +30,11 @@ const RelayersOverview = () => {
         currentPage: pageNumber,
       };
     });
+    setLoading(true);
+    // TODO this has to  be deleted
+    setTimeout(() => {
+      setLoading(false);
+    }, 5000);
     console.log("page number changed=====", pageNumber);
   }, []);
 
@@ -143,6 +149,7 @@ const RelayersOverview = () => {
   ];
 
   const onSort = (sortEvent: SortEvent<Relayer>) => {
+    console.log("sortEvent======", sortEvent);
     if (sortEvent.order === "ascend") {
       const output = dataSource.sort((a, b) => {
         if (typeof a[sortEvent.key] === "number" && typeof b[sortEvent.key] === "number") {
@@ -207,6 +214,7 @@ const RelayersOverview = () => {
       </div>
 
       <Table
+        isLoading={isLoading}
         headerSlot={getTableTabs()}
         onSort={onSort}
         minWidth={"1120px"}
@@ -214,8 +222,6 @@ const RelayersOverview = () => {
         columns={columns}
         pagination={tablePagination}
       />
-
-      <div dangerouslySetInnerHTML={{ __html: t(localeKeys.messagesCounter, { user: "John Doe", counter: "100" }) }} />
     </div>
   );
 };

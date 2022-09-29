@@ -1,10 +1,12 @@
 import sortDefaultIcon from "../../assets/images/sort-default.svg";
 import sortAscendIcon from "../../assets/images/sort-ascend.svg";
 import sortDescendIcon from "../../assets/images/sort-descend.svg";
+import noData from "../../assets/images/no-data.svg";
 import { useState } from "react";
 import "./styles.scss";
 import Scrollbars from "react-custom-scrollbars";
 import Pagination, { PaginationProps } from "../Pagination";
+import Spinner from "../Spinner";
 
 export type Order = "ascend" | "descend";
 export interface Column<T> {
@@ -27,7 +29,11 @@ export interface TableProps<T> {
   minWidth?: string;
   onSort?: (sortEvent: SortEvent<T>) => void;
   headerSlot?: JSX.Element;
+  footerSlot?: JSX.Element;
   pagination?: PaginationProps;
+  noDataText?: string;
+  isLoading?: boolean;
+  spinnerText?: string;
 }
 
 export interface TableRow extends Object {
@@ -38,11 +44,16 @@ const Table = <T extends TableRow>({
   dataSource = [],
   columns = [],
   onSort: onTableSort,
-  minWidth = "1200px",
+  minWidth = "1100px",
   headerSlot,
+  footerSlot,
   pagination,
+  noDataText,
+  isLoading = false,
+  spinnerText,
 }: TableProps<T>) => {
-  const maxAutoHeight = "9999px";
+  /* This will make sure that the table's vertical scrollbar doesn't show until maxAutoHeight is reached */
+  const maxAutoHeight = "99999px";
   const [sortKey, setSortKey] = useState<keyof T | undefined>();
   const [sortOrder, setSortOrder] = useState<Order | undefined>();
   const defaultSortOrder: Order = "ascend";
@@ -64,49 +75,59 @@ const Table = <T extends TableRow>({
     }
   };
   return (
-    <div className={"dw-table"}>
-      {headerSlot}
-      <Scrollbars autoHeight={true} autoHeightMax={maxAutoHeight} className={"dw-table-scrollview"}>
-        <div style={{ minWidth: minWidth }}>
-          {/*Table header*/}
-          <div className={"dw-table-header"}>
-            {columns.map((column) => {
-              return getColumn({
-                isHeader: true,
-                column,
-                onSort,
-                sortKey,
-                sortOrder,
-              });
-            })}
+    <Spinner spinnerText={spinnerText} isLoading={isLoading}>
+      <div className={"dw-table"}>
+        {headerSlot}
+        <Scrollbars autoHeight={true} autoHeightMax={maxAutoHeight} className={"dw-table-scrollview"}>
+          <div style={{ minWidth: minWidth }}>
+            {/*Table header*/}
+            <div className={"dw-table-header"}>
+              {columns.map((column) => {
+                return getColumn({
+                  isHeader: true,
+                  column,
+                  onSort,
+                  sortKey,
+                  sortOrder,
+                });
+              })}
+            </div>
+            {/*Empty table*/}
+            {dataSource.length === 0 && (
+              <div className={"dw-table-empty"}>
+                <img className={"dw-empty-icon"} src={noData} alt="image" />
+                <div>{noDataText ? noDataText : "no data"}</div>
+              </div>
+            )}
+            {/*Table body*/}
+            <div className={"dw-table-body"}>
+              {dataSource.map((row, index) => {
+                const rowKey = row.id ?? index;
+                return (
+                  <div className={"dw-table-row"} key={rowKey}>
+                    {columns.map((column) => {
+                      return getColumn({
+                        isHeader: false,
+                        column,
+                        row,
+                        sortKey,
+                        sortOrder,
+                      });
+                    })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          {/*Table body*/}
-          <div className={"dw-table-body"}>
-            {dataSource.map((row, index) => {
-              const rowKey = row.id ?? index;
-              return (
-                <div className={"dw-table-row"} key={rowKey}>
-                  {columns.map((column) => {
-                    return getColumn({
-                      isHeader: false,
-                      column,
-                      row,
-                      sortKey,
-                      sortOrder,
-                    });
-                  })}
-                </div>
-              );
-            })}
+        </Scrollbars>
+        {pagination && dataSource.length > 0 && (
+          <div className={"dw-table-pagination"}>
+            <Pagination {...pagination} />
           </div>
-        </div>
-      </Scrollbars>
-      {pagination && (
-        <div className={"dw-table-pagination"}>
-          <Pagination {...pagination} />
-        </div>
-      )}
-    </div>
+        )}
+        {footerSlot}
+      </div>
+    </Spinner>
   );
 };
 
