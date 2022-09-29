@@ -3,6 +3,7 @@ import PangolinLogo from "../images/network/pangolin.svg";
 
 const config: PolkadotChainConfig = {
   chainName: "Pangolin",
+  displayName: "Pangolin Chain",
   chainLogo: PangolinLogo,
   rpcUrl: "https://pangolin-rpc.darwinia.network/",
   graphql: {

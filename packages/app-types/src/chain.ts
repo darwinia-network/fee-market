@@ -28,6 +28,7 @@ export enum ChainID {
 
 export interface ChainConfig {
   chainName: FeeMarketChain;
+  displayName: string;
   chainLogo: string;
   rpcUrl: string;
   graphql: {
