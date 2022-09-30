@@ -7,15 +7,15 @@ interface Market {
 }
 
 export interface FeeMarketCtx {
-  market: Market | null;
-  setMarket: (market: Market) => void;
+  currentMarket: Market | null;
+  setCurrentMarket: (market: Market) => void;
   refresh: () => void;
   setRefresh: (fn: () => void) => void;
 }
 
 const defaultValue: FeeMarketCtx = {
-  market: null,
-  setMarket: () => undefined,
+  currentMarket: null,
+  setCurrentMarket: () => undefined,
   refresh: () => undefined,
   setRefresh: () => undefined,
 };
@@ -23,14 +23,14 @@ const defaultValue: FeeMarketCtx = {
 export const FeeMarketContext = createContext<FeeMarketCtx>(defaultValue);
 
 export const FeeMarketProvider = ({ children }: PropsWithChildren<unknown>) => {
-  const [market, setMarket] = useState<Market | null>(null);
+  const [currentMarket, setCurrentMarket] = useState<Market | null>(null);
   const [refresh, setRefresh] = useState<() => void>(() => () => undefined);
 
   return (
     <FeeMarketContext.Provider
       value={{
-        market,
-        setMarket,
+        currentMarket,
+        setCurrentMarket,
         refresh,
         setRefresh,
       }}

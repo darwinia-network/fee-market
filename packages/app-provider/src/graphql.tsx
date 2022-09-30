@@ -4,15 +4,15 @@ import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { useFeeMarket } from "./feemarket";
 
 export const GraphqlProvider = ({ children }: PropsWithChildren<unknown>) => {
-  const { market } = useFeeMarket();
+  const { currentMarket } = useFeeMarket();
 
   const client = useMemo(
     () =>
       new ApolloClient({
-        uri: market?.source ? POLKADOT_CHAIN_CONF[market.source].graphql.endpoint : "",
+        uri: currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].graphql.endpoint : "",
         cache: new InMemoryCache(),
       }),
-    [market?.source]
+    [currentMarket?.source]
   );
 
   return <ApolloProvider client={client}>{children}</ApolloProvider>;
