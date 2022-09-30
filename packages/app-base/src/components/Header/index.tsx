@@ -13,6 +13,7 @@ import NetworkSwitchDialog, { TransferSelection } from "../NetworkSwitchDialog";
 import { Popover } from "@darwinia/ui";
 import useNetworkList from "../../data/useNetworkList";
 import { NetworkOption } from "../../data/types";
+import useMenuList from "../../data/useMenuList";
 
 interface Props {
   title: string;
@@ -22,9 +23,9 @@ interface Props {
   be the page title container on the PC */
 const Header = ({ title }: Props) => {
   const { t } = useTranslation();
+  const { menuList } = useMenuList();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
-  const selectedMenuPath = useRef("");
   const [popperTriggerRef, setPopperTriggerRef] = useState<HTMLElement | null>(null);
   const { networkList } = useNetworkList();
   const defaultNetworkType: keyof NetworkOption = "liveNets";
@@ -63,10 +64,6 @@ const Header = ({ title }: Props) => {
 
   const toggleMobileNavigation = () => {
     setDrawerVisibility((isVisible) => !isVisible);
-  };
-
-  const onToggleSubMenu = (menuPath: string) => {
-    selectedMenuPath.current = menuPath;
   };
 
   const onMobileNetworkSwitchButtonClicked = () => {
@@ -141,7 +138,7 @@ const Header = ({ title }: Props) => {
           {/*Menu, this menu will only be visible on mobile phones,no need to use
             the custom scrollbar since the mobile phone scrollbar is nice by default*/}
           <div className={"flex-1 overflow-auto"}>
-            <Menu selectedMenuPath={selectedMenuPath.current} onToggleSubMenu={onToggleSubMenu} />
+            <Menu menuList={menuList} />
           </div>
           {/*Nav footer*/}
           <div className={"shrink-0 px-[0.875rem] py-[1.5rem]"}>

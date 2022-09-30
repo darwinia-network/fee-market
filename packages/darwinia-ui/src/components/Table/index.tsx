@@ -40,6 +40,10 @@ export interface TableRow extends Object {
   id: string;
 }
 
+/**
+ * IMPORTANT: Each dataSource object MUST contain an id in form of string format
+ */
+
 const Table = <T extends TableRow>({
   dataSource = [],
   columns = [],

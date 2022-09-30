@@ -44,6 +44,17 @@ const localeKeys = {
   sum: "sum",
   reward: "reward",
   slash: "slash",
+  rewardsOrSlash: "rewardsOrSlash",
+  quoteHistory: "quoteHistory",
+  orderId: "orderId",
+  relayerRoles: "relayerRoles",
+  time: "time",
+  relatedOrders: "relatedOrders",
+  relayerDetails: "relayerDetails",
+  finished: "finished",
+  inProgress: "inProgress",
+  inSlot: "inSlot",
+  outOfSlot: "outOfSlot",
 };
 
 export default localeKeys;
