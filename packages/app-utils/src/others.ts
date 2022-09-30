@@ -19,3 +19,14 @@ export const getFeeMarketApiSection = (
 
   return null;
 };
+
+export const getPolkadotMarkets = () => {
+  const markets = {} as Record<FeeMarketPolkadotChain, FeeMarketPolkadotChain[]>;
+
+  const sources = Object.keys(MARKET_API_SECTIONS) as FeeMarketPolkadotChain[];
+  for (const source of sources) {
+    markets[source] = Object.keys(MARKET_API_SECTIONS[source]) as FeeMarketPolkadotChain[];
+  }
+
+  return markets;
+};

@@ -1,9 +1,11 @@
+import type { FeeMarketPolkadotChain } from "@feemarket/app-types";
+
 export interface Destination {
-  id: string;
+  id: FeeMarketPolkadotChain;
   name: string;
 }
 export interface Network {
-  id: string;
+  id: FeeMarketPolkadotChain;
   name: string;
   logo: string;
   destinations: Destination[];

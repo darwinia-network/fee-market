@@ -9,6 +9,7 @@ const config: PolkadotChainConfig = {
   graphql: {
     endpoint: "https://subql.darwinia.network/subql-apps-pangoro/",
   },
+  isTestNet: true,
 };
 
 export default config;
