@@ -1,10 +1,9 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "./locale";
 import "./assets/styles/index.scss";
 import { RouterProvider } from "react-router-dom";
 import browserRouter from "./routes";
-import { FeeMarketProvider, GraphqlProvider } from "@feemarket/app-provider";
+import { FeeMarketProvider, GraphqlProvider, ApiProvider } from "@feemarket/app-provider";
 
 if (process.env.NODE_ENV === "production") {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -20,7 +19,9 @@ if (process.env.NODE_ENV === "production") {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <FeeMarketProvider>
     <GraphqlProvider>
-      <RouterProvider router={browserRouter} />
+      <ApiProvider>
+        <RouterProvider router={browserRouter} />
+      </ApiProvider>
     </GraphqlProvider>
   </FeeMarketProvider>
 );
