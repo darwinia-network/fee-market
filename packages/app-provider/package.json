@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "private": true,
   "scripts": {
+    "watch": "rollup --config --watch",
     "build": "rm -rf dist && rollup --config",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
