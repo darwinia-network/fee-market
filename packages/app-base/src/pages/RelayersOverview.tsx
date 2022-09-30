@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
 import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import relayerAvatar from "../assets/images/relayer-avatar.svg";
+import { useNavigate } from "react-router-dom";
 
 interface Relayer {
   id: string;
@@ -18,6 +19,8 @@ const RelayersOverview = () => {
   const { t } = useTranslation();
   const [isLoading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState("");
+  const navigate = useNavigate();
+
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
   };
@@ -93,6 +96,7 @@ const RelayersOverview = () => {
 
   const onRelayerClicked = useCallback((relayer: Relayer) => {
     console.log("You clicked relayer:====", relayer);
+    navigate(`/relayer-details`);
   }, []);
 
   const columns: Column<Relayer>[] = [

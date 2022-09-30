@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 
-const OverviewData = () => {
+const OverviewSummary = () => {
   const { t } = useTranslation();
   const overviewData = [
     { title: t(localeKeys.totalRelayers), data: "105 / 105" },
@@ -37,4 +37,4 @@ const OverviewData = () => {
   );
 };
 
-export default OverviewData;
+export default OverviewSummary;

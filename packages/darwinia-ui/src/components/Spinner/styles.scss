@@ -3,6 +3,7 @@
 .dw-spinner {
   position: relative;
   min-height: 130px;
+  user-select: none;
 
   .dw-spinner-mask {
     position: absolute;

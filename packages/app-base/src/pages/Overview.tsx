@@ -1,16 +1,12 @@
-import OverviewData from "../components/OverviewData";
+import OverviewSummary from "../components/OverviewSummary";
 import OverviewCharts from "../components/OverviewCharts";
 
 const Overview = () => {
   return (
-    <>
-      <div>
-        <OverviewData />
-      </div>
-      <div className={"mt-[0.9375rem] lg:mt-[1.875rem]"}>
-        <OverviewCharts />
-      </div>
-    </>
+    <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
+      <OverviewSummary />
+      <OverviewCharts />
+    </div>
   );
 };
 

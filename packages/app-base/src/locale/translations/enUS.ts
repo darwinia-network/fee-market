@@ -44,6 +44,13 @@ const enUs = {
   [localeKeys.sum]: "sum",
   [localeKeys.reward]: "reward",
   [localeKeys.slash]: "slash",
+  [localeKeys.rewardsOrSlash]: `rewards/slash <span style="text-transform: uppercase;">{{currency}}</span>`,
+  [localeKeys.quoteHistory]: `quote history <span style="text-transform: uppercase;">{{currency}}</span>`,
+  [localeKeys.orderId]: "order ID",
+  [localeKeys.relayerRoles]: "relayer roles",
+  [localeKeys.time]: "time",
+  [localeKeys.relatedOrders]: "related orders",
+  [localeKeys.relayerDetails]: "relayer details",
 };
 
 export default enUs;

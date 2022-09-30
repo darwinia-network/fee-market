@@ -6,7 +6,7 @@ const Chart = ({ title, timeRange }: { title: string; timeRange: string[] }) => 
   return (
     <div className={"rounded-[0.625rem] flex flex-col gap-[0.9375rem] bg-blackSecondary p-[0.9375rem] lg:p-[1.875rem]"}>
       <div className={"flex border-b-[1px] border-divider pb-[0.9375rem] justify-between items-center"}>
-        <div dangerouslySetInnerHTML={{ __html: title }} />
+        <div className={"text-14-bold"} dangerouslySetInnerHTML={{ __html: title }} />
         <div className={"flex gap-[0.625rem]"}>
           {timeRange.map((time, index) => {
             const activeTab = time === selectedRange ? "bg-primary" : "";
