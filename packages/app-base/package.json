@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@darwinia/ui": "^0.0.1",
+    "@feemarket/app-components": "^1.0.0",
     "@feemarket/app-config": "^1.0.0",
     "@feemarket/app-hooks": "^1.0.0",
     "@feemarket/app-provider": "^1.0.0",

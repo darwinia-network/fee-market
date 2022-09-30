@@ -11,6 +11,7 @@
     "build:app-utils": "lerna run build --scope @feemarket/app-utils",
     "build:app-provider": "lerna run build --scope @feemarket/app-provider",
     "build:app-hooks": "lerna run build --scope @feemarket/app-hooks",
+    "build:app-components": "lerna run build --scope @feemarket/app-components",
     "clean": "lerna clean --yes",
     "boot": "lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
