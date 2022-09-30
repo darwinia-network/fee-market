@@ -40,6 +40,10 @@
     display: flex;
     border-top: 1px solid var(--divider);
     padding: var(--15px) 0;
+
+    &:last-child {
+      border-bottom: 1px solid var(--divider);
+    }
   }
 
   .dw-table-column {
@@ -77,6 +81,25 @@
           height: var(--16px);
         }
       }
+    }
+  }
+
+  .dw-table-pagination {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--15px);
+  }
+
+  .dw-table-empty {
+    min-height: var(--220px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .dw-empty-icon {
+      width: var(--50px);
+      margin-bottom: var(--15px);
     }
   }
 }
