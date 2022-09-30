@@ -20,7 +20,7 @@ const localeKeys = {
   pangolinParachain: "pangolinParachain",
   liveNets: "liveNets",
   testNets: "testNets",
-  to: "to",
+  toDestination: "toDestination",
   switchToLiveNets: "switchToLiveNets",
   switchToTestNets: "switchToTestNets",
   select: "select",
@@ -55,6 +55,17 @@ const localeKeys = {
   inProgress: "inProgress",
   inSlot: "inSlot",
   outOfSlot: "outOfSlot",
+  searchByOrderOrSender: "searchByOrderOrSender",
+  filter: "filter",
+  timeDimension: "timeDimension",
+  date: "date",
+  startDate: "startDate",
+  endDate: "endDate",
+  block: "block",
+  status: "status",
+  slot: "slot",
+  slotNumber: "slotNumber",
+  to: "to",
 };
 
 export default localeKeys;

@@ -34,7 +34,7 @@ const Input = ({
       <div className={"flex-1"}>
         <div
           style={{ ...style }}
-          className={`px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite ${inputWrapperClass} ${className}`}
+          className={`px-[0.625rem] h-[2.5rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite ${inputWrapperClass} ${className}`}
         >
           {/*left icon*/}
           {hasCustomLeftIcon ? (
@@ -45,7 +45,7 @@ const Input = ({
           {/*Input field*/}
           <input
             className={
-              "placeholder:capitalize placeholder-white block w-full flex-1 py-[0.4375rem] border-none bg-[transparent] outline-none focus:outline-none appearance-none"
+              "placeholder:capitalize self-stretch placeholder-white block w-full flex-1 border-none bg-[transparent] outline-none focus:outline-none appearance-none"
             }
             type={type}
             autoComplete={autoComplete}

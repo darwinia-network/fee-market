@@ -20,7 +20,7 @@ const enUs = {
   [localeKeys.pangolinParachain]: "Pangolin Parachain",
   [localeKeys.liveNets]: "Livenet",
   [localeKeys.testNets]: "Testnet",
-  [localeKeys.to]: "to {{destinationName}}",
+  [localeKeys.toDestination]: "to {{destinationName}}",
   [localeKeys.switchToLiveNets]: "switch to livenets",
   [localeKeys.switchToTestNets]: "switch to testnets",
   [localeKeys.select]: "select",
@@ -55,6 +55,17 @@ const enUs = {
   [localeKeys.inProgress]: "in progress",
   [localeKeys.inSlot]: "in slot",
   [localeKeys.outOfSlot]: "out of slot",
+  [localeKeys.searchByOrderOrSender]: "search by order ID/sender address",
+  [localeKeys.filter]: "filter",
+  [localeKeys.timeDimension]: "time dimension",
+  [localeKeys.date]: "date",
+  [localeKeys.startDate]: "start date",
+  [localeKeys.endDate]: "end date",
+  [localeKeys.block]: "block",
+  [localeKeys.status]: "status",
+  [localeKeys.slot]: "slot",
+  [localeKeys.slotNumber]: `slot {{slotNumber}}`,
+  [localeKeys.to]: "to",
 };
 
 export default enUs;
