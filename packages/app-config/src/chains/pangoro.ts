@@ -9,7 +9,10 @@ const config: PolkadotChainConfig = {
   graphql: {
     endpoint: "https://subql.darwinia.network/subql-apps-pangoro/",
   },
-  isTestNet: true,
+  nativeToken: {
+    symbol: "ORING",
+    decimals: 9,
+  },
 };
 
 export default config;

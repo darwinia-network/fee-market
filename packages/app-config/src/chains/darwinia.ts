@@ -9,6 +9,10 @@ const config: PolkadotChainConfig = {
   graphql: {
     endpoint: "https://subql.darwinia.network/subql-apps-darwinia/",
   },
+  nativeToken: {
+    symbol: "RING",
+    decimals: 9,
+  },
 };
 
 export default config;

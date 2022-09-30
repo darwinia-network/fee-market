@@ -9,6 +9,10 @@ const config: PolkadotChainConfig = {
   graphql: {
     endpoint: "https://subql.darwinia.network/subql-apps-crab/",
   },
+  nativeToken: {
+    symbol: "CRAB",
+    decimals: 9,
+  },
 };
 
 export default config;

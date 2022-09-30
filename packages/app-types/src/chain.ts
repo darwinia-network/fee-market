@@ -34,6 +34,10 @@ export interface ChainConfig {
   graphql: {
     endpoint: string;
   };
+  nativeToken: {
+    symbol: string;
+    decimals: number;
+  };
 }
 
 export interface PolkadotChainConfig extends ChainConfig {
