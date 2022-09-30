@@ -15,7 +15,7 @@ const Root = () => {
     "/relayers-overview": t(localeKeys.relayersOverview),
     "/relayer-dashboard": t(localeKeys.relayerDashboard),
     "/orders": t(localeKeys.orders),
-    "/relayer-details": t(localeKeys.relayerDetails),
+    "/relayers-overview/details": t(localeKeys.relayerDetails),
   };
   const location = useLocation();
   useEffect(() => {

@@ -96,7 +96,7 @@ const RelayersOverview = () => {
 
   const onRelayerClicked = useCallback((relayer: Relayer) => {
     console.log("You clicked relayer:====", relayer);
-    navigate(`/relayer-details`);
+    navigate(`/relayers-overview/details`);
   }, []);
 
   const columns: Column<Relayer>[] = [

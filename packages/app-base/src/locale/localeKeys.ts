@@ -51,6 +51,10 @@ const localeKeys = {
   time: "time",
   relatedOrders: "relatedOrders",
   relayerDetails: "relayerDetails",
+  finished: "finished",
+  inProgress: "inProgress",
+  inSlot: "inSlot",
+  outOfSlot: "outOfSlot",
 };
 
 export default localeKeys;

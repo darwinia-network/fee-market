@@ -51,6 +51,10 @@ const enUs = {
   [localeKeys.time]: "time",
   [localeKeys.relatedOrders]: "related orders",
   [localeKeys.relayerDetails]: "relayer details",
+  [localeKeys.finished]: "finished",
+  [localeKeys.inProgress]: "in progress",
+  [localeKeys.inSlot]: "in slot",
+  [localeKeys.outOfSlot]: "out of slot",
 };
 
 export default enUs;

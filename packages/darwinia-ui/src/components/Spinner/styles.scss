@@ -3,7 +3,6 @@
 .dw-spinner {
   position: relative;
   min-height: 130px;
-  user-select: none;
 
   .dw-spinner-mask {
     position: absolute;
@@ -19,6 +18,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    user-select: none;
   }
 
   .dw-spinner-text {

@@ -17,7 +17,13 @@ const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
   );
 };
 
-/* Add all the app routes in here */
+/* Add all the app routes in here.
+ * For nested routes, make sure that the child route contains the
+ * parent route path as well, otherwise your navigation links
+ * highlighting may not work as expected eg: the path relayers-overview/details
+ * is the child page of relayers-overview. If there are more than one root pages that
+ * need to jump to the same page, make sure that their parent paths match the links
+ * accordingly ie: add several links (in createHashRouter) that will open the same component */
 const browserRouter = createHashRouter([
   {
     path: "/",
@@ -33,7 +39,7 @@ const browserRouter = createHashRouter([
         element: <LazyLoader componentFileName={"RelayersOverview"} />,
       },
       {
-        path: "relayer-details",
+        path: "relayers-overview/details",
         element: <LazyLoader componentFileName={"RelayerDetails"} />,
       },
       {

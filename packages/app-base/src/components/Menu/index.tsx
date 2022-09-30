@@ -2,6 +2,7 @@ import MenuItem from "../MenuItem";
 import useMenuList from "../../data/useMenuList";
 import { MenuItem as MenuObject } from "../../data/types";
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 interface Props {
   onToggleSubMenu?: (openedMenuPath: string) => void;
@@ -9,8 +10,11 @@ interface Props {
 }
 
 const Menu = ({ selectedMenuPath, ...rest }: Props) => {
+  /*openedMenuPath is simply just an index in a string format eg "0", "1" */
   const [openedMenuPath, setOpenedMenuPath] = useState<string>("");
+  console.log(openedMenuPath);
   const { menuList } = useMenuList();
+  const location = useLocation();
 
   const onToggleSubMenu = (clickedMenuPath: string) => {
     const isSubMenuOpen = openedMenuPath === clickedMenuPath;
@@ -27,7 +31,6 @@ const Menu = ({ selectedMenuPath, ...rest }: Props) => {
     setOpenedMenuPath(selectedMenuPath ?? "");
   }, []);
 
-  //return <div className={"w-full"}>{generateMenu(menuList, onToggleSubMenu, openedMenuPath)}</div>;
   return (
     <div className={"w-full"}>
       <MenuRoot
@@ -70,6 +73,7 @@ const MenuRoot = ({
     const currentParentPath = `${index}`;
     const isOpen = openedMenuIndex === `${currentParentPath}`;
 
+    /* figure out the height of sub menu items */
     const subMenuHeight = rootMenuRef.current?.scrollHeight ?? 0;
 
     return (
