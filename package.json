@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "lerna run build",
+    "watch:parallel": "lerna run watch --parallel",
     "dev:app-base": "lerna run dev --scope=app-base",
     "build:app-base": "lerna run build --scope=app-base",
     "build:app-types": "lerna run build --scope @feemarket/app-types",
