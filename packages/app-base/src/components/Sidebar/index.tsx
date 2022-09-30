@@ -1,16 +1,11 @@
 import { Link } from "react-router-dom";
 import { Scrollbars } from "react-custom-scrollbars";
 import Menu from "../Menu";
-import { useRef } from "react";
 import logo from "../../assets/images/logo.svg";
+import useMenuList from "../../data/useMenuList";
 
 const Sidebar = () => {
-  const selectedMenuPath = useRef("");
-
-  const onToggleSubMenu = (menuPath: string) => {
-    selectedMenuPath.current = menuPath;
-  };
-
+  const { menuList } = useMenuList();
   return (
     <div className={"bg-blackSecondary h-screen w-[12.5rem] flex flex-col"}>
       <div className={"bg-black h-[3.125rem] px-[0.9375rem] lg:h-[5rem] shrink-0"}>
@@ -23,7 +18,7 @@ const Sidebar = () => {
       </div>
       <Scrollbars className={"flex-1"}>
         <div className={"flex-1 flex"}>
-          <Menu selectedMenuPath={selectedMenuPath.current} onToggleSubMenu={onToggleSubMenu} />
+          <Menu menuList={menuList} />
         </div>
       </Scrollbars>
     </div>

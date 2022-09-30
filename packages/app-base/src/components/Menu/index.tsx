@@ -1,60 +1,35 @@
 import MenuItem from "../MenuItem";
-import useMenuList from "../../data/useMenuList";
 import { MenuItem as MenuObject } from "../../data/types";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 interface Props {
   onToggleSubMenu?: (openedMenuPath: string) => void;
-  selectedMenuPath?: string;
+  menuList: MenuObject[];
 }
 
-const Menu = ({ selectedMenuPath, ...rest }: Props) => {
-  /*openedMenuPath is simply just an index in a string format eg "0", "1" */
-  const [openedMenuPath, setOpenedMenuPath] = useState<string>("");
-  console.log(openedMenuPath);
-  const { menuList } = useMenuList();
-  const location = useLocation();
-
-  const onToggleSubMenu = (clickedMenuPath: string) => {
-    const isSubMenuOpen = openedMenuPath === clickedMenuPath;
-    const menuPath = isSubMenuOpen ? "" : clickedMenuPath;
-    setOpenedMenuPath(() => {
-      if (rest.onToggleSubMenu) {
-        rest.onToggleSubMenu(menuPath);
-      }
-      return menuPath;
-    });
-  };
-
-  useEffect(() => {
-    setOpenedMenuPath(selectedMenuPath ?? "");
-  }, []);
-
+const Menu = ({ menuList }: Props) => {
   return (
     <div className={"w-full"}>
-      <MenuRoot
-        menuList={menuList}
-        onToggleSubMenu={onToggleSubMenu}
-        openedMenuIndex={openedMenuPath}
-        isChildMenu={false}
-      />
+      <MenuRoot menuList={menuList} isChildMenu={false} />
     </div>
   );
 };
 
-const MenuRoot = ({
-  menuList,
-  onToggleSubMenu,
-  openedMenuIndex,
-  isChildMenu = false,
-}: {
-  menuList: MenuObject[];
-  onToggleSubMenu: (menuIndex: string) => void;
-  openedMenuIndex: string;
-  isChildMenu: boolean;
-}) => {
+const MenuRoot = ({ menuList, isChildMenu = false }: { menuList: MenuObject[]; isChildMenu: boolean }) => {
   const rootMenuRef = useRef<HTMLDivElement>(null);
+  const [openedIndexes, setOpenedIndexes] = useState<number[]>([]);
+
+  const onToggleSubMenu = (index: number) => {
+    const isAlreadyOpen = openedIndexes.includes(index);
+    let newOpenedIndexes;
+    if (isAlreadyOpen) {
+      newOpenedIndexes = openedIndexes.filter((someIndex) => someIndex !== index);
+    } else {
+      newOpenedIndexes = [...openedIndexes, index];
+    }
+    setOpenedIndexes(newOpenedIndexes);
+  };
 
   const menu = menuList.map((menuObject, index) => {
     if (!menuObject.children || menuObject.children.length === 0) {
@@ -70,8 +45,7 @@ const MenuRoot = ({
       );
     }
 
-    const currentParentPath = `${index}`;
-    const isOpen = openedMenuIndex === `${currentParentPath}`;
+    const isOpen = openedIndexes.includes(index);
 
     /* figure out the height of sub menu items */
     const subMenuHeight = rootMenuRef.current?.scrollHeight ?? 0;
@@ -80,7 +54,7 @@ const MenuRoot = ({
       <div key={menuObject.id}>
         <MenuItem
           onClick={() => {
-            onToggleSubMenu(currentParentPath);
+            onToggleSubMenu(index);
           }}
           path={menuObject.path}
           hasSubMenu={true}
@@ -93,12 +67,7 @@ const MenuRoot = ({
           className={`transition overflow-hidden bg-black`}
         >
           <div ref={rootMenuRef}>
-            <MenuRoot
-              menuList={menuObject.children}
-              onToggleSubMenu={onToggleSubMenu}
-              openedMenuIndex={openedMenuIndex}
-              isChildMenu={true}
-            />
+            <MenuRoot menuList={menuObject.children} isChildMenu={true} />
           </div>
         </div>
       </div>

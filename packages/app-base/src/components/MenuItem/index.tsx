@@ -58,6 +58,8 @@ const getNavItem = (text: string, icon?: string, hasSubMenu?: boolean, isOpen?: 
     <>
       {icon && <img className={"shrink-0 self-center"} src={icon} alt="image" />}
       <div className={`flex-1 truncate ${textSize}`}>{text}</div>
+      {/*All menu items have caret and are visible except the ones that don't
+      have submenus their caret will be invisible */}
       {!isChildMenu && (
         <img
           className={`transition shrink-0 self-center ${caretClass} ${caretRotationClass}`}
