@@ -56,3 +56,9 @@
   top: 50%;
   transform: translateY(-50%);
 }
+
+@mixin ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

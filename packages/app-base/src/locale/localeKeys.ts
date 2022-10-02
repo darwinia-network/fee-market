@@ -66,6 +66,10 @@ const localeKeys = {
   slot: "slot",
   slotNumber: "slotNumber",
   to: "to",
+  deliveryRelayer: "deliveryRelayer",
+  confirmationRelayer: "confirmationRelayer",
+  createdAt: "createdAt",
+  confirmAt: "confirmAt",
 };
 
 export default localeKeys;

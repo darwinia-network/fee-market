@@ -66,6 +66,10 @@ const enUs = {
   [localeKeys.slot]: "slot",
   [localeKeys.slotNumber]: `slot {{slotNumber}}`,
   [localeKeys.to]: "to",
+  [localeKeys.deliveryRelayer]: "delivery relayer",
+  [localeKeys.confirmationRelayer]: "confirmation relayer",
+  [localeKeys.createdAt]: "created at",
+  [localeKeys.confirmAt]: "confirm at",
 };
 
 export default enUs;

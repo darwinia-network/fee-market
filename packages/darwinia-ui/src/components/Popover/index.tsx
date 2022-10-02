@@ -18,6 +18,14 @@ export interface PopoverProps {
   onPopoverTrigger?: (report: PopoverReport) => void;
   placement?: Placement;
 }
+
+/**
+ *  IMPORTANT: triggerRef MUST be a functional component state NOT a ref so as
+ *  to trigger a component rebuild eg: const [testRef, setTestRef] = useState<HTMLElement | null>(null);
+ *  setTestRef will be hooked into the trigger's ref ie: ref={setTestRef} and the
+ *  testRef will be added to triggerRef = {testRef}
+ *  */
+
 const Popover = ({
   children,
   triggerRef: popoverTriggerRef,

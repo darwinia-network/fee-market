@@ -1,9 +1,10 @@
 import { DetailedHTMLProps, InputHTMLAttributes } from "react";
 import searchIcon from "../../assets/images/search.svg";
+import { Placeholder } from "../../types";
 
 export interface InputProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
   leftIcon?: JSX.Element | null;
-  placeholder?: string;
+  placeholder?: Placeholder;
   clearButton?: JSX.Element;
   onClear?: () => void;
   rightSlot?: JSX.Element;

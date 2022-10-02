@@ -42,3 +42,16 @@
   font-size: var(--24px);
   line-height: var(--32px);
 }
+
+.clickable {
+  user-select: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
