@@ -64,11 +64,7 @@ const Modal = forwardRef<ModalRefs, ModalProps>(
             }}
             className={"dw-mask absolute left-0 right-0 top-0 bottom-0 w-full h-full bg-black opacity-80 z-[50]"}
           />
-          <div
-            style={{ ...modalStyles }}
-            {...rest}
-            className={`modal-content relative z-[56] max-w-[21.5625rem] w-[92%] ${className}`}
-          >
+          <div style={{ ...modalStyles }} {...rest} className={`modal-content ${className}`}>
             {children}
           </div>
         </div>

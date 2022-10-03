@@ -11,8 +11,9 @@ import Tabs from "./components/Tabs";
 import Pagination from "./components/Pagination";
 import Spinner from "./components/Spinner";
 import Select from "./components/Select";
+import ModalEnhanced from "./components/ModalEnhanced";
 
-export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination, Spinner, Select };
+export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination, Spinner, Select, ModalEnhanced };
 
 /*Types*/
 import { PopoverReport, PopoverProps, PopoverTriggerEvents } from "./components/Popover";
@@ -27,6 +28,7 @@ import { PaginationProps } from "./components/Pagination";
 import { SpinnerProps } from "./components/Spinner";
 import { Placeholder } from "./types";
 import { OptionProps } from "./components/Select";
+import { ModalEnhancedProps, ModalEnhancedRefs } from "./components/ModalEnhanced";
 
 export type {
   PopoverReport,
@@ -52,4 +54,6 @@ export type {
   SpinnerProps,
   Placeholder,
   OptionProps,
+  ModalEnhancedProps,
+  ModalEnhancedRefs,
 };

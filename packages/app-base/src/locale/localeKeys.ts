@@ -70,6 +70,14 @@ const localeKeys = {
   confirmationRelayer: "confirmationRelayer",
   createdAt: "createdAt",
   confirmAt: "confirmAt",
+  loginInfo: "loginInfo",
+  connectMetamask: "connectMetamask",
+  unregistered: "unregistered",
+  registered: "registered",
+  switchAccount: "switchAccount",
+  runBridger: "runBridger",
+  registerRelayer: "registerRelayer",
+  moreActions: "moreActions",
 };
 
 export default localeKeys;

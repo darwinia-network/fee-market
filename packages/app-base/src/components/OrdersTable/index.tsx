@@ -4,6 +4,7 @@ import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
+import { ModalEnhanced } from "@darwinia/ui";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -81,6 +82,7 @@ const OrdersTable = () => {
     },
   ];
   const [status, setStatus] = useState<string>("all");
+
   const slotOptions: OptionProps[] = [
     {
       id: "1",
@@ -109,6 +111,8 @@ const OrdersTable = () => {
     },
   ];
   const [slot, setSlot] = useState<string>("all");
+
+  const [isFilterModalVisible, setFilterModalVisibility] = useState(false);
 
   const [isLoading, setLoading] = useState(false);
 
@@ -226,7 +230,7 @@ const OrdersTable = () => {
     },
   ];
 
-  const [orderDataSource, setOrderDataSource] = useState<Order[]>([
+  const [orderDataSource] = useState<Order[]>([
     {
       id: "1",
       orderId: "14234",
@@ -301,22 +305,30 @@ const OrdersTable = () => {
     console.log("Searched keywords...", keywords);
   };
 
-  const onSelectTimeDimension = (time: string | string[]) => {
+  const onTimeDimensionChanged = (time: string | string[]) => {
     if (typeof time === "string") {
       setTimeDimension(time);
     }
   };
 
-  const onSelectStatus = (status: string | string[]) => {
+  const onStatusChanged = (status: string | string[]) => {
     if (typeof status === "string") {
       setStatus(status);
     }
   };
 
-  const onSelectSlot = (slot: string | string[]) => {
+  const onSlotChanged = (slot: string | string[]) => {
     if (typeof slot === "string") {
       setSlot(status);
     }
+  };
+
+  const onShowFilterModal = () => {
+    setFilterModalVisibility(true);
+  };
+
+  const onCloseFilterModal = () => {
+    setFilterModalVisibility(false);
   };
 
   return (
@@ -340,8 +352,82 @@ const OrdersTable = () => {
         </div>
         {/*filter button*/}
         <div className={"lg:hidden"}>
-          <Button plain={true}>{t(localeKeys.filter)}</Button>
+          <Button onClick={onShowFilterModal} plain={true}>
+            {t(localeKeys.filter)}
+          </Button>
         </div>
+        {/*Filter modal that will only show on mobile devices*/}
+        <ModalEnhanced modalTitle={t(localeKeys.filter)} onClose={onCloseFilterModal} isVisible={isFilterModalVisible}>
+          <div className={"flex flex-col gap-[0.9375rem]"}>
+            {/*time dimension*/}
+            <div className={"flex flex-col gap-[0.625rem]"}>
+              <div className={"text-12"}>{t(localeKeys.timeDimension)}</div>
+              <div>
+                <Select
+                  className={"text-12-bold"}
+                  dropdownClassName={"text-12-bold"}
+                  value={timeDimension}
+                  onChange={onTimeDimensionChanged}
+                  options={timeDimensionOptions}
+                />
+              </div>
+            </div>
+
+            {/*Date*/}
+            <div className={"flex flex-col gap-[0.625rem]"}>
+              <div className={"text-12"}>{t(localeKeys.date)}</div>
+              <div className={"flex gap-[0.625rem]"}>
+                <div className={"flex-1"}>
+                  <Select
+                    className={"text-12-bold"}
+                    dropdownClassName={"text-12-bold"}
+                    value={status}
+                    onChange={onStatusChanged}
+                    options={statusOptions}
+                  />
+                </div>
+                <div className={"flex-1"}>
+                  <Select
+                    className={"text-12-bold"}
+                    dropdownClassName={"text-12-bold"}
+                    value={status}
+                    onChange={onStatusChanged}
+                    options={statusOptions}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/*Status*/}
+            <div className={"flex flex-col gap-[0.625rem]"}>
+              <div className={"text-12"}>{t(localeKeys.status)}</div>
+              <div>
+                <Select
+                  className={"text-12-bold"}
+                  dropdownClassName={"text-12-bold"}
+                  value={status}
+                  onChange={onStatusChanged}
+                  options={statusOptions}
+                />
+              </div>
+            </div>
+
+            {/*Slot*/}
+            <div className={"flex flex-col gap-[0.625rem]"}>
+              <div className={"text-12"}>{t(localeKeys.slot)}</div>
+              <div>
+                <Select
+                  className={"text-12-bold"}
+                  dropdownClassName={"text-12-bold"}
+                  value={slot}
+                  onChange={onSlotChanged}
+                  options={slotOptions}
+                  dropdownHeight={150}
+                />
+              </div>
+            </div>
+          </div>
+        </ModalEnhanced>
       </div>
       {/*PC filter options*/}
       <div className={"hidden text-12 flex-wrap lg:flex gap-x-[1.875rem] gap-y-[1.25rem]"}>
@@ -352,7 +438,7 @@ const OrdersTable = () => {
             <Select
               options={timeDimensionOptions}
               value={timeDimension}
-              onChange={onSelectTimeDimension}
+              onChange={onTimeDimensionChanged}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
@@ -376,7 +462,7 @@ const OrdersTable = () => {
             <Select
               options={statusOptions}
               value={status}
-              onChange={onSelectStatus}
+              onChange={onStatusChanged}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
@@ -389,7 +475,7 @@ const OrdersTable = () => {
             <Select
               options={slotOptions}
               value={slot}
-              onChange={onSelectSlot}
+              onChange={onSlotChanged}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />

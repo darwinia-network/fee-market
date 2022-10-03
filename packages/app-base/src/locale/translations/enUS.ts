@@ -70,6 +70,14 @@ const enUs = {
   [localeKeys.confirmationRelayer]: "confirmation relayer",
   [localeKeys.createdAt]: "created at",
   [localeKeys.confirmAt]: "confirm at",
+  [localeKeys.loginInfo]: `Login your account to check your relaying data and update your Collateral & Quote in the current Fee Market. `,
+  [localeKeys.connectMetamask]: "connect metamask",
+  [localeKeys.unregistered]: "unregistered",
+  [localeKeys.registered]: "registered",
+  [localeKeys.switchAccount]: "switch account",
+  [localeKeys.runBridger]: "run brigder",
+  [localeKeys.registerRelayer]: "register relayer",
+  [localeKeys.moreActions]: "more actions",
 };
 
 export default enUs;

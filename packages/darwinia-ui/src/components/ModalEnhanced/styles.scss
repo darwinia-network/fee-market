@@ -1,0 +1,62 @@
+@import "../../assets/styles/common";
+
+.dw-enhanced-modal {
+  width: 100%;
+  border: var(--border2px);
+  border-color: var(--primary);
+  border-radius: var(--borderRadius10px);
+  background-color: var(--primary);
+
+  .dw-modal-enhanced-header {
+    background-color: var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: var(--44px);
+    border-bottom: var(--border2px);
+    border-color: var(--primary);
+    border-top-left-radius: var(--borderRadius10px);
+    border-top-right-radius: var(--borderRadius10px);
+    gap: var(--44px);
+
+    .dw-modal-enhanced-title {
+      @extend .dw-text-18-bold;
+
+      @include ellipsis;
+
+      padding-left: var(--15px);
+    }
+  }
+
+  .dw-modal-enhanced-close-wrapper {
+    align-self: stretch;
+    display: flex;
+    padding-right: var(--15px);
+    flex-shrink: 0;
+  }
+
+  .dw-modal-enhanced-close {
+    @extend .clickable;
+
+    width: var(--24px);
+    height: var(--24px);
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .dw-modal-enhanced-content {
+    padding: var(--15px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--20px);
+    background-color: var(--blackSecondary);
+    border-bottom-left-radius: var(--borderRadius10px);
+    border-bottom-right-radius: var(--borderRadius10px);
+  }
+
+  .dw-modal-enhanced-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--20px);
+  }
+}

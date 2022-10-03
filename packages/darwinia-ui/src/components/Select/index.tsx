@@ -19,6 +19,7 @@ export interface SelectProps {
   placeholder?: Placeholder;
   style?: CSSProperties;
   className?: string;
+  dropdownClassName?: string;
   size?: SelectSize;
   dropdownHeight?: number;
   options: OptionProps[];
@@ -29,6 +30,7 @@ const Select = ({
   value,
   style,
   className,
+  dropdownClassName,
   size = "large",
   dropdownHeight = 200,
   onChange,
@@ -181,7 +183,11 @@ const Select = ({
         <img src={caretDown} alt="image" />
       </div>
       <CSSTransition unmountOnExit={true} in={isDropdownVisible} timeout={300} classNames={"dw-drop-down"}>
-        <Scrollbars autoHeight={true} autoHeightMax={dropdownHeight} className={"dw-select-options-wrapper"}>
+        <Scrollbars
+          autoHeight={true}
+          autoHeightMax={dropdownHeight}
+          className={`dw-select-options-wrapper ${dropdownClassName}`}
+        >
           <div className={"dw-select-options"}>{selectOptionsJSX}</div>
         </Scrollbars>
       </CSSTransition>
