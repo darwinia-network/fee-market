@@ -101,7 +101,7 @@ const RelayerDetailsTable = () => {
   });
 
   const getTableTitle = () => {
-    return <div>{t(localeKeys.relatedOrders)}</div>;
+    return <div className={"pb-[0.9375rem]"}>{t(localeKeys.relatedOrders)}</div>;
   };
 
   return (

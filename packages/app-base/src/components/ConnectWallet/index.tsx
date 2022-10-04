@@ -19,7 +19,9 @@ const ConnectWallet = ({ onConnected }: { onConnected: () => void }) => {
         <img className={"w-full"} src={metamaskLogo} alt="image" />
       </div>
       <div>
-        <Button onClick={onConnectWallet}>{t(localeKeys.connectMetamask)}</Button>
+        <Button className={"px-[0.9375rem]"} onClick={onConnectWallet}>
+          {t(localeKeys.connectMetamask)}
+        </Button>
       </div>
       <div className={"text-center"}>{t(localeKeys.loginInfo)}</div>
     </div>

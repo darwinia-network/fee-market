@@ -19,7 +19,7 @@ export interface ModalRefs {
 export interface ModalProps extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   isVisible: boolean;
   modalStyles?: CSSProperties;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 const Modal = forwardRef<ModalRefs, ModalProps>(

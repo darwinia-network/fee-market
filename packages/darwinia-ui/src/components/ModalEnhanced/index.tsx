@@ -19,7 +19,7 @@ export interface ModalEnhancedRefs {
 export interface ModalEnhancedProps extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   isVisible: boolean;
   modalStyles?: CSSProperties;
-  onClose?: () => void;
+  onClose: () => void;
   onCancel?: () => void;
   onConfirm?: () => void;
   modalTitle: JSX.Element | string;
@@ -68,7 +68,6 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
     });
 
     const onConfirmClicked = () => {
-      setModalVisibility(false);
       if (onConfirm) {
         onConfirm();
       }
@@ -115,7 +114,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
                     {confirmText}
                   </Button>
                 )}
-                {onClose && (
+                {onCancel && (
                   <Button
                     plain={true}
                     onClick={() => {

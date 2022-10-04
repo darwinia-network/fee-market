@@ -12,8 +12,23 @@ import Pagination from "./components/Pagination";
 import Spinner from "./components/Spinner";
 import Select from "./components/Select";
 import ModalEnhanced from "./components/ModalEnhanced";
+import SlideDownUp from "./components/SlideDownUp";
 
-export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination, Spinner, Select, ModalEnhanced };
+export {
+  Button,
+  Radio,
+  Popover,
+  Modal,
+  Drawer,
+  Input,
+  Table,
+  Tabs,
+  Pagination,
+  Spinner,
+  Select,
+  ModalEnhanced,
+  SlideDownUp,
+};
 
 /*Types*/
 import { PopoverReport, PopoverProps, PopoverTriggerEvents } from "./components/Popover";

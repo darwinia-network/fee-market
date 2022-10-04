@@ -500,7 +500,7 @@ const getRelayerColumn = (row: Order, key: keyof Order, avatar: string) => {
   return (
     <div className={"flex items-center gap-[0.3125rem] clickable"}>
       <div className={"w-[1.375rem] h-[1.375rem] shrink-0"}>
-        <img className={"w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
+        <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
       </div>
       <div className={"flex-1 text-14-bold truncate"}>{row[key]}</div>
     </div>

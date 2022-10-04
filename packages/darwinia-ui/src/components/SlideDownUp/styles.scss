@@ -1,0 +1,10 @@
+@import "../../assets/styles/common";
+
+$heightTransitionEase: ease-in-out;
+$heightTransitionDuration: 300ms;
+
+.slide-enter-active,
+.slide-exit-active {
+  overflow: hidden;
+  transition: height $heightTransitionDuration $heightTransitionEase;
+}
