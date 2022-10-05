@@ -51,7 +51,11 @@ const OverviewCharts = () => {
     return <Chart key={index} title={item.title} timeRange={item.timeRange} />;
   });
 
-  return <div className={"grid grid-cols-1 lg:grid-cols-2 gap-[0.9375rem]"}>{charts}</div>;
+  return (
+    <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>
+      {charts}
+    </div>
+  );
 };
 
 export default OverviewCharts;
