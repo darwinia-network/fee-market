@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { EMPTY, from, switchMap, forkJoin } from "rxjs";
 
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
+import type { ApiPromise } from "@polkadot/api";
 import type { Vec, u128, Option } from "@polkadot/types";
 import type { Balance, AccountId32 } from "@polkadot/types/interfaces";
 
-import { useApi } from "./api";
-import { useFeeMarket } from "./feemarket";
+import type { Market } from "@feemarket/app-provider";
 import { useGrapgQuery } from "./graphQuery";
 import { transformTotalOrdersOverview, transformFeeHistory, getFeeMarketApiSection } from "@feemarket/app-utils";
 import { FEE_MARKET_OVERVIEW, TOTAL_ORDERS_OVERVIEW, FEE_HISTORY } from "@feemarket/app-config";
@@ -18,10 +18,13 @@ import type {
   PalletFeeMarketRelayer,
 } from "@feemarket/app-types";
 
-export const useFeeMarketOverviewData = () => {
-  const { currentMarket, setRefresh } = useFeeMarket();
-  const { apiPolkadot } = useApi();
+interface Params {
+  currentMarket: Market | null;
+  apiPolkadot: ApiPromise | null;
+  setRefresh: (fn: () => void) => void;
+}
 
+export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefresh }: Params) => {
   const [totalRelayers, setTotalRelayers] = useState<{
     total: number | null | undefined;
     active: number | null | undefined;

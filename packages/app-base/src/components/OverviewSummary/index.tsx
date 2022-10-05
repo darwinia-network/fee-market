@@ -1,14 +1,74 @@
 import { useTranslation } from "react-i18next";
+import { formatDistanceStrict } from "date-fns";
+import { utils as ethersUtils } from "ethers";
+import type { BN } from "@polkadot/util";
+import type { Balance } from "@polkadot/types/interfaces";
+
 import localeKeys from "../../locale/localeKeys";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { useFeeMarketOverviewData } from "@feemarket/app-hooks";
+import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+
+const formatRelayers = (active?: number | null, total?: number | null): string => {
+  const a = active || active === 0 ? `${active}` : "-";
+  const t = total && total >= 0 ? `${total}` : "-";
+  return `${a} / ${t}`;
+};
+
+const formatSpeed = (speed?: number | null): string => {
+  if (speed || speed === 0) {
+    const now = Date.now();
+    const distance = formatDistanceStrict(now, now + speed).split(" ");
+    return `${distance[0]}${distance[1].slice(0, 1)}`;
+  }
+  return "-";
+};
+
+const formatCurrentFee = (fee?: BN | Balance | null, decimals?: number | null, symbol?: string | null): string => {
+  if (fee && decimals && symbol) {
+    return `${ethersUtils.commify(ethersUtils.formatUnits(fee.toString(), decimals).split(".")[0])} ${symbol}`;
+  }
+  return "-";
+};
+
+const formatRewards = (rewards?: BN | null, decimals?: number | null): string => {
+  if (rewards && decimals) {
+    return ethersUtils.commify(ethersUtils.formatUnits(rewards.toString(), decimals).split(".")[0]);
+  }
+  return "-";
+};
+
+const formatOrders = (orders?: number | null): string => {
+  if (orders) {
+    return ethersUtils.commify(orders);
+  }
+  return "-";
+};
 
 const OverviewSummary = () => {
   const { t } = useTranslation();
+  const { currentMarket, setRefresh } = useFeeMarket();
+  const { apiPolkadot } = useApi();
+  const { averageSpeed, totalOrders, totalRelayers, totalReward, currentFee } = useFeeMarketOverviewData({
+    apiPolkadot,
+    currentMarket,
+    setRefresh,
+  });
+
+  const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
+
   const summaryData = [
-    { title: t(localeKeys.totalRelayers), data: "105 / 105" },
-    { title: t(localeKeys.averageSpeed), data: "13s" },
-    { title: t(localeKeys.currentMessageFee), data: "25 RING" },
-    { title: t(localeKeys.totalRewards), data: "10,440" },
-    { title: t(localeKeys.totalOrders), data: "91,588" },
+    {
+      title: t(localeKeys.totalRelayers),
+      data: formatRelayers(totalRelayers.active, totalRelayers.total),
+    },
+    { title: t(localeKeys.averageSpeed), data: formatSpeed(averageSpeed.value) },
+    {
+      title: t(localeKeys.currentMessageFee),
+      data: formatCurrentFee(currentFee.value, nativeToken?.decimals, nativeToken?.symbol),
+    },
+    { title: t(localeKeys.totalRewards), data: formatRewards(totalReward.value, nativeToken?.decimals) },
+    { title: t(localeKeys.totalOrders), data: formatOrders(totalOrders.value) },
   ];
   const overview = summaryData.map((item, index) => {
     return (

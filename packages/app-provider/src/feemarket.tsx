@@ -1,12 +1,12 @@
 import type { FeeMarketPolkadotChain } from "@feemarket/app-types";
 import { createContext, PropsWithChildren, useState, useContext } from "react";
 
-interface Market {
+export interface Market {
   source: Extract<FeeMarketPolkadotChain, "Crab" | "Darwinia" | "Pangolin" | "Pangoro">;
   destination: FeeMarketPolkadotChain;
 }
 
-export interface FeeMarketCtx {
+interface FeeMarketCtx {
   currentMarket: Market | null;
   setCurrentMarket: (market: Market) => void;
   refresh: () => void;
@@ -20,7 +20,7 @@ const defaultValue: FeeMarketCtx = {
   setRefresh: () => undefined,
 };
 
-export const FeeMarketContext = createContext<FeeMarketCtx>(defaultValue);
+const FeeMarketContext = createContext<FeeMarketCtx>(defaultValue);
 
 export const FeeMarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [currentMarket, setCurrentMarket] = useState<Market | null>(null);
