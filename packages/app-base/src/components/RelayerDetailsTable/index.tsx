@@ -2,6 +2,7 @@ import { Column, PaginationProps, Table } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Order {
   id: string;
@@ -14,6 +15,7 @@ interface Order {
 
 const RelayerDetailsTable = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const columns: Column<Order>[] = [
     {
@@ -21,7 +23,16 @@ const RelayerDetailsTable = () => {
       key: "orderId",
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
-        return getOrderIdColumn(row);
+        return (
+          <div
+            onClick={() => {
+              onOrderIdClicked(row);
+            }}
+            className={"clickable text-primary text-14-bold"}
+          >
+            #{row.orderId}
+          </div>
+        );
       },
       width: "12.727%",
     },
@@ -50,6 +61,11 @@ const RelayerDetailsTable = () => {
       title: <div className={"capitalize"}>{t([localeKeys.time])}</div>,
     },
   ];
+
+  const onOrderIdClicked = (row: Order) => {
+    console.log(row);
+    // navigate()
+  };
 
   const [dataSource, setDataSource] = useState<Order[]>([
     {
@@ -114,10 +130,6 @@ const RelayerDetailsTable = () => {
       pagination={tablePagination}
     />
   );
-};
-
-const getOrderIdColumn = (row: Order) => {
-  return <div className={"text-primary text-14-bold"}>#{row.orderId}</div>;
 };
 
 const getRelayerRolesColumn = (row: Order) => {

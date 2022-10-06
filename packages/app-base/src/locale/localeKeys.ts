@@ -104,6 +104,23 @@ const localeKeys = {
   modifyCollateralBalance: "modifyCollateralBalance",
   yourCollateralBalance: "yourCollateralBalance",
   youModifyBalanceTo: "youModifyBalanceTo",
+  collateralBalanceTooltip: "collateralBalanceTooltip",
+  currentlyLockedTooltip: "currentlyLockedTooltip",
+  currentQuoteTooltip: "currentQuoteTooltip",
+  registerRelayerTooltip: "registerRelayerTooltip",
+  runBridgerTooltip: "runBridgerTooltip",
+  orderNumberDetails: "orderNumberDetails",
+  details: "details",
+  nonce: "nonce",
+  laneId: "laneId",
+  timestamp: "timestamp",
+  sourceTxID: "sourceTxID",
+  sender: "sender",
+  state: "state",
+  fee: "fee",
+  slotAt: "slotAt",
+  extrinsic: "extrinsic",
+  treasury: "treasury",
 };
 
 export default localeKeys;

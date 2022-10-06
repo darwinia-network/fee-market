@@ -2,7 +2,7 @@ import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useState } from "react";
-import { Button } from "@darwinia/ui";
+import { Button, Tooltip } from "@darwinia/ui";
 import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
@@ -14,7 +14,7 @@ interface AccountProps {
 
 const Account = ({ advanced = false }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(true);
+  const [isRegistered, setRegistered] = useState(false);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
@@ -90,9 +90,14 @@ const Account = ({ advanced = false }: AccountProps) => {
             plain={true}
           >
             <div>{t(localeKeys.runBridger)}</div>
-            <div className={"self-stretch pl-[0.375rem] flex"}>
+            <Tooltip
+              placement={"left"}
+              message={<div dangerouslySetInnerHTML={{ __html: t(localeKeys.runBridgerTooltip) }} />}
+              toolTipClassName={"!w-[16.75rem]"}
+              className={"self-stretch pl-[0.375rem] flex"}
+            >
               <img className={"w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
-            </div>
+            </Tooltip>
           </Button>
           {isRegistered ? (
             <Button
@@ -112,9 +117,14 @@ const Account = ({ advanced = false }: AccountProps) => {
               }
             >
               <div>{t(localeKeys.registerRelayer)}</div>
-              <div className={"self-stretch pl-[0.375rem] flex"}>
+              <Tooltip
+                placement={"left"}
+                message={<div dangerouslySetInnerHTML={{ __html: t(localeKeys.registerRelayerTooltip) }} />}
+                toolTipClassName={"!w-[16.75rem]"}
+                className={"self-stretch pl-[0.375rem] flex"}
+              >
                 <img className={"w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
-              </div>
+              </Tooltip>
             </Button>
           )}
         </div>

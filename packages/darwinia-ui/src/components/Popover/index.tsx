@@ -1,9 +1,10 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { usePopper } from "react-popper";
-import { Placement } from "@popperjs/core";
+import { Offsets, Placement } from "@popperjs/core";
 import { CSSTransition } from "react-transition-group";
 import "./style.scss";
+import * as React from "react";
 
 export type PopoverTriggerEvents = "click" | "hover";
 export interface PopoverReport {
@@ -16,7 +17,9 @@ export interface PopoverProps {
   triggerRef: HTMLElement | null;
   children: JSX.Element;
   onPopoverTrigger?: (report: PopoverReport) => void;
+  extendTriggerToPopover?: boolean;
   placement?: Placement;
+  offset?: [number, number];
 }
 
 /**
@@ -32,8 +35,10 @@ const Popover = ({
   triggerEvent = "click",
   onPopoverTrigger,
   placement = "bottom-end",
+  offset = [0, 10],
+  extendTriggerToPopover = false,
 }: PopoverProps) => {
-  const popperContentRef = useRef(null);
+  const popperContentRef = useRef<HTMLDivElement>(null);
   const [isPopoverVisible, setPopoverVisible] = useState(false);
   const [popoverRef, setPopoverRef] = useState<HTMLElement | null>(null);
   const [triggerRef, setTriggerRef] = useState<HTMLElement | null>(null);
@@ -43,7 +48,7 @@ const Popover = ({
       {
         name: "offset",
         options: {
-          offset: [0, 10],
+          offset: offset,
         },
       },
     ],
@@ -72,6 +77,19 @@ const Popover = ({
           reportPopoverEvent(false);
           setPopoverVisible(false);
         });
+        /* allow the mouse hover effect to go to the popover that way
+         * it won't close when the user hovers the popover */
+        if (extendTriggerToPopover) {
+          popoverRef?.addEventListener("mouseenter", (e) => {
+            e.stopPropagation();
+            setPopoverVisible(true);
+          });
+
+          popoverRef?.addEventListener("mouseleave", (e) => {
+            e.stopPropagation();
+            setPopoverVisible(false);
+          });
+        }
       } else {
         // only click is supported for now
         popoverTriggerRef.addEventListener(triggerEvent, (e) => {
@@ -94,10 +112,11 @@ const Popover = ({
         setPopoverVisible(false);
       });
     }
-  }, [popoverTriggerRef]);
+  }, [popoverTriggerRef, popoverRef]);
 
-  return createPortal(
+  const portalItem = createPortal(
     <div
+      tabIndex={1}
       onClick={(e) => {
         e.stopPropagation();
       }}
@@ -105,17 +124,23 @@ const Popover = ({
       style={styles.popper}
       {...attributes.popper}
     >
-      <CSSTransition
-        classNames={"popover"}
-        unmountOnExit={true}
-        timeout={300}
-        nodeRef={popperContentRef}
-        in={isPopoverVisible}
-      >
-        <div ref={popperContentRef}>{children}</div>
-      </CSSTransition>
+      <div className={"dw-popover-init"} ref={popperContentRef}>
+        {children}
+      </div>
     </div>,
     document.body
+  );
+
+  return (
+    <CSSTransition
+      classNames={"popover"}
+      unmountOnExit={true}
+      timeout={300}
+      nodeRef={popperContentRef}
+      in={isPopoverVisible}
+    >
+      <>{portalItem}</>
+    </CSSTransition>
   );
 };
 

@@ -1,6 +1,11 @@
 $scaleTransitionDuration: 200ms;
 $opacityTransitionDuration: 150ms;
 
+.dw-popover-init {
+  transform: scale3d(0, 0, 0);
+  opacity: 0;
+}
+
 [data-popper-placement*="bottom"],
 [data-popper-placement*="top"],
 [data-popper-placement*="left"],

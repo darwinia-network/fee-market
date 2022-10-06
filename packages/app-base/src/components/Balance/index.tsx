@@ -5,6 +5,7 @@ import editIcon from "../../assets/images/edit.svg";
 import ModifyQuoteModal from "../ModifyQuoteModal";
 import { useState } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
+import { Tooltip } from "@darwinia/ui";
 
 const Balance = () => {
   const { t } = useTranslation();
@@ -38,9 +39,13 @@ const Balance = () => {
         >
           <div className={"flex items-center"}>
             <div className={"text-14-bold"}>{t(localeKeys.collateralBalance)}</div>
-            <div className={"flex pl-[0.625rem]"}>
+            <Tooltip
+              placement={"right"}
+              message={<div dangerouslySetInnerHTML={{ __html: t(localeKeys.collateralBalanceTooltip) }} />}
+              className={"flex pl-[0.625rem]"}
+            >
               <img className={"clickable w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
-            </div>
+            </Tooltip>
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>4,300 RING</div>
@@ -53,9 +58,13 @@ const Balance = () => {
         <div className={"flex flex-1 flex-col gap-[0.625rem]"}>
           <div className={"flex items-center"}>
             <div className={"text-14-bold"}>{t(localeKeys.currentlyLocked)}</div>
-            <div className={"flex pl-[0.625rem]"}>
+            <Tooltip
+              placement={"right"}
+              message={<div dangerouslySetInnerHTML={{ __html: t(localeKeys.currentlyLockedTooltip) }} />}
+              className={"flex pl-[0.625rem]"}
+            >
               <img className={"clickable w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
-            </div>
+            </Tooltip>
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>130 RING</div>
@@ -67,9 +76,14 @@ const Balance = () => {
         <div className={"flex flex-1 flex-col gap-[0.625rem]"}>
           <div className={"flex items-center"}>
             <div className={"text-14-bold"}>{t(localeKeys.currentQuote)}</div>
-            <div className={"flex pl-[0.625rem]"}>
+            <Tooltip
+              placement={"left"}
+              message={<div dangerouslySetInnerHTML={{ __html: t(localeKeys.currentQuoteTooltip) }} />}
+              className={"flex pl-[0.625rem]"}
+              toolTipClassName={"!w-[16.75rem]"}
+            >
               <img className={"clickable w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
-            </div>
+            </Tooltip>
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>{t(localeKeys.quotePhrase, { amount: "55 RING" })}</div>

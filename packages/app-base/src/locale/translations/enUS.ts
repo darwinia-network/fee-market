@@ -106,6 +106,23 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.modifyCollateralBalance]: "Modify your Collateral Balance",
   [localeKeys.yourCollateralBalance]: "Your Collateral Balance",
   [localeKeys.youModifyBalanceTo]: "You’ll modify the Balance To",
+  [localeKeys.collateralBalanceTooltip]: `The collateral balance is the funds you have deposited in the Fee Market system. It comes from the funds you deposit and from the earnings you receive as you participate in the message relaying.<br/><br/><div>You can transfer or add to this balance using the modify button below.</div>`,
+  [localeKeys.currentlyLockedTooltip]: `The currently locked collateral is the funds that is temporarily locked in the system to ensure that your currently assigned message order is delivered on time. <br/><br/><div>If the order is delivered on time, the funds will be returned, otherwise it may be slashed.</div>`,
+  [localeKeys.currentQuoteTooltip]: `This is the price that you wish the users to pay for sending a cross-chain message. The system will consider the order assignment based on your quoted information. <br/><br/><div>You can modify it using the modify button below .</div>`,
+  [localeKeys.registerRelayerTooltip]: `registering in the current Fee Market system requires you to deposit a certain amount of collateral and to quote an order for relaying message. After registration, the system will assign you orders with reference to your collateral Balance and quotes.`,
+  [localeKeys.runBridgerTooltip]: `You need to Run a Relayer Client to Relay Message.`,
+  [localeKeys.orderNumberDetails]: `Order > #{{orderNumber}}`,
+  [localeKeys.details]: "details",
+  [localeKeys.nonce]: "nonce",
+  [localeKeys.laneId]: "laneID",
+  [localeKeys.timestamp]: "timestamp",
+  [localeKeys.sourceTxID]: "source TxID",
+  [localeKeys.sender]: "sender",
+  [localeKeys.state]: "state",
+  [localeKeys.fee]: "fee",
+  [localeKeys.slotAt]: "slot at",
+  [localeKeys.extrinsic]: "extrinsic",
+  [localeKeys.treasury]: "treasury",
 };
 
 export default enUs;

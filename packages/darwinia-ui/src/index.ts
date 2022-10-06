@@ -13,6 +13,8 @@ import Spinner from "./components/Spinner";
 import Select from "./components/Select";
 import ModalEnhanced from "./components/ModalEnhanced";
 import SlideDownUp from "./components/SlideDownUp";
+import Tooltip from "./components/Tooltip";
+import DatePicker from "./components/DatePicker";
 
 export {
   Button,
@@ -28,6 +30,8 @@ export {
   Select,
   ModalEnhanced,
   SlideDownUp,
+  Tooltip,
+  DatePicker,
 };
 
 /*Types*/

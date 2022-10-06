@@ -1,10 +1,11 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
+import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
+import { useNavigate } from "react-router-dom";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -24,6 +25,7 @@ interface Order {
 
 const OrdersTable = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [keywords, setKeywords] = useState("");
   const dropdownMaxHeight = 200;
   const timeDimensionOptions: OptionProps[] = [
@@ -40,44 +42,20 @@ const OrdersTable = () => {
   ];
   const [timeDimension, setTimeDimension] = useState<string>("block");
 
-  const labelStatusMap: LabelStatusMap = {
-    all: t(localeKeys.all),
-    inProgress: t(localeKeys.inProgress),
-    finished: t(localeKeys.finished),
-  };
-
-  const createStatusLabel = (status: Status) => {
-    if (status === "all") {
-      return <div>{labelStatusMap[status]}</div>;
-    }
-    let bg = "";
-    if (status === "finished") {
-      bg = "bg-success";
-    } else if (status === "inProgress") {
-      bg = "bg-warning";
-    }
-    return (
-      <div className={"flex gap-[0.525rem] items-center"}>
-        <div className={`w-[0.5rem] h-[0.5rem] rounded-full ${bg}`} />
-        <div>{labelStatusMap[status]}</div>
-      </div>
-    );
-  };
-
   const statusOptions: OptionProps[] = [
     {
       id: "1",
-      label: createStatusLabel("all"),
+      label: createStatusLabel("all", t),
       value: "all",
     },
     {
       id: "2",
-      label: createStatusLabel("finished"),
+      label: createStatusLabel("finished", t),
       value: "finished",
     },
     {
       id: "3",
-      label: createStatusLabel("inProgress"),
+      label: createStatusLabel("inProgress", t),
       value: "inProgress",
     },
   ];
@@ -148,6 +126,7 @@ const OrdersTable = () => {
 
   const onOrderNumberClicked = (row: Order) => {
     console.log("onOrderNumberClicked=====", row);
+    navigate(`/orders/details?orderId=${row.orderId}`);
   };
 
   const orderColumns: Column<Order>[] = [
@@ -224,7 +203,7 @@ const OrdersTable = () => {
       key: "status",
       title: t([localeKeys.status]),
       render: (row) => {
-        return createStatusLabel(row.status);
+        return createStatusLabel(row.status, t);
       },
       width: "11.6%",
     },
@@ -492,6 +471,30 @@ const OrdersTable = () => {
           pagination={tablePagination}
         />
       </div>
+    </div>
+  );
+};
+
+export const createStatusLabel = (status: Status, t: TFunction<"translation">) => {
+  const labelStatusMap: LabelStatusMap = {
+    all: t(localeKeys.all),
+    inProgress: t(localeKeys.inProgress),
+    finished: t(localeKeys.finished),
+  };
+
+  if (status === "all") {
+    return <div>{labelStatusMap[status]}</div>;
+  }
+  let bg = "";
+  if (status === "finished") {
+    bg = "bg-success";
+  } else if (status === "inProgress") {
+    bg = "bg-warning";
+  }
+  return (
+    <div className={"flex gap-[0.525rem] items-center"}>
+      <div className={`w-[0.5rem] h-[0.5rem] rounded-full ${bg}`} />
+      <div>{labelStatusMap[status]}</div>
     </div>
   );
 };
