@@ -135,7 +135,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
                 loading: false,
               });
             },
-            complete: () => setTotalRelayers({ total: 0, active: 0, loading: false }),
+            complete: () => setTotalRelayers((prev) => ({ ...prev, loading: false })),
             error: () => setTotalRelayers((prev) => ({ ...prev, loading: false })),
           });
       }
