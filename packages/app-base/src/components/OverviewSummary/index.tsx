@@ -11,7 +11,7 @@ import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 
 const formatRelayers = (active?: number | null, total?: number | null): string => {
   const a = active || active === 0 ? `${active}` : "-";
-  const t = total && total >= 0 ? `${total}` : "-";
+  const t = total || total == 0 ? `${total}` : "-";
   return `${a} / ${t}`;
 };
 
