@@ -1,6 +1,8 @@
-import type { ApiPromise } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import { providers } from "ethers";
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
+import { useFeeMarket } from "./feemarket";
+import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 
 export interface ApiCtx {
   apiPolkadot: ApiPromise | null;
@@ -15,11 +17,26 @@ const defaultValue: ApiCtx = {
 export const ApiContext = createContext<ApiCtx>(defaultValue);
 
 export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
+  const { currentMarket } = useFeeMarket();
   const [apiEth, setApiEth] = useState<providers.Web3Provider | null>(null);
   const [apiPolkadot, setApiPolkadot] = useState<ApiPromise | null>(null);
 
   useEffect(() => {
-    setApiEth(null);
+    if (currentMarket?.source) {
+      const provider = new WsProvider(POLKADOT_CHAIN_CONF[currentMarket.source].provider.rpc);
+      ApiPromise.create({ provider })
+        .then((api) => {
+          setApiPolkadot(api);
+        })
+        .catch((error) => {
+          console.error("Create polkadot api:", error);
+        });
+    } else {
+      setApiEth(null);
+    }
+  }, [currentMarket]);
+
+  useEffect(() => {
     setApiPolkadot(null);
   }, []);
 

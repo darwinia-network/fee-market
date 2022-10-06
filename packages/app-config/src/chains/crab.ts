@@ -5,7 +5,9 @@ const config: PolkadotChainConfig = {
   chainName: "Crab",
   displayName: "Crab Chain",
   chainLogo: CrabLogo,
-  rpcUrl: "https://crab-rpc.darwinia.network/",
+  provider: {
+    rpc: "wss://crab-rpc.darwinia.network",
+  },
   graphql: {
     endpoint: "https://subql.darwinia.network/subql-apps-crab/",
   },

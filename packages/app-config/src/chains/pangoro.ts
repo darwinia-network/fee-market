@@ -5,7 +5,9 @@ const config: PolkadotChainConfig = {
   chainName: "Pangoro",
   displayName: "Pangoro Chain",
   chainLogo: PangoroLogo,
-  rpcUrl: "https://pangoro-rpc.darwinia.network/",
+  provider: {
+    rpc: "wss://pangoro-rpc.darwinia.network",
+  },
   graphql: {
     endpoint: "https://subql.darwinia.network/subql-apps-pangoro/",
   },

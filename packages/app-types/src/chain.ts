@@ -30,9 +30,11 @@ export interface ChainConfig {
   chainName: FeeMarketChain;
   displayName: string;
   chainLogo: string;
-  rpcUrl: string;
   graphql: {
     endpoint: string;
+  };
+  provider: {
+    rpc: string;
   };
   nativeToken: {
     symbol: string;
