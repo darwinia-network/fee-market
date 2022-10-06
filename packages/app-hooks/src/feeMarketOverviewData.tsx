@@ -160,7 +160,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
               setCurrentFee({ loading: false, value: BN_ZERO });
             }
           },
-          complete: () => setCurrentFee({ value: BN_ZERO, loading: false }),
+          complete: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
           error: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
         });
       }
