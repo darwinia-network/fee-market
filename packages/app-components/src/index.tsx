@@ -1,1 +1,2 @@
-export const Component = () => <p>Component</p>;
+export * from "./OrdersCountChart";
+export * from "./FeeHistoryChart";

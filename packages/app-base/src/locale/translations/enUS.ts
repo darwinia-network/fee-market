@@ -32,7 +32,7 @@ const enUs = {
   [localeKeys.ordersCount]: "orders count",
   [localeKeys.days]: "{{daysNumber}}D",
   [localeKeys.all]: "all",
-  [localeKeys.freeHistory]: `free history <span style="text-transform: uppercase;">{{currency}}</span>`,
+  [localeKeys.freeHistory]: `free history (<span style="text-transform: uppercase;">{{currency}}</span>)`,
   [localeKeys.searchByRelayerAddress]: "search by relayer address",
   [localeKeys.allRelayers]: "all relayers",
   [localeKeys.assignedRelayers]: "assigned relayers",

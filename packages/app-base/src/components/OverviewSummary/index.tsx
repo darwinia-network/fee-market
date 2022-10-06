@@ -5,8 +5,7 @@ import type { BN } from "@polkadot/util";
 import type { Balance } from "@polkadot/types/interfaces";
 
 import localeKeys from "../../locale/localeKeys";
-import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { useFeeMarketOverviewData } from "@feemarket/app-hooks";
+import type { Market } from "@feemarket/app-provider";
 import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 
 const formatRelayers = (active?: number | null, total?: number | null): string => {
@@ -45,15 +44,40 @@ const formatOrders = (orders?: number | null): string => {
   return "-";
 };
 
-const OverviewSummary = () => {
+interface Props {
+  averageSpeed: {
+    value: number | null | undefined;
+    loading: boolean;
+  };
+  totalOrders: {
+    value: number | null | undefined;
+    loading: boolean;
+  };
+  totalRelayers: {
+    total: number | null | undefined;
+    active: number | null | undefined;
+    loading: boolean;
+  };
+  totalReward: {
+    value: BN | null | undefined;
+    loading: boolean;
+  };
+  currentFee: {
+    value: BN | Balance | null | undefined;
+    loading: boolean;
+  };
+  currentMarket: Market | null;
+}
+
+const OverviewSummary = ({
+  currentMarket,
+  averageSpeed,
+  totalOrders,
+  totalRelayers,
+  totalReward,
+  currentFee,
+}: Props) => {
   const { t } = useTranslation();
-  const { currentMarket, setRefresh } = useFeeMarket();
-  const { apiPolkadot } = useApi();
-  const { averageSpeed, totalOrders, totalRelayers, totalReward, currentFee } = useFeeMarketOverviewData({
-    apiPolkadot,
-    currentMarket,
-    setRefresh,
-  });
 
   const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
 

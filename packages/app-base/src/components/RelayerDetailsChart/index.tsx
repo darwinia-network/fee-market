@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import Chart from "../Chart";
+import Chart from "../Chart/index";
 
 const RelayerDetailsChart = () => {
   const { t } = useTranslation();
