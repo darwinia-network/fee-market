@@ -29,10 +29,10 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
     total: number | null | undefined;
     active: number | null | undefined;
     loading: boolean;
-  }>({ total: null, active: null, loading: true });
+  }>({ total: null, active: null, loading: false });
   const [currentFee, setCurrentFee] = useState<{ value: BN | Balance | null | undefined; loading: boolean }>({
     value: null,
-    loading: true,
+    loading: false,
   }); // Amount
 
   const {

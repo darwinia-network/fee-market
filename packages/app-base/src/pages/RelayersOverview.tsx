@@ -38,7 +38,7 @@ const RelayersOverview = () => {
 
   const { currentMarket, setRefresh } = useFeeMarket();
   const { apiPolkadot } = useApi();
-  const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, apiPolkadot, activeTabId, setRefresh });
+  const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, apiPolkadot, setRefresh });
 
   const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
 
@@ -71,19 +71,25 @@ const RelayersOverview = () => {
   const tabs: Tab[] = [
     {
       id: "1",
-      title: `${t([localeKeys.allRelayers])} (105)`,
+      title: `${t([localeKeys.allRelayers])} (${relayersOverviewData.allRelayersDataSource.length})`,
     },
     {
       id: "2",
-      title: `${t([localeKeys.assignedRelayers])} (3)`,
+      title: `${t([localeKeys.assignedRelayers])} (${relayersOverviewData.assignedRelayersDataSource.length})`,
     },
   ];
 
   const [dataSource, setDataSource] = useState<Relayer[]>([]);
 
   useEffect(() => {
-    setDataSource(relayersOverviewData.dataSource);
-  }, [relayersOverviewData.dataSource]);
+    if (activeTabId === "1") {
+      setDataSource(relayersOverviewData.allRelayersDataSource);
+    } else if (activeTabId === "2") {
+      setDataSource(relayersOverviewData.assignedRelayersDataSource);
+    } else {
+      setDataSource([]);
+    }
+  }, [relayersOverviewData, activeTabId]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

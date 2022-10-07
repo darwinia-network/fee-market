@@ -21,17 +21,21 @@ interface DataSource {
 }
 
 interface Params {
-  activeTabId: string;
   currentMarket: Market | null;
   apiPolkadot: ApiPromise | null;
   setRefresh: (fn: () => void) => void;
 }
 
-export const useRelayersOverviewData = ({ activeTabId, currentMarket, apiPolkadot, setRefresh }: Params) => {
+export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh }: Params) => {
   const apolloClient = useApolloClient();
-  const [relayersOverviewData, setRelayersOverviewData] = useState<{ dataSource: DataSource[]; loading: boolean }>({
-    dataSource: [],
-    loading: true,
+  const [relayersOverviewData, setRelayersOverviewData] = useState<{
+    allRelayersDataSource: DataSource[];
+    assignedRelayersDataSource: DataSource[];
+    loading: boolean;
+  }>({
+    allRelayersDataSource: [],
+    assignedRelayersDataSource: [],
+    loading: false,
   });
 
   const getRelayersOverviewData = useCallback(() => {
@@ -39,26 +43,36 @@ export const useRelayersOverviewData = ({ activeTabId, currentMarket, apiPolkado
       const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination);
 
       if (apiSection) {
-        const relayersObs =
-          activeTabId === "1"
-            ? from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32>>()).pipe(
-                switchMap((res) =>
-                  forkJoin(res.map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item)))
-                )
-              )
-            : from(apiPolkadot.query[apiSection].assignedRelayers<Option<Vec<PalletFeeMarketRelayer>>>()).pipe(
-                map((res) => (res.isSome ? res.unwrap().toArray() : []))
-              );
+        const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32>>()).pipe(
+          switchMap((res) =>
+            forkJoin(res.map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item)))
+          )
+        );
+        const assignedRelayersObs = from(
+          apiPolkadot.query[apiSection].assignedRelayers<Option<Vec<PalletFeeMarketRelayer>>>()
+        ).pipe(map((res) => (res.isSome ? res.unwrap().toArray() : [])));
 
         setRelayersOverviewData((prev) => ({ ...prev, loading: true }));
 
-        return relayersObs
+        return zip(allRelayersObs, assignedRelayersObs)
           .pipe(
-            switchMap((relayers) =>
+            switchMap(([allRelayers, assignedRelayers]) =>
               zip(
-                of(relayers),
+                of(allRelayers),
+                of(assignedRelayers),
                 forkJoin(
-                  relayers.map((relayer) =>
+                  allRelayers.map((relayer) =>
+                    apolloClient.query<
+                      { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
+                      { relayerId: string }
+                    >({
+                      query: RELAYER_OVERVIEW,
+                      variables: { relayerId: `${currentMarket.destination}-${relayer.id.toString()}` },
+                    })
+                  )
+                ),
+                forkJoin(
+                  assignedRelayers.map((relayer) =>
                     apolloClient.query<
                       { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
                       { relayerId: string }
@@ -71,10 +85,22 @@ export const useRelayersOverviewData = ({ activeTabId, currentMarket, apiPolkado
               )
             )
           )
-          .subscribe(([relayers, res]) => {
+          .subscribe(([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
             setRelayersOverviewData({
-              dataSource: res.map(({ data }, index) => {
-                const relayer = relayers[index];
+              allRelayersDataSource: allRelayersData.map(({ data }, index) => {
+                const relayer = allRelayers[index];
+                return {
+                  id: `${index}`,
+                  relayer: relayer.id.toString(),
+                  count: data.relayer?.totalOrders || 0,
+                  collateral: relayer.collateral,
+                  quote: relayer.fee,
+                  reward: bnToBn(data.relayer?.totalRewards),
+                  slash: bnToBn(data.relayer?.totalSlashes),
+                };
+              }),
+              assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
+                const relayer = assignedRelayers[index];
                 return {
                   id: `${index}`,
                   relayer: relayer.id.toString(),
@@ -91,9 +117,9 @@ export const useRelayersOverviewData = ({ activeTabId, currentMarket, apiPolkado
       }
     }
 
-    setRelayersOverviewData({ dataSource: [], loading: false });
+    setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
     return EMPTY.subscribe();
-  }, [apiPolkadot, currentMarket?.destination, activeTabId]);
+  }, [apiPolkadot, currentMarket?.destination]);
 
   useEffect(() => {
     const sub$$ = getRelayersOverviewData();
