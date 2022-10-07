@@ -2,13 +2,15 @@ import { useEffect, useState, useRef } from "react";
 import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 
-export const FeeHistoryChart = ({
+export const RewardAndSlashChart = ({
   title,
-  data,
+  rewardData,
+  slashData,
   loading,
 }: {
   title: string;
-  data: [number, number][];
+  rewardData: [number, number][];
+  slashData: [number, number][];
   loading?: boolean;
 }) => {
   const [options, setOptions] = useState<Highcharts.Options>({});
@@ -27,14 +29,6 @@ export const FeeHistoryChart = ({
     lineHeight: "16px",
     opacity: 1,
   };
-
-  useEffect(() => {
-    if (loading) {
-      chartComponentRef.current?.chart.showLoading();
-    } else {
-      chartComponentRef.current?.chart.hideLoading();
-    }
-  }, [loading]);
 
   useEffect(() => {
     setOptions({
@@ -60,10 +54,16 @@ export const FeeHistoryChart = ({
       },
       series: [
         {
-          type: "line",
-          name: "Fee",
-          color: mainColor,
-          data: [...data],
+          type: "column",
+          name: "Reward",
+          color: "rgba(255,0,131,1)",
+          data: [...rewardData],
+        },
+        {
+          type: "column",
+          name: "Slash",
+          color: "rgba(255,0,131,0.5)",
+          data: [...slashData],
         },
       ],
       tooltip: {
@@ -150,15 +150,22 @@ export const FeeHistoryChart = ({
         selected: 0,
       },
     });
-  }, [title, data]);
+  }, [title, rewardData, slashData]);
+
+  useEffect(() => {
+    if (loading) {
+      chartComponentRef.current?.chart.showLoading();
+    } else {
+      chartComponentRef.current?.chart.hideLoading();
+    }
+  }, [loading]);
 
   return (
     <HighchartsReact
       highcharts={Highcharts}
       options={options}
-      ref={chartComponentRef}
       constructorType="stockChart"
-      containerProps={{ className: "h-[21rem] w-full rounded-[0.625rem] bg-blackSecondary" }}
+      containerProps={{ className: "h-[21rem] w-full rounded-[0.625rem]" }}
     />
   );
 };

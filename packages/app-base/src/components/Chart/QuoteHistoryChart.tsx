@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 
-export const FeeHistoryChart = ({
+export const QuoteHistoryChart = ({
   title,
   data,
   loading,
@@ -61,7 +61,7 @@ export const FeeHistoryChart = ({
       series: [
         {
           type: "line",
-          name: "Fee",
+          name: "Quote",
           color: mainColor,
           data: [...data],
         },
@@ -158,7 +158,7 @@ export const FeeHistoryChart = ({
       options={options}
       ref={chartComponentRef}
       constructorType="stockChart"
-      containerProps={{ className: "h-[21rem] w-full rounded-[0.625rem] bg-blackSecondary" }}
+      containerProps={{ className: "h-[21rem] w-full rounded-[0.625rem]" }}
     />
   );
 };

@@ -1,27 +1,33 @@
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import Chart from "../Chart/index";
 
-const RelayerDetailsChart = () => {
+import type { Market } from "@feemarket/app-provider";
+import { RewardAndSlashChart } from "../Chart/RewardAndSlashChart";
+import { QuoteHistoryChart } from "../Chart/QuoteHistoryChart";
+import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+
+interface Props {
+  currentMarket: Market | null;
+  rewardsData: [number, number][];
+  slashesData: [number, number][];
+  quoteHistoryData: [number, number][];
+}
+
+const RelayerDetailsChart = ({ currentMarket, rewardsData, slashesData, quoteHistoryData }: Props) => {
   const { t } = useTranslation();
-  const chartsData = [
-    {
-      title: t(localeKeys.rewardsOrSlash, { currency: "ring" }),
-      timeRange: [t(localeKeys.days, { daysNumber: 7 }), t(localeKeys.days, { daysNumber: 30 }), t(localeKeys.all)],
-    },
-    {
-      title: t(localeKeys.quoteHistory, { currency: "ring" }),
-      timeRange: [t(localeKeys.days, { daysNumber: 7 }), t(localeKeys.days, { daysNumber: 30 }), t(localeKeys.all)],
-    },
-  ];
-
-  const charts = chartsData.map((item, index) => {
-    return <Chart key={index} title={item.title} timeRange={item.timeRange} />;
-  });
+  const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
 
   return (
     <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>
-      {charts}
+      <RewardAndSlashChart
+        title={t(localeKeys.rewardsOrSlash, { currency: nativeToken?.symbol || "-" })}
+        rewardData={rewardsData}
+        slashData={slashesData}
+      />
+      <QuoteHistoryChart
+        title={t(localeKeys.quoteHistory, { currency: nativeToken?.symbol || "-" })}
+        data={quoteHistoryData}
+      />
     </div>
   );
 };
