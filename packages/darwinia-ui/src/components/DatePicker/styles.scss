@@ -1,1 +1,121 @@
 @import "../../assets/styles/common";
+
+.dw-date-picker {
+  border: 1px solid var(--halfWhite);
+  border-radius: var(--borderRadius5px);
+  padding: var(--10px);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  background-color: var(--blackSecondary);
+
+  .dw-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--divider);
+    padding-bottom: var(--10px);
+
+    .dw-date-summary {
+      @extend .dw-text-14-bold;
+
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      gap: var(--15px);
+    }
+
+    .dw-calendar-btn {
+      width: var(--24px);
+      height: var(--24px);
+      border-radius: 50%;
+      padding: 2.5px;
+
+      img {
+        width: 100%;
+      }
+    }
+  }
+
+  .dw-calendar-week {
+    display: flex;
+
+    .dw-week-day-wrapper {
+      flex: 1;
+      text-align: center;
+      padding: var(--10px) 0;
+    }
+  }
+
+  .dw-dates-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
+
+    .dw-week-wrapper {
+      display: flex;
+      flex: 1;
+
+      .dw-day-wrapper {
+        display: flex;
+        flex: 1;
+
+        &.dw-date-in-range {
+          background-color: rgb(3 148 255 / 50%);
+        }
+
+        &.dw-start-date,
+        &.dw-start-week-selected-date {
+          border-bottom-left-radius: 50%;
+          border-top-left-radius: 50%;
+        }
+
+        &.dw-end-date,
+        &.dw-end-week-selected-date {
+          border-bottom-right-radius: 50%;
+          border-top-right-radius: 50%;
+        }
+      }
+
+      .dw-day-square {
+        width: 100%;
+        padding-bottom: 100%;
+        position: relative;
+
+        .dw-day-label {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          border: 1px solid rgb(255 255 255 / 0%);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 3;
+
+          &.dw-calendar-today {
+            border-color: var(--halfWhite);
+          }
+
+          &.dw-not-this-month {
+            color: var(--halfWhite);
+          }
+
+          &:hover {
+            border-color: var(--link);
+            cursor: default;
+          }
+
+          &.dw-start-selected-date {
+            border-color: var(--link);
+            background-color: var(--link);
+          }
+        }
+      }
+    }
+  }
+}

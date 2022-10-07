@@ -23,10 +23,10 @@ const Tooltip = ({
   extendTriggerToPopover = false,
   ...rest
 }: TooltipProps) => {
-  const [triggerRef, setTriggerRef] = useState<HTMLDivElement | null>(null);
+  const [triggerElementState, setTriggerElement] = useState<HTMLDivElement | null>(null);
   return (
     <>
-      <div ref={setTriggerRef} {...rest} className={className}>
+      <div ref={setTriggerElement} {...rest} className={className}>
         {children}
       </div>
       <Popover
@@ -34,7 +34,7 @@ const Tooltip = ({
         offset={offset}
         triggerEvent={triggerEvent}
         placement={placement}
-        triggerRef={triggerRef}
+        triggerElementState={triggerElementState}
       >
         <div className={`dw-tooltip ${toolTipClassName}`}>{message}</div>
       </Popover>

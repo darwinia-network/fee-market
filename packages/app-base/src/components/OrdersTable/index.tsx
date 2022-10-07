@@ -6,6 +6,7 @@ import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate } from "react-router-dom";
+import DatePickerFakeInput from "../DatePickerFakeInput";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -353,29 +354,7 @@ const OrdersTable = () => {
             </div>
 
             {/*Date*/}
-            <div className={"flex flex-col gap-[0.625rem]"}>
-              <div className={"text-12"}>{t(localeKeys.date)}</div>
-              <div className={"flex gap-[0.625rem]"}>
-                <div className={"flex-1"}>
-                  <Select
-                    className={"text-12-bold"}
-                    dropdownClassName={"text-12-bold"}
-                    value={status}
-                    onChange={onStatusChanged}
-                    options={statusOptions}
-                  />
-                </div>
-                <div className={"flex-1"}>
-                  <Select
-                    className={"text-12-bold"}
-                    dropdownClassName={"text-12-bold"}
-                    value={status}
-                    onChange={onStatusChanged}
-                    options={statusOptions}
-                  />
-                </div>
-              </div>
-            </div>
+            <DatePickerFakeInput />
 
             {/*Status*/}
             <div className={"flex flex-col gap-[0.625rem]"}>
@@ -424,16 +403,10 @@ const OrdersTable = () => {
           </div>
         </div>
         {/*date*/}
-        <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
-          <div>{t(localeKeys.date)}</div>
-          <div className={"w-[8rem]"}>
-            <Input className={"h-[1.5625rem]"} leftIcon={null} placeholder={t(localeKeys.startDate)} />
-          </div>
-          <div>{t(localeKeys.to)}</div>
-          <div className={"w-[8rem]"}>
-            <Input className={"h-[1.5625rem]"} leftIcon={null} placeholder={t(localeKeys.endDate)} />
-          </div>
+        <div className={"shrink-0"}>
+          <DatePickerFakeInput />
         </div>
+
         {/*status*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
           <div>{t(localeKeys.status)}</div>

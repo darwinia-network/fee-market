@@ -14,7 +14,7 @@ export interface PopoverReport {
 
 export interface PopoverProps {
   triggerEvent?: PopoverTriggerEvents;
-  triggerRef: HTMLElement | null;
+  triggerElementState: HTMLElement | null;
   children: JSX.Element;
   onPopoverTrigger?: (report: PopoverReport) => void;
   extendTriggerToPopover?: boolean;
@@ -23,21 +23,22 @@ export interface PopoverProps {
 }
 
 /**
- *  IMPORTANT: triggerRef MUST be a functional component state NOT a ref so as
+ *  IMPORTANT: triggerElementState MUST be a functional component state NOT a ref so as
  *  to trigger a component rebuild eg: const [testRef, setTestRef] = useState<HTMLElement | null>(null);
  *  setTestRef will be hooked into the trigger's ref ie: ref={setTestRef} and the
- *  testRef will be added to triggerRef = {testRef}
+ *  testRef will be added to triggerElementState = {testRef}
  *  */
 
 const Popover = ({
   children,
-  triggerRef: popoverTriggerRef,
+  triggerElementState: popoverTriggerRef,
   triggerEvent = "click",
   onPopoverTrigger,
   placement = "bottom-end",
   offset = [0, 10],
   extendTriggerToPopover = false,
 }: PopoverProps) => {
+  const isTriggerEventListenerBind = useRef(false);
   const popperContentRef = useRef<HTMLDivElement>(null);
   const [isPopoverVisible, setPopoverVisible] = useState(false);
   const [popoverRef, setPopoverRef] = useState<HTMLElement | null>(null);
@@ -65,6 +66,10 @@ const Popover = ({
 
   useEffect(() => {
     if (popoverTriggerRef) {
+      if (isTriggerEventListenerBind.current) {
+        return;
+      }
+      isTriggerEventListenerBind.current = true;
       setTriggerRef(popoverTriggerRef);
       if (triggerEvent === "hover") {
         popoverTriggerRef.addEventListener("mouseenter", (e) => {
