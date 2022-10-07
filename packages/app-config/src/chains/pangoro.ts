@@ -15,6 +15,9 @@ const config: PolkadotChainConfig = {
     symbol: "ORING",
     decimals: 9,
   },
+  explorer: {
+    url: "https://pangoro.subscan.io/",
+  },
 };
 
 export default config;

@@ -15,6 +15,9 @@ const config: PolkadotChainConfig = {
     symbol: "PRING",
     decimals: 9,
   },
+  explorer: {
+    url: "https://pangolin.subscan.io/",
+  },
 };
 
 export default config;

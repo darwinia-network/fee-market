@@ -10,6 +10,7 @@ import type { BN } from "@polkadot/util";
 import type { Balance } from "@polkadot/types/interfaces";
 import { utils as ethersUtils } from "ethers";
 import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 
 const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
   if (decimals) {
@@ -40,7 +41,9 @@ const RelayersOverview = () => {
   const { apiPolkadot } = useApi();
   const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, apiPolkadot, setRefresh });
 
-  const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
+  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
+    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+    : null;
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);

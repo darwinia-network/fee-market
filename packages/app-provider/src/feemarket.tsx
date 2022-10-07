@@ -1,9 +1,9 @@
-import type { FeeMarketPolkadotChain } from "@feemarket/app-types";
+import type { FeeMarketChain, FeeMarketSourceChan } from "@feemarket/app-types";
 import { createContext, PropsWithChildren, useState, useContext } from "react";
 
 export interface Market {
-  source: Extract<FeeMarketPolkadotChain, "Crab" | "Darwinia" | "Pangolin" | "Pangoro">;
-  destination: FeeMarketPolkadotChain;
+  source: FeeMarketSourceChan;
+  destination: FeeMarketChain;
 }
 
 interface FeeMarketCtx {

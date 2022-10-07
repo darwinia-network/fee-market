@@ -15,6 +15,9 @@ const config: PolkadotChainConfig = {
     symbol: "RING",
     decimals: 9,
   },
+  explorer: {
+    url: "https://darwinia.subscan.io/",
+  },
 };
 
 export default config;

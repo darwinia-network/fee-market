@@ -15,6 +15,9 @@ const config: PolkadotChainConfig = {
     symbol: "CRAB",
     decimals: 9,
   },
+  explorer: {
+    url: "https://crab.subscan.io/",
+  },
 };
 
 export default config;

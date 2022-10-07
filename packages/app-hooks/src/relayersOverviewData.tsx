@@ -2,7 +2,7 @@ import type { ApiPromise } from "@polkadot/api";
 import type { Vec, Option } from "@polkadot/types";
 import type { AccountId32, Balance } from "@polkadot/types/interfaces";
 import type { Market } from "@feemarket/app-provider";
-import type { PalletFeeMarketRelayer, RelayerEntity } from "@feemarket/app-types";
+import type { PalletFeeMarketRelayer, RelayerEntity, FeeMarketPolkadotChain } from "@feemarket/app-types";
 import { getFeeMarketApiSection } from "@feemarket/app-utils";
 import { useCallback, useEffect, useState } from "react";
 import { EMPTY, from, switchMap, forkJoin, map, zip, of } from "rxjs";
@@ -40,7 +40,7 @@ export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh
 
   const getRelayersOverviewData = useCallback(() => {
     if (apiPolkadot && currentMarket?.destination) {
-      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination);
+      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
 
       if (apiSection) {
         const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32>>()).pipe(

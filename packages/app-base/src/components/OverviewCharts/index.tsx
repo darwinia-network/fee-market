@@ -4,6 +4,7 @@ import localeKeys from "../../locale/localeKeys";
 import { OrdersCountChart } from "../Chart/OrdersCountChart";
 import { FeeHistoryChart } from "../Chart/FeeHistoryChart";
 import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 
 interface Props {
   currentMarket: Market | null;
@@ -14,7 +15,9 @@ interface Props {
 const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryData }: Props) => {
   const { t } = useTranslation();
 
-  const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
+  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
+    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+    : null;
 
   return (
     <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>

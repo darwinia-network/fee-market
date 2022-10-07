@@ -1,19 +1,33 @@
-// specName
-export type FeeMarketPolkadotChain =
-  | "Crab"
-  | "Darwinia"
-  | "Pangolin"
-  | "Pangoro"
-  | "Crab Parachain"
-  | "Darwinia Parachain"
-  | "Pangolin Parachain";
+// Customized
+export const ALL_FEE_MARKET_ETH_CHAINS = [
+  "Goerli",
+  "Ethereum",
+  "Crab Smart Chain",
+  "Darwinia Smart Chain",
+  "Pangolin Smart Chain",
+  "Pangoro Smart Chain",
+] as const;
 
-export type FeeMarketEthChain =
-  | "Ethereum"
-  | "Crab Smart Chain"
-  | "Darwinia Smart Chain"
-  | "Pangolin Smart Chain"
-  | "Pangoro Smart Chain";
+// Substrate specName
+export const ALL_FEE_MARKET_POLKADOT_CHAINS = [
+  "Crab",
+  "Darwinia",
+  "Pangolin",
+  "Pangoro",
+  "Crab Parachain",
+  "Darwinia Parachain",
+  "Pangolin Parachain",
+] as const;
+
+export type FeeMarketEthChain = typeof ALL_FEE_MARKET_ETH_CHAINS[number];
+export type FeeMarketPolkadotChain = typeof ALL_FEE_MARKET_POLKADOT_CHAINS[number];
+
+export type FeeMarketSourceChainEth = Extract<FeeMarketEthChain, "Goerli">;
+export type FeeMarketSourceChainPolkadot = Extract<
+  FeeMarketPolkadotChain,
+  "Crab" | "Darwinia" | "Pangolin" | "Pangoro"
+>;
+export type FeeMarketSourceChan = FeeMarketSourceChainEth | FeeMarketSourceChainPolkadot;
 
 export type FeeMarketChain = FeeMarketPolkadotChain | FeeMarketEthChain;
 
@@ -33,26 +47,23 @@ export interface ChainConfig {
   graphql: {
     endpoint: string;
   };
-  provider: {
-    rpc: string;
-  };
   nativeToken: {
     symbol: string;
     decimals: number;
+  };
+  explorer: {
+    url: string;
   };
 }
 
 export interface PolkadotChainConfig extends ChainConfig {
   chainName: FeeMarketPolkadotChain;
+  provider: {
+    rpc: string;
+  };
 }
 
 export interface EthChainConfig extends ChainConfig {
   chainId: ChainID;
   chainName: FeeMarketEthChain;
-  nativeCurrency: {
-    name: string;
-    symbol: string; // 2-6 characters long
-    decimals: 18;
-  };
-  blockExplorerUrls?: string[];
 }

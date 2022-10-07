@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 
 import type { Market } from "@feemarket/app-provider";
+import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { RewardAndSlashChart } from "../Chart/RewardAndSlashChart";
 import { QuoteHistoryChart } from "../Chart/QuoteHistoryChart";
 import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
@@ -15,7 +16,9 @@ interface Props {
 
 const RelayerDetailsChart = ({ currentMarket, rewardsData, slashesData, quoteHistoryData }: Props) => {
   const { t } = useTranslation();
-  const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
+  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
+    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+    : null;
 
   return (
     <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>

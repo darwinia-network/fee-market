@@ -16,6 +16,7 @@ import type {
   OrderEntity,
   FeeEntity,
   PalletFeeMarketRelayer,
+  FeeMarketChain,
 } from "@feemarket/app-types";
 
 interface Params {
@@ -41,7 +42,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
     loading: speedTotalOrdersAndRewardLoading,
   } = useGrapgQuery<
     { market: Pick<MarketEntity, "averageSpeed" | "totalOrders" | "totalReward"> | null },
-    { destination: FeeMarketPolkadotChain | undefined }
+    { destination: FeeMarketChain | undefined }
   >(FEE_MARKET_OVERVIEW, {
     variables: {
       destination: currentMarket?.destination,
@@ -75,7 +76,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
 
   const { transformedData: marketOrdersHistory, refetch: updateMarketOrdersHistory } = useGrapgQuery<
     { orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null },
-    { destination: FeeMarketPolkadotChain | undefined },
+    { destination: FeeMarketChain | undefined },
     [number, number][]
   >(
     TOTAL_ORDERS_OVERVIEW,
@@ -89,7 +90,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
 
   const { transformedData: marketFeeHistory, refetch: updateMarketFeeHistory } = useGrapgQuery<
     { feeHistory: Pick<FeeEntity, "data"> | null },
-    { destination: FeeMarketPolkadotChain | undefined },
+    { destination: FeeMarketChain | undefined },
     [number, number][]
   >(
     FEE_HISTORY,
@@ -103,7 +104,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
 
   const updateTotalRelayers = useCallback(() => {
     if (apiPolkadot && currentMarket?.destination) {
-      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination);
+      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
 
       if (apiSection) {
         setTotalRelayers((prev) => ({ ...prev, loading: true }));
@@ -136,17 +137,19 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
               });
             },
             complete: () => setTotalRelayers((prev) => ({ ...prev, loading: false })),
-            error: () => setTotalRelayers((prev) => ({ ...prev, loading: false })),
+            error: () => setTotalRelayers({ active: null, total: null, loading: false }),
           });
       }
     }
+
+    setTotalRelayers({ active: null, total: null, loading: false });
 
     return EMPTY.subscribe();
   }, [apiPolkadot, currentMarket]);
 
   const updateCurrentFee = useCallback(() => {
     if (apiPolkadot && currentMarket?.destination) {
-      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination);
+      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
 
       if (apiSection) {
         setCurrentFee((prev) => ({ ...prev, loading: true }));
@@ -161,10 +164,12 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
             }
           },
           complete: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
-          error: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
+          error: () => setCurrentFee({ value: null, loading: false }),
         });
       }
     }
+
+    setCurrentFee({ value: null, loading: false });
 
     return EMPTY.subscribe();
   }, [apiPolkadot, currentMarket?.destination]);

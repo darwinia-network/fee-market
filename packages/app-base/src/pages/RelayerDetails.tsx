@@ -3,6 +3,7 @@ import RelayerDetailsChart from "../components/RelayerDetailsChart";
 import RelayerDetailsTable from "../components/RelayerDetailsTable";
 import RelayerDetailsSummary from "../components/RelayerDetailsSummary";
 
+import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { useFeeMarket } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
@@ -17,7 +18,9 @@ const RelayerDetails = () => {
     setRefresh,
   });
 
-  const nativeToken = currentMarket?.source ? POLKADOT_CHAIN_CONF[currentMarket.source].nativeToken : null;
+  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
+    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+    : null;
 
   return (
     <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>

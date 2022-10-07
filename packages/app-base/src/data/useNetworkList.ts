@@ -6,6 +6,7 @@ import darwiniaLogo from "../assets/images/darwinia-icon.svg";
 import crabLogo from "../assets/images/crab-icon.svg";
 import pangolinLogo from "../assets/images/pangolin-icon.svg";
 import pangoroLogo from "../assets/images/pangoro-icon.svg";
+import ethereumLogo from "../assets/images/ethereum-icon.svg";
 
 const useNetworkList = () => {
   const { t } = useTranslation();
@@ -69,6 +70,17 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
           {
             id: "Pangolin",
             name: t(localeKeys.pangolinChain),
+          },
+        ],
+      },
+      {
+        id: "Goerli",
+        name: t(localeKeys.goerli),
+        logo: ethereumLogo,
+        destinations: [
+          {
+            id: "Pangoro Smart Chain",
+            name: t(localeKeys.pangoroSmartChain),
           },
         ],
       },
