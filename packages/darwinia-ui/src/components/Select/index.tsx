@@ -157,8 +157,8 @@ const Select = ({
     setSelectOptionsJSX(someOptions);
   }, [optionsList, selectedValues]);
 
-  const onDropdownClicked = (e: MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation();
+  const onDropdownClicked = () => {
+    // e.stopPropagation();
     setDropdownVisibility((isVisible) => !isVisible);
   };
 
@@ -171,8 +171,8 @@ const Select = ({
   return (
     <div tabIndex={0} onBlur={onDropdownBlurred} className={`dw-select-wrapper ${size}`}>
       <div
-        onClick={(e) => {
-          onDropdownClicked(e);
+        onClick={() => {
+          onDropdownClicked();
         }}
         style={{ ...style }}
         className={`dw-select ${className}`}

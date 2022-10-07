@@ -121,12 +121,11 @@ const Popover = ({
 
   const portalItem = createPortal(
     <div
-      tabIndex={1}
       onClick={(e) => {
         e.stopPropagation();
       }}
       ref={setPopoverRef}
-      style={styles.popper}
+      style={{ zIndex: 2000, ...styles.popper }}
       {...attributes.popper}
     >
       <div className={"dw-popover-init"} ref={popperContentRef}>
