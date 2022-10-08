@@ -1,15 +1,12 @@
 import ConnectWallet from "../components/ConnectWallet";
-import { useState } from "react";
 import Dashboard from "../components/RelayerDashboard";
 
+import { useApi } from "@feemarket/app-provider";
+
 const RelayerDashboard = () => {
-  const [isWalletConnected, setWalletConnected] = useState(false);
+  const { accounts, requestAccounts } = useApi();
 
-  const onWalletConnected = () => {
-    setWalletConnected(true);
-  };
-
-  return <>{isWalletConnected ? <Dashboard /> : <ConnectWallet onConnected={onWalletConnected} />}</>;
+  return <>{accounts !== null ? <Dashboard /> : <ConnectWallet onConnected={requestAccounts} />}</>;
 };
 
 export default RelayerDashboard;

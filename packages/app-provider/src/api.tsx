@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { providers } from "ethers";
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { useFeeMarket } from "./feemarket";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
@@ -10,12 +10,16 @@ export interface ApiCtx {
   apiPolkadot: ApiPromise | null;
   apiEth: providers.Web3Provider | null;
   api: providers.Web3Provider | ApiPromise | null;
+  accounts: string[] | null;
+  requestAccounts: () => Promise<void>;
 }
 
 const defaultValue: ApiCtx = {
   api: null,
   apiEth: null,
   apiPolkadot: null,
+  accounts: null,
+  requestAccounts: async () => undefined,
 };
 
 export const ApiContext = createContext<ApiCtx>(defaultValue);
@@ -25,11 +29,33 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [apiEth, setApiEth] = useState<providers.Web3Provider | null>(null);
   const [apiPolkadot, setApiPolkadot] = useState<ApiPromise | null>(null);
   const [api, setApi] = useState<providers.Web3Provider | ApiPromise | null>(null);
+  const [accounts, setAccounts] = useState<string[] | null>(null);
+
+  const requestAccounts = useCallback(async () => {
+    if (isEthApi(api)) {
+      setAccounts(await api.send("eth_requestAccounts", []));
+    } else if (isPolkadotApi(api)) {
+      // TODO
+      setAccounts([]);
+    } else {
+      setAccounts(null);
+    }
+  }, [api]);
 
   useEffect(() => {
     if (currentMarket?.source) {
       if (ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]) {
-        setApi(new providers.Web3Provider(window.ethereum));
+        if (typeof window.ethereum !== "undefined") {
+          setApi(new providers.Web3Provider(window.ethereum));
+
+          window.ethereum.on("chainChanged", () => {
+            setApi(new providers.Web3Provider(window.ethereum));
+          });
+
+          window.ethereum.on("accountsChanged", (accs: string[]) => {
+            setAccounts(accs);
+          });
+        }
       } else if (POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]) {
         const provider = new WsProvider(
           POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot].provider.rpc
@@ -46,6 +72,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     } else {
       setApi(null);
       setApiEth(null);
+      setApiPolkadot(null);
     }
   }, [currentMarket]);
 
@@ -59,26 +86,14 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     }
   }, [currentMarket?.source]);
 
-  useEffect(() => {
-    if (isEthApi(api)) {
-      console.log("api: eth");
-    } else if (isPolkadotApi(api)) {
-      console.log("api: polkadot");
-    } else {
-      console.log("api: unknown");
-    }
-  }, [api]);
-
-  useEffect(() => {
-    setApiPolkadot(null);
-  }, []);
-
   return (
     <ApiContext.Provider
       value={{
         api,
         apiEth,
         apiPolkadot,
+        accounts,
+        requestAccounts,
       }}
     >
       {children}
