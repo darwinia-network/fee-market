@@ -1,24 +1,24 @@
 import type { EthChainConfig } from "@feemarket/app-types";
 import { ChainID } from "@feemarket/app-types";
-import chainLogo from "../images/network/ethereum.svg";
+import chainLogo from "../images/network/darwinia.svg";
 import contractInterface from "../abi/eth.json";
 
 const config: EthChainConfig = {
-  chainId: ChainID.GOERLI,
-  chainName: "Goerli",
-  displayName: "Goerli Testnet",
+  chainId: ChainID.DARWINIA_SMART_CHAIN,
+  chainName: "Darwinia Smart Chain",
+  displayName: "Darwinia Smart Chain",
   chainLogo,
   graphql: {
     endpoint: "",
   },
   nativeToken: {
-    symbol: "GoerliETH",
+    symbol: "RING",
     decimals: 18,
   },
   explorer: {
-    url: "https://goerli.etherscan.io/",
+    url: "https://darwinia.subscan.io/",
   },
-  contractAddress: "0xdb5E16A6E25ABF29dbe26e701D1DDCad03180E92",
+  contractAddress: "0xcA927Df15afb7629b79dA4713a871190315c7409",
   contractInterface,
 };
 

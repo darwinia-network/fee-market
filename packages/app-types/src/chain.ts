@@ -1,3 +1,5 @@
+import type { ContractInterface } from "ethers";
+
 // Customized
 export const ALL_FEE_MARKET_ETH_CHAINS = [
   "Goerli",
@@ -22,7 +24,10 @@ export const ALL_FEE_MARKET_POLKADOT_CHAINS = [
 export type FeeMarketEthChain = typeof ALL_FEE_MARKET_ETH_CHAINS[number];
 export type FeeMarketPolkadotChain = typeof ALL_FEE_MARKET_POLKADOT_CHAINS[number];
 
-export type FeeMarketSourceChainEth = Extract<FeeMarketEthChain, "Goerli">;
+export type FeeMarketSourceChainEth = Extract<
+  FeeMarketEthChain,
+  "Goerli" | "Pangoro Smart Chain" | "Ethereum" | "Darwinia Smart Chain"
+>;
 export type FeeMarketSourceChainPolkadot = Extract<
   FeeMarketPolkadotChain,
   "Crab" | "Darwinia" | "Pangolin" | "Pangoro"
@@ -66,4 +71,6 @@ export interface PolkadotChainConfig extends ChainConfig {
 export interface EthChainConfig extends ChainConfig {
   chainId: ChainID;
   chainName: FeeMarketEthChain;
+  contractAddress: string;
+  contractInterface: ContractInterface;
 }

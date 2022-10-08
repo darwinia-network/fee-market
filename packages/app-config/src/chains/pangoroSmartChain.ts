@@ -1,24 +1,24 @@
 import type { EthChainConfig } from "@feemarket/app-types";
 import { ChainID } from "@feemarket/app-types";
-import chainLogo from "../images/network/ethereum.svg";
+import chainLogo from "../images/network/pangoro.svg";
 import contractInterface from "../abi/eth.json";
 
 const config: EthChainConfig = {
-  chainId: ChainID.GOERLI,
-  chainName: "Goerli",
-  displayName: "Goerli Testnet",
+  chainId: ChainID.PANGORO_SMART_CHAIN,
+  chainName: "Pangoro Smart Chain",
+  displayName: "Pangoro Smart Chain",
   chainLogo,
   graphql: {
     endpoint: "",
   },
   nativeToken: {
-    symbol: "GoerliETH",
+    symbol: "ORING",
     decimals: 18,
   },
   explorer: {
-    url: "https://goerli.etherscan.io/",
+    url: "https://pangoro.subscan.io/",
   },
-  contractAddress: "0xdb5E16A6E25ABF29dbe26e701D1DDCad03180E92",
+  contractAddress: "0x25ee4212CfA2DC29E6a5e4A857b9656E439259c9",
   contractInterface,
 };
 
