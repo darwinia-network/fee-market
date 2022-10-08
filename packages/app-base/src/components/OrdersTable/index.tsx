@@ -5,8 +5,9 @@ import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react"
 import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
+import { UrlSearchParamsKey } from "@feemarket/app-types";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -17,6 +18,8 @@ type LabelStatusMap = {
 interface Order {
   id: string;
   orderId: string;
+  lane: string;
+  nonce: string;
   deliveryRelayer: string;
   confirmationRelayer: string;
   createdAt: string;
@@ -32,6 +35,7 @@ interface Props {
 const OrdersTable = ({ ordersTableData }: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [keywords, setKeywords] = useState("");
   const dropdownMaxHeight = 200;
   const timeDimensionOptions: OptionProps[] = [
@@ -132,7 +136,10 @@ const OrdersTable = ({ ordersTableData }: Props) => {
 
   const onOrderNumberClicked = (row: Order) => {
     console.log("onOrderNumberClicked=====", row);
-    navigate(`/orders/details?orderId=${row.orderId}`);
+    const urlSearchParams = new URLSearchParams();
+    urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
+    urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
+    navigate(`${pathname}/details?${urlSearchParams.toString()}`);
   };
 
   const orderColumns: Column<Order>[] = [

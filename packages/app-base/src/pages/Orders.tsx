@@ -25,11 +25,13 @@ const Orders = () => {
       <OrdersTable
         ordersTableLoading={ordersTableLoading}
         ordersTableData={(ordersTableData?.orders?.nodes || [])
-          .sort((a, b) => a.createBlockNumber - b.createBlockNumber)
+          .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
           .map((node, index) => {
             return {
               id: index.toString(),
               orderId: node.nonce,
+              lane: node.lane,
+              nonce: node.nonce,
               deliveryRelayer: node.deliveryRelayers?.nodes.length
                 ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
                 : "-",

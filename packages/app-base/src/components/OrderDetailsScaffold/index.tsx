@@ -10,6 +10,10 @@ interface OrderDetailsProps {
 }
 
 const OrderDetailsScaffold = ({ data, title }: OrderDetailsProps) => {
+  if (data.length === 0) {
+    return null;
+  }
+
   return (
     <div className={"bg-blackSecondary card"}>
       <div className={"text-18-bold pb-[0.9375rem]"}>{title}</div>
