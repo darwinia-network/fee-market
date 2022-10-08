@@ -4,9 +4,11 @@ import Dashboard from "../components/RelayerDashboard";
 import { useApi } from "@feemarket/app-provider";
 
 const RelayerDashboard = () => {
-  const { accounts, requestAccounts } = useApi();
+  const { api, accounts, requestAccounts } = useApi();
 
-  return <>{accounts !== null ? <Dashboard /> : <ConnectWallet onConnected={requestAccounts} />}</>;
+  return (
+    <>{accounts !== null ? <Dashboard /> : <ConnectWallet loading={api === null} onConnected={requestAccounts} />}</>
+  );
 };
 
 export default RelayerDashboard;
