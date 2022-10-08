@@ -3,7 +3,7 @@ import logoIcon from "../../assets/images/logo.svg";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { Drawer, Modal } from "@darwinia/ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
