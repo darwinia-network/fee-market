@@ -7,9 +7,27 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useState } from "react";
 
+import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { useFeeMarket } from "@feemarket/app-provider";
+import { useRelayersDetailData } from "@feemarket/app-hooks";
+
+const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
+
 const RelayerDashboard = () => {
   const { t } = useTranslation();
+  const { currentMarket, setRefresh } = useFeeMarket();
+  const { rewardAndSlashData, quoteHistoryData, relayerRelatedOrdersData } = useRelayersDetailData({
+    relayerAddress,
+    currentMarket,
+    setRefresh,
+  });
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
+
+  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
+    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+    : null;
+
   const onSwitchNetwork = () => {
     console.log("switch network====");
     onShowNotification();
@@ -51,12 +69,21 @@ const RelayerDashboard = () => {
       </div>
       {/*Charts*/}
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <RelayerDetailsChart />
+        <RelayerDetailsChart
+          currentMarket={currentMarket}
+          rewardsData={rewardAndSlashData?.rewards || []}
+          slashesData={rewardAndSlashData?.slashs || []}
+          quoteHistoryData={quoteHistoryData || []}
+        />
       </div>
 
       {/*Relayer Orders table*/}
       <div>
-        <RelayerDetailsTable />
+        <RelayerDetailsTable
+          relatedOrdersData={relayerRelatedOrdersData}
+          tokenSymbol={nativeToken?.symbol}
+          tokenDecimals={nativeToken?.decimals}
+        />
       </div>
     </div>
   );
