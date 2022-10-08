@@ -1,7 +1,7 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, FormEvent, useCallback, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
@@ -24,7 +24,12 @@ interface Order {
   status: Status;
 }
 
-const OrdersTable = () => {
+interface Props {
+  ordersTableLoading?: boolean;
+  ordersTableData: Order[];
+}
+
+const OrdersTable = ({ ordersTableData }: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [keywords, setKeywords] = useState("");
@@ -210,7 +215,7 @@ const OrdersTable = () => {
     },
   ];
 
-  const [orderDataSource] = useState<Order[]>([
+  const [orderDataSource, setOrderDataSource] = useState<Order[]>([
     {
       id: "1",
       orderId: "14234",
@@ -275,6 +280,10 @@ const OrdersTable = () => {
       status: "finished",
     },
   ]);
+
+  useEffect(() => {
+    setOrderDataSource(ordersTableData);
+  }, [ordersTableData]);
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
