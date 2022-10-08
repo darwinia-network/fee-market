@@ -1,4 +1,5 @@
 import Root from "./Root";
+import { FeeMarketProvider, GraphqlProvider, ApiProvider } from "@feemarket/app-provider";
 
 /* WEIRD BUG FIX 🐛🔧
  * For some reasons the App component rejects all React's hooks,
@@ -7,7 +8,15 @@ import Root from "./Root";
  * component
  * */
 const App = () => {
-  return <Root />;
+  return (
+    <FeeMarketProvider>
+      <GraphqlProvider>
+        <ApiProvider>
+          <Root />
+        </ApiProvider>
+      </GraphqlProvider>
+    </FeeMarketProvider>
+  );
 };
 
 export default App;

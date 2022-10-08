@@ -29,3 +29,9 @@ export interface RelayerOrdersDataSource extends Pick<OrderEntity, "lane" | "non
 export interface SlashReward extends Pick<SlashEntity, "amount" | "relayerRole"> {
   order: Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> | null;
 }
+
+export enum UrlSearchParamsKey {
+  FROM = "from",
+  TO = "to",
+  ID = "id",
+}

@@ -1,5 +1,8 @@
+import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { FeeMarketChain, FeeMarketSourceChan } from "@feemarket/app-types";
-import { createContext, PropsWithChildren, useState, useContext } from "react";
+import { createContext, PropsWithChildren, useState, useContext, useCallback, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 
 export interface Market {
   source: FeeMarketSourceChan;
@@ -23,8 +26,41 @@ const defaultValue: FeeMarketCtx = {
 const FeeMarketContext = createContext<FeeMarketCtx>(defaultValue);
 
 export const FeeMarketProvider = ({ children }: PropsWithChildren<unknown>) => {
-  const [currentMarket, setCurrentMarket] = useState<Market | null>(null);
+  const navigate = useNavigate();
+  const { search, pathname } = useLocation();
+  const [currentMarket, _setCurrentMarket] = useState<Market | null>(null);
   const [refresh, setRefresh] = useState<() => void>(() => () => undefined);
+
+  const setCurrentMarket = useCallback(
+    (market: Market | null) => {
+      _setCurrentMarket(market);
+
+      const urlSearchParams = new URLSearchParams(search);
+
+      if (market) {
+        urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[market.source]);
+        urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[market.destination]);
+      } else {
+        urlSearchParams.delete(UrlSearchParamsKey.FROM);
+        urlSearchParams.delete(UrlSearchParamsKey.TO);
+      }
+
+      if (urlSearchParams.toString().length) {
+        navigate(`${pathname}?${urlSearchParams.toString()}`);
+      }
+    },
+    [search, navigate]
+  );
+
+  useEffect(() => {
+    const urlSearchParams = new URLSearchParams(search);
+    const source = urlSearchParams.get(UrlSearchParamsKey.FROM) as FeeMarketSourceChan;
+    const destination = urlSearchParams.get(UrlSearchParamsKey.TO) as FeeMarketChain;
+
+    if (source && destination) {
+      _setCurrentMarket({ source, destination });
+    }
+  }, [search]);
 
   return (
     <FeeMarketContext.Provider

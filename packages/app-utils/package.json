@@ -16,6 +16,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-node-resolve": "^14.1.0",
+    "@types/lodash": "^4.14.186",
     "rollup": "^2.79.1",
     "rollup-plugin-typescript2": "^0.34.0",
     "tslib": "^2.4.0",
@@ -27,6 +28,7 @@
     "@feemarket/app-types": "^1.0.0",
     "date-fns": "^2.29.3",
     "ethers": "^5.7.1",
-    "graphql": "^16.6.0"
+    "graphql": "^16.6.0",
+    "lodash": "^4.17.21"
   }
 }
