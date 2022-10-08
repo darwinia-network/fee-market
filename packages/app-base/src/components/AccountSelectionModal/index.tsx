@@ -72,7 +72,7 @@ const AccountSelectionModal = ({ isVisible, onClose }: AccountSelectionModalProp
     const accountBorder = isSelected ? "border-primary" : "border-white";
     return (
       <div
-        className={`flex gap-[1.25rem] border ${accountBorder} rounded-[0.3125rem] px-[1.25rem] py-[0.625rem]`}
+        className={`cursor-pointer clickable flex gap-[1.25rem] border ${accountBorder} rounded-[0.3125rem] px-[1.25rem] py-[0.625rem]`}
         key={item.id}
         onClick={() => {
           onAccountSelect(item);
@@ -83,7 +83,7 @@ const AccountSelectionModal = ({ isVisible, onClose }: AccountSelectionModalProp
         </div>
         <div className={"flex flex-col gap-[0.3125rem]"}>
           <div className={"text-18-bold"}>{item.name}</div>
-          <div className={"text-18-bold"}>{item.account}</div>
+          <div className={"text-14"}>{item.account}</div>
           <div className={"text-12 text-halfWhite"}>{item.balance}</div>
         </div>
       </div>

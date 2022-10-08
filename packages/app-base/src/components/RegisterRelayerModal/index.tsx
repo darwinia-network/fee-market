@@ -32,7 +32,7 @@ const RegisterRelayerModal = ({ isVisible, onClose }: RegisterRelayerModalProps)
 
   const onRegister = () => {
     if (deposit === "") {
-      setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: "15 RING" })));
+      setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: "6,000 RING" })));
       return;
     }
 
@@ -83,7 +83,9 @@ const RegisterRelayerModal = ({ isVisible, onClose }: RegisterRelayerModalProps)
             onChange={onDepositChanged}
             rightSlot={<div className={"text-14-bold flex items-center px-[0.625rem]"}>RING</div>}
           />
-          <div className={"text-12 text-halfWhite"}>{t(localeKeys.youDepositInfo, { amount: "6,000 RING" })}</div>
+          {!depositError && (
+            <div className={"text-12 text-halfWhite"}>{t(localeKeys.youDepositInfo, { amount: "6,000 RING" })}</div>
+          )}
         </div>
 
         {/*Your quote*/}

@@ -52,9 +52,9 @@ const RelayerDashboard = () => {
               "card flex flex-col lg:flex-row lg:justify-between bg-danger gap-[0.9375rem] px-[0.9375rem] py-[1.125rem]"
             }
           >
-            <div className={"flex-1"}>{t(localeKeys.switchAccountNotice)}</div>
+            <div className={"flex-1 flex items-center"}>{t(localeKeys.switchAccountNotice)}</div>
             <div>
-              <Button onClick={onSwitchNetwork} className={"bg-white text-danger"}>
+              <Button onClick={onSwitchNetwork} className={"bg-white text-danger lg:h-[1.875rem] h-[2.5rem]"}>
                 {t(localeKeys.switchNetwork)}
               </Button>
             </div>

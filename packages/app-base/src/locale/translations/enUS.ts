@@ -90,7 +90,7 @@ const enUs = {
   [localeKeys.register]: "register",
   [localeKeys.account]: "account",
   [localeKeys.youDeposit]: `you'll deposit`,
-  [localeKeys.youDepositInfo]: `The collateral Balance should be greater than {{amount}}`,
+  [localeKeys.youDepositInfo]: `The collateral Balance should be greater than {{amount}}.`,
   [localeKeys.youQuote]: `you'll quote`,
   [localeKeys.quoteAmountLimitError]: `The quote amount should be greater than {{amount}}.`,
   [localeKeys.perOrder]: `{{currency}}/Order`,
