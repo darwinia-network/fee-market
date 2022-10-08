@@ -261,7 +261,7 @@ const getSlotsDiagram = (slots: Slot[], t: TFunction<"translation">) => {
                         <div className={"text-12-bold text-primary"}>{slot.relayer}</div>
                       </div>
                     }
-                    className={"cursor-pointer absolute h-[1.75rem] w-[2px] bg-white -top-[1.9075rem]"}
+                    className={"cursor-default absolute h-[1.75rem] w-[2px] bg-white -top-[1.9075rem]"}
                   >
                     <div
                       className={"absolute w-[0.875rem] h-[0.875rem] bg-primary -left-[0.375rem] top-0 rounded-full"}

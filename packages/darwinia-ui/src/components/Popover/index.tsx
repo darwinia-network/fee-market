@@ -66,6 +66,20 @@ const Popover = ({
 
   useEffect(() => {
     if (popoverTriggerRef) {
+      /* allow the mouse hover effect to go to the popover that way
+       * it won't close when the user hovers the popover */
+      if (extendTriggerToPopover && triggerEvent === "hover") {
+        popoverRef?.addEventListener("mouseenter", (e) => {
+          e.stopPropagation();
+          setPopoverVisible(true);
+        });
+
+        popoverRef?.addEventListener("mouseleave", (e) => {
+          e.stopPropagation();
+          setPopoverVisible(false);
+        });
+      }
+
       if (isTriggerEventListenerBind.current) {
         return;
       }
@@ -82,19 +96,6 @@ const Popover = ({
           reportPopoverEvent(false);
           setPopoverVisible(false);
         });
-        /* allow the mouse hover effect to go to the popover that way
-         * it won't close when the user hovers the popover */
-        if (extendTriggerToPopover) {
-          popoverRef?.addEventListener("mouseenter", (e) => {
-            e.stopPropagation();
-            setPopoverVisible(true);
-          });
-
-          popoverRef?.addEventListener("mouseleave", (e) => {
-            e.stopPropagation();
-            setPopoverVisible(false);
-          });
-        }
       } else {
         // only click is supported for now
         popoverTriggerRef.addEventListener(triggerEvent, (e) => {
@@ -122,6 +123,8 @@ const Popover = ({
   const portalItem = createPortal(
     <div
       onClick={(e) => {
+        /*Make sure that clicking inside the popover won't be propagated to the document
+         * that way the whole popover won't be closed*/
         e.stopPropagation();
       }}
       ref={setPopoverRef}
