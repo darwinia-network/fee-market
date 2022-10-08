@@ -2,7 +2,7 @@ import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { FeeMarketChain, FeeMarketSourceChan } from "@feemarket/app-types";
 import { createContext, PropsWithChildren, useState, useContext, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
+import { MAPPING_CHAIN_2_URL_SEARCH_PARAM, MAPPING_URL_SEARCH_PARAM_2_CHAIN } from "@feemarket/app-config";
 
 export interface Market {
   source: FeeMarketSourceChan;
@@ -53,14 +53,17 @@ export const FeeMarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   );
 
   useEffect(() => {
-    const urlSearchParams = new URLSearchParams(search);
-    const source = urlSearchParams.get(UrlSearchParamsKey.FROM) as FeeMarketSourceChan;
-    const destination = urlSearchParams.get(UrlSearchParamsKey.TO) as FeeMarketChain;
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const source = urlSearchParams.get(UrlSearchParamsKey.FROM);
+    const destination = urlSearchParams.get(UrlSearchParamsKey.TO);
 
     if (source && destination) {
-      _setCurrentMarket({ source, destination });
+      _setCurrentMarket({
+        source: MAPPING_URL_SEARCH_PARAM_2_CHAIN[source] as FeeMarketSourceChan,
+        destination: MAPPING_URL_SEARCH_PARAM_2_CHAIN[destination],
+      });
     }
-  }, [search]);
+  }, []);
 
   return (
     <FeeMarketContext.Provider
