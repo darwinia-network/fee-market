@@ -1,7 +1,16 @@
+@import "../../assets/styles/common";
+
 $opacityTransitionDuration: 300ms;
 $opacityEase: cubic-bezier(0.645, 0.045, 0.355, 1);
 $translateTransitionDuration: 300ms;
 $scaleEase: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+.modal-content {
+  position: relative;
+  z-index: 56;
+  width: 92%;
+  max-width: 35rem;
+}
 
 .dw-modal-enter {
   opacity: 0;

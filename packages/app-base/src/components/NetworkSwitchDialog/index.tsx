@@ -217,7 +217,7 @@ const DestinationList = ({ network, selectedDestination, onDestinationChanged, s
           {network.destinations.map((destination) => {
             return (
               <Radio.Button className={"mt-[0.9375rem]"} key={destination.id} value={destination.id} size={"small"}>
-                {t([localeKeys.to], { destinationName: destination.name })}
+                {t([localeKeys.toDestination], { destinationName: destination.name })}
               </Radio.Button>
             );
           })}

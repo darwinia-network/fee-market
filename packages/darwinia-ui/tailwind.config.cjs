@@ -12,7 +12,7 @@ module.exports = {
       halfWhite: "rgba(255, 255, 255, 0.5)",
       divider: "rgba(255, 255, 255, 0.2)",
       link: "#0094FF",
-      danger: "#FF4B4B",
+      danger: "#FF2D20",
       success:"#42FF00",
       warning: "#FFB732",
     },

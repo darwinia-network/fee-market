@@ -30,7 +30,7 @@ const Header = ({ title }: Props) => {
   const { setCurrentMarket } = useFeeMarket();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
-  const [popperTriggerRef, setPopperTriggerRef] = useState<HTMLElement | null>(null);
+  const [popperTriggerElement, setPopperTriggerElement] = useState<HTMLElement | null>(null);
   const { networkList } = useNetworkList();
   const defaultNetworkType: keyof NetworkOption = "liveNets";
   const [networkSelectionBtnText, setNetworkSelectionBtnText] = useState<{ from: string; to: string }>({
@@ -183,7 +183,7 @@ const Header = ({ title }: Props) => {
       {/*PC Page title, this content will be fixed to the top*/}
       <div className={"hidden lg:flex items-center h-full px-[1.875rem] justify-between"}>
         <div className={"page-title"}>{title}</div>
-        <div ref={setPopperTriggerRef}>
+        <div ref={setPopperTriggerElement}>
           {/* Don't bind an onClick event here since the onclick event is already implemented in the
           Popover component */}
           <NetworkSwitchButton
@@ -193,7 +193,7 @@ const Header = ({ title }: Props) => {
           />
         </div>
 
-        <Popover triggerEvent={"click"} triggerRef={popperTriggerRef}>
+        <Popover triggerEvent={"click"} triggerElementState={popperTriggerElement}>
           <div>
             <NetworkSwitchDialog
               transferSelection={transferSelection}

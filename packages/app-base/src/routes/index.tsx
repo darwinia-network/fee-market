@@ -50,6 +50,10 @@ const browserRouter = createHashRouter([
         path: "orders",
         element: <LazyLoader componentFileName={"Orders"} />,
       },
+      {
+        path: "orders/details",
+        element: <LazyLoader componentFileName={"OrderDetails"} />,
+      },
     ],
   },
   {

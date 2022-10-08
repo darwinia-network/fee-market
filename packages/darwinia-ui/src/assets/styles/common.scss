@@ -7,6 +7,12 @@
   line-height: var(--15px);
 }
 
+.dw-text-10-bold {
+  font-family: DW-JetBrainsMono-Bold;
+  font-size: var(--10px);
+  line-height: var(--15px);
+}
+
 .dw-text-12 {
   font-family: DW-JetBrainsMono-Light;
   font-size: var(--12px);
@@ -41,4 +47,17 @@
   font-family: DW-JetBrainsMono-Bold;
   font-size: var(--24px);
   line-height: var(--32px);
+}
+
+.clickable {
+  user-select: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
 }

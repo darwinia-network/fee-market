@@ -9,6 +9,7 @@ import { Spinner } from "@darwinia/ui";
 
 const Root = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [pageTitle, setPageTitle] = useState("");
   const pagesPathTitleMap = {
     "/": t(localeKeys.overview),
@@ -16,8 +17,13 @@ const Root = () => {
     "/relayer-dashboard": t(localeKeys.relayerDashboard),
     "/orders": t(localeKeys.orders),
     "/relayers-overview/details": t(localeKeys.relayerDetails),
+    "/orders/details": () => {
+      const params = new URLSearchParams(location.search);
+      const orderId = params.get("orderId") ?? "";
+      return t(localeKeys.orderNumberDetails, { orderNumber: orderId });
+    },
   };
-  const location = useLocation();
+
   useEffect(() => {
     const pathname = location.pathname as keyof typeof pagesPathTitleMap;
     setPageTitle(pagesPathTitleMap[pathname] ?? t(localeKeys.overview));

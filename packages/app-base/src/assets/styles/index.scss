@@ -66,6 +66,10 @@ a {
     @apply hover:opacity-80 active:opacity-50 select-none cursor-pointer box-border;
   }
 
+  .card {
+    @apply bg-blackSecondary p-[0.9375rem] lg:p-[1.875rem] rounded-[0.625rem] box-border;
+  }
+
   body {
     @apply font-[JetBrainsMono-Light] text-[0.875rem] leading-[1.375rem] leading-[1.5rem] capitalize text-white;
   }

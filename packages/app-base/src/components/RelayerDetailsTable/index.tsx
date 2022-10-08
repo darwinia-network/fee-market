@@ -2,6 +2,7 @@ import { Column, PaginationProps, Table } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { utils as ethersUtils } from "ethers";
 import type { BN } from "@polkadot/util";
@@ -31,6 +32,7 @@ interface Props {
 
 const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: Props) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const columns: Column<Order>[] = [
     {
@@ -38,7 +40,16 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       key: "orderId",
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
-        return getOrderIdColumn(row);
+        return (
+          <div
+            onClick={() => {
+              onOrderIdClicked(row);
+            }}
+            className={"clickable text-primary text-14-bold"}
+          >
+            #{row.orderId}
+          </div>
+        );
       },
       width: "12.727%",
     },
@@ -67,6 +78,11 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       title: <div className={"capitalize"}>{t([localeKeys.time])}</div>,
     },
   ];
+
+  const onOrderIdClicked = (row: Order) => {
+    console.log(row);
+    // navigate()
+  };
 
   const [dataSource, setDataSource] = useState<Order[]>([
     {
@@ -133,7 +149,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
   });
 
   const getTableTitle = () => {
-    return <div>{t(localeKeys.relatedOrders)}</div>;
+    return <div className={"pb-[0.9375rem]"}>{t(localeKeys.relatedOrders)}</div>;
   };
 
   return (
@@ -146,10 +162,6 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       pagination={tablePagination}
     />
   );
-};
-
-const getOrderIdColumn = (row: Order) => {
-  return <div className={"text-primary text-14-bold"}>#{row.orderId}</div>;
 };
 
 const RoleOrderMapping: Record<string, number> = {
