@@ -32,6 +32,7 @@ jobs:
           vercel_token: ${{ secrets.VERCEL_TOKEN }}
           vercel_group: itering
           preview_output: true
+          alias_domain: feemarket-stg
           project_name: feemarket
           dist_path: packages/app-base/dist
           script_run: false
