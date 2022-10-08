@@ -1,12 +1,14 @@
 import { DetailedHTMLProps, InputHTMLAttributes } from "react";
 import searchIcon from "../../assets/images/search.svg";
+import { Placeholder } from "../../types";
 
 export interface InputProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
   leftIcon?: JSX.Element | null;
-  placeholder?: string;
+  placeholder?: Placeholder;
   clearButton?: JSX.Element;
   onClear?: () => void;
   rightSlot?: JSX.Element;
+  error?: JSX.Element | null;
 }
 
 const Input = ({
@@ -19,6 +21,7 @@ const Input = ({
   placeholder = "",
   autoComplete = "off",
   type = "text",
+  error,
   ...rest
 }: InputProps) => {
   const hasCustomLeftIcon = typeof leftIcon !== "undefined";
@@ -30,54 +33,59 @@ const Input = ({
     : "rounded-[0.3125rem]";
 
   return (
-    <div className={"flex w-full"}>
-      <div className={"flex-1"}>
-        <div
-          style={{ ...style }}
-          className={`px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite ${inputWrapperClass} ${className}`}
-        >
-          {/*left icon*/}
-          {hasCustomLeftIcon ? (
-            leftIcon && <Icon icon={leftIcon} />
-          ) : (
-            <Icon icon={<img alt="image" src={searchIcon} />} />
-          )}
-          {/*Input field*/}
-          <input
-            className={
-              "placeholder:capitalize placeholder-white block w-full flex-1 py-[0.4375rem] border-none bg-[transparent] outline-none focus:outline-none appearance-none"
-            }
-            type={type}
-            autoComplete={autoComplete}
-            {...rest}
-            placeholder={placeholder}
-          />
-          {/*clear icon*/}
-          {clearButton && (
-            <div
-              onClick={() => {
-                if (onClear) {
-                  onClear();
-                }
-              }}
-            >
-              <Icon icon={clearButton} />
-            </div>
-          )}
-        </div>
-      </div>
-      {/*right slot*/}
-      {rightSlot && (
-        <div className={"flex shrink-0"}>
+    <div className={`flex flex-col gap-[0.625rem] ${error ? "!text-danger" : ""}`}>
+      <div className={"flex w-full"}>
+        <div className={"flex-1"}>
           <div
-            className={
-              "flex flex-1 bg-blackSecondary border border-halfWhite border-l-0 rounded-[0.3125rem] rounded-tl-none rounded-bl-none"
-            }
+            style={{ ...style }}
+            className={`px-[0.625rem] h-[2.5rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite ${
+              error ? "!border-danger" : ""
+            } ${inputWrapperClass} ${className}`}
           >
-            {rightSlot}
+            {/*left icon*/}
+            {hasCustomLeftIcon ? (
+              leftIcon && <Icon icon={leftIcon} />
+            ) : (
+              <Icon icon={<img alt="image" src={searchIcon} />} />
+            )}
+            {/*Input field*/}
+            <input
+              className={
+                "placeholder:capitalize self-stretch placeholder-white block w-full flex-1 border-none bg-[transparent] outline-none focus:outline-none appearance-none"
+              }
+              type={type}
+              autoComplete={autoComplete}
+              {...rest}
+              placeholder={placeholder}
+            />
+            {/*clear icon*/}
+            {clearButton && (
+              <div
+                onClick={() => {
+                  if (onClear) {
+                    onClear();
+                  }
+                }}
+              >
+                <Icon icon={clearButton} />
+              </div>
+            )}
           </div>
         </div>
-      )}
+        {/*right slot*/}
+        {rightSlot && (
+          <div className={"flex shrink-0"}>
+            <div
+              className={`flex flex-1 bg-blackSecondary border border-halfWhite border-l-0 rounded-[0.3125rem] rounded-tl-none rounded-bl-none ${
+                error ? "border-danger" : ""
+              }`}
+            >
+              {rightSlot}
+            </div>
+          </div>
+        )}
+      </div>
+      {error && <div className={"text-12-bold"}>{error}</div>}
     </div>
   );
 };

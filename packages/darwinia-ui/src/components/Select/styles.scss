@@ -1,0 +1,125 @@
+@import "../../assets/styles/common";
+$scaleDuration: 300ms;
+$opacityDuration: 300ms;
+
+.dw-select-wrapper {
+  @extend .dw-text-14-bold;
+
+  position: relative;
+
+  .dw-select {
+    background-color: var(--blackSecondary);
+    min-height: var(--40px);
+    border-radius: var(--borderRadius5px);
+    border: var(--border1px);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--10px);
+    gap: var(--10px);
+    user-select: none;
+    cursor: default;
+
+    .dw-selected-value {
+      flex: 1;
+
+      @include ellipsis;
+
+      &.dw-multi-selections {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--5px);
+        padding: var(--5px) 0;
+      }
+
+      .dw-single-selection {
+        border: 1px solid var(--halfWhite);
+        padding: 3px 8px;
+        border-radius: var(--borderRadius5px);
+      }
+    }
+
+    .dw-caret {
+      width: var(--16px);
+      height: var(--16px);
+      align-self: center;
+    }
+  }
+
+  &.small {
+    @extend .dw-text-12-bold;
+
+    .dw-select {
+      min-height: var(--26px);
+    }
+  }
+
+  .dw-select-options-wrapper {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    background-color: var(--blackSecondary);
+    z-index: 9;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--borderRadius5px);
+    border: var(--border1px);
+    margin-top: var(--5px);
+
+    .dw-select-options * {
+      @include ellipsis;
+    }
+  }
+
+  .dw-drop-down-enter {
+    transform: scale3d(1, 0.8, 1);
+    opacity: 0;
+  }
+
+  .dw-drop-down-enter-active {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+    transition: transform $scaleDuration ease-in-out, opacity $opacityDuration ease-in-out;
+    transform-origin: top center;
+  }
+
+  .dw-drop-down-enter-done {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+
+  .dw-drop-down-exit {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+
+  .dw-drop-down-exit-active {
+    transform: scale3d(1, 0.8, 1);
+    opacity: 0;
+    transition: transform $scaleDuration ease-in-out, opacity $opacityDuration ease-in-out;
+    transform-origin: top center;
+  }
+
+  .dw-drop-down-exit-done {
+    opacity: 0;
+    transform: scale3d(1, 0.8, 1);
+  }
+}
+
+.dw-option {
+  @extend .clickable;
+
+  height: var(--40px);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--10px);
+
+  &.small {
+    height: var(--26px);
+  }
+
+  &.dw-selected-option {
+    background-color: var(--link);
+  }
+}

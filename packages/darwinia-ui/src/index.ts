@@ -10,8 +10,29 @@ import Table from "./components/Table";
 import Tabs from "./components/Tabs";
 import Pagination from "./components/Pagination";
 import Spinner from "./components/Spinner";
+import Select from "./components/Select";
+import ModalEnhanced from "./components/ModalEnhanced";
+import SlideDownUp from "./components/SlideDownUp";
+import Tooltip from "./components/Tooltip";
+import DatePicker from "./components/DatePicker";
 
-export { Button, Radio, Popover, Modal, Drawer, Input, Table, Tabs, Pagination, Spinner };
+export {
+  Button,
+  Radio,
+  Popover,
+  Modal,
+  Drawer,
+  Input,
+  Table,
+  Tabs,
+  Pagination,
+  Spinner,
+  Select,
+  ModalEnhanced,
+  SlideDownUp,
+  Tooltip,
+  DatePicker,
+};
 
 /*Types*/
 import { PopoverReport, PopoverProps, PopoverTriggerEvents } from "./components/Popover";
@@ -24,6 +45,10 @@ import { TableProps, Column, Order, SortEvent } from "./components/Table";
 import { Tab, TabsProps } from "./components/Tabs";
 import { PaginationProps } from "./components/Pagination";
 import { SpinnerProps } from "./components/Spinner";
+import { Placeholder } from "./types";
+import { OptionProps } from "./components/Select";
+import { ModalEnhancedProps, ModalEnhancedRefs } from "./components/ModalEnhanced";
+import { DatePickEvent, DatePickerProps } from "./components/DatePicker";
 
 export type {
   PopoverReport,
@@ -47,4 +72,10 @@ export type {
   TabsProps,
   PaginationProps,
   SpinnerProps,
+  Placeholder,
+  OptionProps,
+  ModalEnhancedProps,
+  ModalEnhancedRefs,
+  DatePickEvent,
+  DatePickerProps,
 };

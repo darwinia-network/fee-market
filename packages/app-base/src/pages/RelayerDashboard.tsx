@@ -1,5 +1,15 @@
+import ConnectWallet from "../components/ConnectWallet";
+import { useState } from "react";
+import Dashboard from "../components/RelayerDashboard";
+
 const RelayerDashboard = () => {
-  return <div>RelayerDashboard Page</div>;
+  const [isWalletConnected, setWalletConnected] = useState(false);
+
+  const onWalletConnected = () => {
+    setWalletConnected(true);
+  };
+
+  return <>{isWalletConnected ? <Dashboard /> : <ConnectWallet onConnected={onWalletConnected} />}</>;
 };
 
 export default RelayerDashboard;

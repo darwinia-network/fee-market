@@ -1,0 +1,14 @@
+@import "../../assets/styles/common";
+
+$heightTransitionEase: ease-in-out;
+$heightTransitionDuration: 300ms;
+
+.dw-tooltip {
+  @extend .dw-text-10-bold;
+
+  background-color: var(--blackSecondary);
+  padding: var(--20px);
+  border: 2px solid var(--primary);
+  border-radius: var(--10px);
+  max-width: 330px;
+}
