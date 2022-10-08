@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { usePopper } from "react-popper";
-import { Offsets, Placement } from "@popperjs/core";
+import { Placement } from "@popperjs/core";
 import { CSSTransition } from "react-transition-group";
 import "./style.scss";
 import * as React from "react";

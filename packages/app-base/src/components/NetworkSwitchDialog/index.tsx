@@ -52,10 +52,12 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
     switch (networkType) {
       case "liveNets": {
         setNetworkType("testNets");
+        setDefaultSelectedNetwork("testNets");
         break;
       }
       case "testNets": {
         setNetworkType("liveNets");
+        setDefaultSelectedNetwork("liveNets");
         break;
       }
     }
@@ -72,14 +74,22 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
     });
   };
 
-  useEffect(() => {
-    /* select the first network by default when the network is changed */
-    const networks = networkList[networkType];
-    if (networks.length > 0) {
-      const defaultNetwork = networks[0];
-      onNetworkSelectionChanged(defaultNetwork.id);
+  const setDefaultSelectedNetwork = (netType: keyof NetworkOption) => {
+    /* if the user has switched the previous selected network type, default the
+     * selected network to his previous selection */
+    if (transferSelection?.networkType == netType) {
+      setNetworkType(transferSelection.networkType);
+      onNetworkSelectionChanged(transferSelection.selectedNetwork.id);
+      onDestinationChanged(transferSelection.selectedDestination.id);
+    } else {
+      /* select the first network by default when the network is changed */
+      const networks = networkList[netType];
+      if (networks.length > 0) {
+        const defaultNetwork = networks[0];
+        onNetworkSelectionChanged(defaultNetwork.id);
+      }
     }
-  }, [networkType]);
+  };
 
   useEffect(() => {
     if (transferSelection) {

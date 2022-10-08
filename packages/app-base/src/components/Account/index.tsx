@@ -14,7 +14,7 @@ interface AccountProps {
 
 const Account = ({ advanced = false }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(true);
+  const [isRegistered, setRegistered] = useState(false);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
