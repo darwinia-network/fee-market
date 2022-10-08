@@ -1,14 +1,69 @@
-// specName
-export type FeeMarketPolkadotChain =
-  | "Crab"
-  | "Darwinia"
-  | "Pangolin"
-  | "Pangoro"
-  | "Crab Parachain"
-  | "Darwinia Parachain"
-  | "Pangolin Parachain";
+// Customized
+export const ALL_FEE_MARKET_ETH_CHAINS = [
+  "Goerli",
+  "Ethereum",
+  "Crab Smart Chain",
+  "Darwinia Smart Chain",
+  "Pangolin Smart Chain",
+  "Pangoro Smart Chain",
+] as const;
 
-// TODO
-export type FeeMarketEthChain = "";
+// Substrate specName
+export const ALL_FEE_MARKET_POLKADOT_CHAINS = [
+  "Crab",
+  "Darwinia",
+  "Pangolin",
+  "Pangoro",
+  "Crab Parachain",
+  "Darwinia Parachain",
+  "Pangolin Parachain",
+] as const;
+
+export type FeeMarketEthChain = typeof ALL_FEE_MARKET_ETH_CHAINS[number];
+export type FeeMarketPolkadotChain = typeof ALL_FEE_MARKET_POLKADOT_CHAINS[number];
+
+export type FeeMarketSourceChainEth = Extract<FeeMarketEthChain, "Goerli">;
+export type FeeMarketSourceChainPolkadot = Extract<
+  FeeMarketPolkadotChain,
+  "Crab" | "Darwinia" | "Pangolin" | "Pangoro"
+>;
+export type FeeMarketSourceChan = FeeMarketSourceChainEth | FeeMarketSourceChainPolkadot;
 
 export type FeeMarketChain = FeeMarketPolkadotChain | FeeMarketEthChain;
+
+export enum ChainID {
+  ETHEREUM = 1,
+  GOERLI = 5,
+  CRAB_SMART_CHAIN = 44,
+  DARWINIA_SMART_CHAIN = 46,
+  PANGOLIN_SMART_CHAIN = 43,
+  PANGORO_SMART_CHAIN = 45,
+}
+
+export interface ChainConfig {
+  chainName: FeeMarketChain;
+  displayName: string;
+  chainLogo: string;
+  graphql: {
+    endpoint: string;
+  };
+  nativeToken: {
+    symbol: string;
+    decimals: number;
+  };
+  explorer: {
+    url: string;
+  };
+}
+
+export interface PolkadotChainConfig extends ChainConfig {
+  chainName: FeeMarketPolkadotChain;
+  provider: {
+    rpc: string;
+  };
+}
+
+export interface EthChainConfig extends ChainConfig {
+  chainId: ChainID;
+  chainName: FeeMarketEthChain;
+}

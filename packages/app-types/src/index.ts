@@ -4,3 +4,4 @@ export * from "./others";
 export * from "./relayer";
 export * from "./chain";
 export * from "./polkadot";
+export * from "./metamask";

@@ -1,30 +1,52 @@
 import localeKeys from "../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
-import { ChangeEvent, FormEvent, useCallback, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import relayerAvatar from "../assets/images/relayer-avatar.svg";
 import { useNavigate } from "react-router-dom";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { useRelayersOverviewData } from "@feemarket/app-hooks";
+import type { BN } from "@polkadot/util";
+import type { Balance } from "@polkadot/types/interfaces";
+import { utils as ethersUtils } from "ethers";
+import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+
+const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
+  if (decimals) {
+    return <span>{ethersUtils.commify(ethersUtils.formatUnits(amount.toString(), decimals))}</span>;
+  }
+
+  return <span>-</span>;
+};
 
 interface Relayer {
   id: string;
   relayer: string;
   count: number;
-  collateral: number;
-  quote: number;
-  reward: number;
-  slash: number;
+  collateral: Balance;
+  quote: Balance;
+  reward: BN;
+  slash: BN;
 }
 
 const RelayersOverview = () => {
   const { t } = useTranslation();
-  const [isLoading, setLoading] = useState(false);
+  const [activeTabId, setActiveTabId] = useState("1");
   const [keywords, setKeywords] = useState("");
   const navigate = useNavigate();
+
+  const { currentMarket, setRefresh } = useFeeMarket();
+  const { apiPolkadot } = useApi();
+  const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, apiPolkadot, setRefresh });
+
+  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
+    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+    : null;
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
   };
-  const [activeTabId, setActiveTabId] = useState("1");
 
   const onPageChange = useCallback((pageNumber: number) => {
     setTablePagination((oldValues) => {
@@ -33,61 +55,50 @@ const RelayersOverview = () => {
         currentPage: pageNumber,
       };
     });
-    setLoading(true);
-    // TODO this has to  be deleted
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    console.log("page number changed=====", pageNumber);
   }, []);
 
   const [tablePagination, setTablePagination] = useState<PaginationProps>({
     currentPage: 1,
     pageSize: 10,
-    totalPages: 1000,
+    totalPages: 0,
     onChange: onPageChange,
   });
+
+  useEffect(() => {
+    if (activeTabId === "1") {
+      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverviewData.allRelayersDataSource.length }));
+    } else if (activeTabId === "2") {
+      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverviewData.assignedRelayersDataSource.length }));
+    } else {
+      setTablePagination((prev) => ({ ...prev, totalPages: 0 }));
+    }
+  }, [activeTabId, relayersOverviewData]);
 
   const tabs: Tab[] = [
     {
       id: "1",
-      title: `${t([localeKeys.allRelayers])} (105)`,
+      title: `${t([localeKeys.allRelayers])} (${relayersOverviewData.allRelayersDataSource.length})`,
     },
     {
       id: "2",
-      title: `${t([localeKeys.assignedRelayers])} (3)`,
+      title: `${t([localeKeys.assignedRelayers])} (${relayersOverviewData.assignedRelayersDataSource.length})`,
     },
   ];
 
-  const [dataSource, setDataSource] = useState<Relayer[]>([
-    {
-      id: "1",
-      relayer: "BIGF...H大鱼#4",
-      count: 10,
-      collateral: 20,
-      quote: 30,
-      reward: 40,
-      slash: 50,
-    },
-    {
-      id: "2",
-      relayer: "BIGF...H大鱼#4",
-      count: 100,
-      collateral: 200,
-      quote: 2,
-      reward: 400,
-      slash: 500,
-    },
-    {
-      id: "3",
-      relayer: "BIGF...H大鱼#4",
-      count: 1000,
-      collateral: 2000,
-      quote: 3000,
-      reward: 4000,
-      slash: 5000,
-    },
-  ]);
+  const [dataSource, setDataSource] = useState<Relayer[]>([]);
+
+  useEffect(() => {
+    const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
+    const end = start + tablePagination.pageSize;
+
+    if (activeTabId === "1") {
+      setDataSource(relayersOverviewData.allRelayersDataSource.slice(start, end));
+    } else if (activeTabId === "2") {
+      setDataSource(relayersOverviewData.assignedRelayersDataSource.slice(start, end));
+    } else {
+      setDataSource([]);
+    }
+  }, [relayersOverviewData, activeTabId, tablePagination]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -123,12 +134,14 @@ const RelayersOverview = () => {
       key: "collateral",
       title: <div>{t([localeKeys.collateral])}</div>,
       sortable: true,
+      render: (row) => renderBalance(row.collateral, nativeToken?.decimals),
     },
     {
       id: "4",
       key: "quote",
       title: <div>{t([localeKeys.quote])}</div>,
       sortable: true,
+      render: (row) => renderBalance(row.quote, nativeToken?.decimals),
     },
     {
       id: "5",
@@ -139,6 +152,7 @@ const RelayersOverview = () => {
         </div>
       ),
       sortable: true,
+      render: (row) => renderBalance(row.reward, nativeToken?.decimals),
     },
     {
       id: "6",
@@ -149,6 +163,7 @@ const RelayersOverview = () => {
         </div>
       ),
       sortable: true,
+      render: (row) => renderBalance(row.slash, nativeToken?.decimals),
     },
   ];
 
@@ -218,7 +233,7 @@ const RelayersOverview = () => {
       </div>
 
       <Table
-        isLoading={isLoading}
+        isLoading={relayersOverviewData.loading}
         headerSlot={getTableTabs()}
         onSort={onSort}
         minWidth={"1120px"}

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "baseUrl": "./packages"
+    "baseUrl": "./packages",
+    "strict": true
   },
   "include": ["packages/**/src/**/*"],
   "exclude": ["**/node_modules/**/*"]

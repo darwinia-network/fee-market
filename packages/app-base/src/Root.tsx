@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "./locale/localeKeys";
 import { Spinner } from "@darwinia/ui";
 
+import { UrlSearchParamsKey } from "@feemarket/app-types";
+
 const Root = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -19,7 +21,7 @@ const Root = () => {
     "/relayers-overview/details": t(localeKeys.relayerDetails),
     "/orders/details": () => {
       const params = new URLSearchParams(location.search);
-      const orderId = params.get("orderId") ?? "";
+      const orderId = params.get(UrlSearchParamsKey.NONCE) ?? "";
       return t(localeKeys.orderNumberDetails, { orderNumber: orderId });
     },
   };

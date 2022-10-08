@@ -113,7 +113,7 @@ export interface OrderEntity {
   finishEventIndex: number;
 
   treasuryAmount: string | null;
-  assignedRelayersAddress: [string];
+  assignedRelayersAddress: string[];
 }
 
 export interface OrderRelayerEntity {

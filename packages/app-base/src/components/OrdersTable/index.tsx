@@ -1,12 +1,13 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, FormEvent, useCallback, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
+import { UrlSearchParamsKey } from "@feemarket/app-types";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -17,6 +18,8 @@ type LabelStatusMap = {
 interface Order {
   id: string;
   orderId: string;
+  lane: string;
+  nonce: string;
   deliveryRelayer: string;
   confirmationRelayer: string;
   createdAt: string;
@@ -24,9 +27,15 @@ interface Order {
   status: Status;
 }
 
-const OrdersTable = () => {
+interface Props {
+  ordersTableLoading?: boolean;
+  ordersTableData: Order[];
+}
+
+const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [keywords, setKeywords] = useState("");
   const dropdownMaxHeight = 200;
   const timeDimensionOptions: OptionProps[] = [
@@ -95,6 +104,10 @@ const OrdersTable = () => {
 
   const [isLoading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setLoading(ordersTableLoading ?? false);
+  }, [ordersTableLoading]);
+
   const onPageChange = useCallback((pageNumber: number) => {
     setTablePagination((oldValues) => {
       return {
@@ -102,18 +115,12 @@ const OrdersTable = () => {
         currentPage: pageNumber,
       };
     });
-    setLoading(true);
-    // TODO this has to  be deleted
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    console.log("page number changed=====", pageNumber);
   }, []);
 
   const [tablePagination, setTablePagination] = useState<PaginationProps>({
     currentPage: 1,
     pageSize: 10,
-    totalPages: 1000,
+    totalPages: ordersTableData.length,
     onChange: onPageChange,
   });
 
@@ -127,7 +134,10 @@ const OrdersTable = () => {
 
   const onOrderNumberClicked = (row: Order) => {
     console.log("onOrderNumberClicked=====", row);
-    navigate(`/orders/details?orderId=${row.orderId}`);
+    const urlSearchParams = new URLSearchParams();
+    urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
+    urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
+    navigate(`${pathname}/details?${urlSearchParams.toString()}`);
   };
 
   const orderColumns: Column<Order>[] = [
@@ -210,71 +220,13 @@ const OrdersTable = () => {
     },
   ];
 
-  const [orderDataSource] = useState<Order[]>([
-    {
-      id: "1",
-      orderId: "14234",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213038",
-      confirmAt: "1213038",
-      status: "all",
-    },
-    {
-      id: "2",
-      orderId: "14235",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213039",
-      confirmAt: "1213039",
-      status: "finished",
-    },
-    {
-      id: "3",
-      orderId: "14236",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213040",
-      confirmAt: "1213040",
-      status: "inProgress",
-    },
-    {
-      id: "4",
-      orderId: "14237",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213041",
-      confirmAt: "1213041",
-      status: "inProgress",
-    },
-    {
-      id: "5",
-      orderId: "14238",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213042",
-      confirmAt: "1213042",
-      status: "all",
-    },
-    {
-      id: "6",
-      orderId: "14239",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213043",
-      confirmAt: "1213043",
-      status: "finished",
-    },
-    {
-      id: "7",
-      orderId: "14240",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213044",
-      confirmAt: "1213044",
-      status: "finished",
-    },
-  ]);
+  const [orderDataSource, setOrderDataSource] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
+    const end = start + tablePagination.pageSize;
+    setOrderDataSource(ordersTableData.slice(start, end));
+  }, [ordersTableData, tablePagination]);
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);

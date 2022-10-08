@@ -3,13 +3,17 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": []
+        "cacheableOperations": ["dev"],
+        "parallel": 3
       }
     }
   },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"]
+    },
+    "dev": {
+      "dependsOn": []
     }
   }
 }

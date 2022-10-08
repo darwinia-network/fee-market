@@ -1,8 +1,19 @@
 import { Column, PaginationProps, Table } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { utils as ethersUtils } from "ethers";
+import type { BN } from "@polkadot/util";
+import type { RelayerOrdersDataSource } from "@feemarket/app-types";
+
+const formatBalance = (amount: BN, symbol?: string | null, decimals?: number | null): string => {
+  if (decimals) {
+    return `${ethersUtils.commify(ethersUtils.formatUnits(amount.toString(), decimals))} ${symbol}`;
+  }
+  return "-";
+};
 
 interface Order {
   id: string;
@@ -13,7 +24,13 @@ interface Order {
   time: string;
 }
 
-const RelayerDetailsTable = () => {
+interface Props {
+  relatedOrdersData?: RelayerOrdersDataSource[];
+  tokenSymbol?: string | null;
+  tokenDecimals?: number | null;
+}
+
+const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
@@ -94,6 +111,21 @@ const RelayerDetailsTable = () => {
     },
   ]);
 
+  useEffect(() => {
+    setDataSource(
+      relatedOrdersData?.map((item, index) => {
+        return {
+          id: `${index}`,
+          orderId: item.nonce,
+          relayerRoles: item.relayerRoles,
+          slash: formatBalance(item.slash, tokenSymbol, tokenDecimals),
+          reward: formatBalance(item.reward, tokenSymbol, tokenDecimals),
+          time: item.createBlockTime,
+        };
+      }) || []
+    );
+  }, [relatedOrdersData, tokenSymbol, tokenDecimals]);
+
   const onPageChange = useCallback((pageNumber: number) => {
     setTablePagination((oldValues) => {
       return {
@@ -132,17 +164,25 @@ const RelayerDetailsTable = () => {
   );
 };
 
+const RoleOrderMapping: Record<string, number> = {
+  Assigned: 0,
+  Delivery: 1,
+  Confirmation: 2,
+};
+
 const getRelayerRolesColumn = (row: Order) => {
   return (
     <div className={"flex-wrap flex flex-row gap-[0.625rem]"}>
-      {row.relayerRoles.map((role, index) => {
-        const roleBg = role === "assigned" ? "bg-primary" : "";
-        return (
-          <div key={index} className={`${roleBg} border border-primary px-[0.8125rem] py-[0.21875rem]`}>
-            {role}
-          </div>
-        );
-      })}
+      {row.relayerRoles
+        .sort((a, b) => RoleOrderMapping[a] - RoleOrderMapping[b])
+        .map((role, index) => {
+          const roleBg = role.toLowerCase() === "assigned" ? "bg-primary" : "";
+          return (
+            <div key={index} className={`${roleBg} border border-primary px-[0.8125rem] py-[0.21875rem]`}>
+              {role}
+            </div>
+          );
+        })}
     </div>
   );
 };

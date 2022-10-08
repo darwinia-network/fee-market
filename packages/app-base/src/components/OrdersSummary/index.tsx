@@ -4,12 +4,38 @@ import finishedIcon from "../../assets/images/finished.svg";
 import inProgressIcon from "../../assets/images/in-progress.svg";
 import outOfSlotIcon from "../../assets/images/out-of-slot.svg";
 
-const OrdersSummary = () => {
+import { utils as ethersUtils } from "ethers";
+
+const formatOrders = (count: number | null | undefined): string => {
+  if (count || count === 0) {
+    return ethersUtils.commify(count);
+  }
+  return "-";
+};
+
+interface Props {
+  loading?: boolean;
+  orders: {
+    finished: number | null | undefined;
+    unfinishedInSlot: number | null | undefined;
+    unfinishedOutOfSlot: number | null | undefined;
+  };
+}
+
+const OrdersSummary = ({ orders }: Props) => {
   const { t } = useTranslation();
   const summaryData = [
-    { title: t(localeKeys.finished), data: "99,900", icon: finishedIcon },
-    { title: `${t(localeKeys.inProgress)} (${t(localeKeys.inSlot)})`, data: "3,332", icon: inProgressIcon },
-    { title: `${t(localeKeys.inProgress)} (${t(localeKeys.outOfSlot)})`, data: "273", icon: outOfSlotIcon },
+    { title: t(localeKeys.finished), data: formatOrders(orders.finished), icon: finishedIcon },
+    {
+      title: `${t(localeKeys.inProgress)} (${t(localeKeys.inSlot)})`,
+      data: formatOrders(orders.unfinishedInSlot),
+      icon: inProgressIcon,
+    },
+    {
+      title: `${t(localeKeys.inProgress)} (${t(localeKeys.outOfSlot)})`,
+      data: formatOrders(orders.unfinishedOutOfSlot),
+      icon: outOfSlotIcon,
+    },
   ];
   const overview = summaryData.map((item, index) => {
     return (

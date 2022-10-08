@@ -1,4 +1,6 @@
 import typescript from "rollup-plugin-typescript2";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 
 /**
  * @type {import('rollup').RollupOptions}
@@ -13,8 +15,8 @@ const config = [
         exports: "named",
       },
     ],
-    plugins: [typescript()],
-    external: (id) => /@polkadot/.test(id),
+    plugins: [resolve(), commonjs(), typescript({ clean: true })],
+    external: (id) => /node_modules/.test(id),
   },
 ];
 

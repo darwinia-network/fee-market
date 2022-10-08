@@ -15,6 +15,9 @@ import useNetworkList from "../../data/useNetworkList";
 import { NetworkOption } from "../../data/types";
 import useMenuList from "../../data/useMenuList";
 
+import type { Market } from "@feemarket/app-provider";
+import { useFeeMarket } from "@feemarket/app-provider";
+
 interface Props {
   title: string;
 }
@@ -24,6 +27,7 @@ interface Props {
 const Header = ({ title }: Props) => {
   const { t } = useTranslation();
   const { menuList } = useMenuList();
+  const { setCurrentMarket } = useFeeMarket();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const [popperTriggerElement, setPopperTriggerElement] = useState<HTMLElement | null>(null);
@@ -45,6 +49,10 @@ const Header = ({ title }: Props) => {
       const defaultNetwork = networks[0];
       if (defaultNetwork.destinations.length > 0) {
         const defaultDestination = defaultNetwork.destinations[0];
+        setCurrentMarket({
+          source: defaultNetwork.id,
+          destination: defaultDestination.id,
+        } as Market);
         setTransferSelection({
           networkType: defaultNetworkType,
           selectedNetwork: defaultNetwork,
@@ -56,7 +64,7 @@ const Header = ({ title }: Props) => {
         });
       }
     }
-  }, []);
+  }, [setCurrentMarket]);
 
   useEffect(() => {
     setDrawerVisibility(false);
@@ -82,6 +90,10 @@ const Header = ({ title }: Props) => {
 
   const onNetworkSelectionCompleted = (selection: TransferSelection) => {
     console.log("network selection complete", selection);
+    setCurrentMarket({
+      source: selection.selectedNetwork.id,
+      destination: selection.selectedDestination.id,
+    } as Market);
     setTransferSelection(selection);
     setNetworkSelectionBtnText({
       from: selection.selectedNetwork.name,

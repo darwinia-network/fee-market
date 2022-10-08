@@ -1,9 +1,11 @@
+import type { FeeMarketChain } from "@feemarket/app-types";
+
 export interface Destination {
-  id: string;
+  id: FeeMarketChain;
   name: string;
 }
 export interface Network {
-  id: string;
+  id: FeeMarketChain;
   name: string;
   logo: string;
   destinations: Destination[];
