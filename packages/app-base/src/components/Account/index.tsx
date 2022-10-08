@@ -14,7 +14,7 @@ interface AccountProps {
 
 const Account = ({ advanced = false }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(false);
+  const [isRegistered, setRegistered] = useState(true);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
@@ -42,6 +42,10 @@ const Account = ({ advanced = false }: AccountProps) => {
 
   const onMoreActions = () => {
     setCancelRelayerModalVisible(true);
+  };
+
+  const onRunBridger = () => {
+    console.log("run bridger====");
   };
 
   return (
@@ -84,6 +88,7 @@ const Account = ({ advanced = false }: AccountProps) => {
             {t(localeKeys.switchAccount)}
           </Button>
           <Button
+            onClick={onRunBridger}
             className={
               "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0"
             }

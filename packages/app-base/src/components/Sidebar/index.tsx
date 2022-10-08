@@ -8,7 +8,7 @@ const Sidebar = () => {
   const { menuList } = useMenuList();
   return (
     <div className={"bg-blackSecondary h-screen w-[12.5rem] flex flex-col"}>
-      <div className={"bg-black h-[3.125rem] px-[0.9375rem] lg:h-[5rem] shrink-0"}>
+      <div className={"h-[3.125rem] px-[0.9375rem] lg:h-[5rem] shrink-0"}>
         {/*Logo*/}
         <div className={"shrink-0 h-full"}>
           <Link className={"h-full flex"} to={"/"}>
