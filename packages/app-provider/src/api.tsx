@@ -5,12 +5,14 @@ import { useFeeMarket } from "./feemarket";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { isEthApi, isPolkadotApi, isEthChain, isPolkadotChain } from "@feemarket/app-utils";
+import { from, Subscription } from "rxjs";
 
 export interface ApiCtx {
   apiPolkadot: ApiPromise | null;
   apiEth: providers.Web3Provider | null;
   api: providers.Web3Provider | ApiPromise | null;
   accounts: string[] | null;
+  currentChainId: number | null;
   requestAccounts: () => Promise<void>;
 }
 
@@ -19,6 +21,7 @@ const defaultValue: ApiCtx = {
   apiEth: null,
   apiPolkadot: null,
   accounts: null,
+  currentChainId: null,
   requestAccounts: async () => undefined,
 };
 
@@ -30,6 +33,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [apiPolkadot, setApiPolkadot] = useState<ApiPromise | null>(null);
   const [api, setApi] = useState<providers.Web3Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<string[] | null>(null);
+  const [currentChainId, setCurrentChainId] = useState<number | null>(null);
 
   const requestAccounts = useCallback(async () => {
     if (isEthApi(api)) {
@@ -77,6 +81,24 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   }, [currentMarket]);
 
   useEffect(() => {
+    let sub$$: Subscription;
+
+    if (isEthApi(api)) {
+      sub$$ = from(api.getNetwork()).subscribe(({ chainId }) => {
+        setCurrentChainId(chainId);
+      });
+    } else {
+      setCurrentChainId(null);
+    }
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
+  }, [api]);
+
+  useEffect(() => {
     if (isEthChain(currentMarket?.source)) {
       console.log(currentMarket?.source, "is Eth Chain");
     } else if (isPolkadotChain(currentMarket?.source)) {
@@ -93,6 +115,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         apiEth,
         apiPolkadot,
         accounts,
+        currentChainId,
         requestAccounts,
       }}
     >

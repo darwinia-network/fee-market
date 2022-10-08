@@ -5,11 +5,11 @@ import RelayerDetailsTable from "../RelayerDetailsTable";
 import { Button, SlideDownUp } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
-import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
-import { useFeeMarket } from "@feemarket/app-provider";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
 
 const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
@@ -17,6 +17,7 @@ const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
 const RelayerDashboard = () => {
   const { t } = useTranslation();
   const { currentMarket, setRefresh } = useFeeMarket();
+  const { api, currentChainId } = useApi();
   const { rewardAndSlashData, quoteHistoryData, relayerRelatedOrdersData } = useRelayersDetailData({
     relayerAddress,
     currentMarket,
@@ -30,16 +31,23 @@ const RelayerDashboard = () => {
 
   const onSwitchNetwork = () => {
     console.log("switch network====");
-    onShowNotification();
   };
 
   const onShowNotification = () => {
-    setNotificationVisibility((isVisible) => !isVisible);
+    setNotificationVisibility(true);
   };
 
   const onHideNotification = () => {
     setNotificationVisibility(false);
   };
+
+  useEffect(() => {
+    if (Object.values(ETH_CHAIN_CONF).some((item) => item.chainId === currentChainId)) {
+      onHideNotification();
+    } else {
+      onShowNotification();
+    }
+  }, [currentChainId]);
 
   return (
     /*Don't use flex gap to avoid a "junky gap animation" when the notification slides down */
