@@ -222,71 +222,7 @@ const OrdersTable = ({ ordersTableData }: Props) => {
     },
   ];
 
-  const [orderDataSource, setOrderDataSource] = useState<Order[]>([
-    {
-      id: "1",
-      orderId: "14234",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213038",
-      confirmAt: "1213038",
-      status: "all",
-    },
-    {
-      id: "2",
-      orderId: "14235",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213039",
-      confirmAt: "1213039",
-      status: "finished",
-    },
-    {
-      id: "3",
-      orderId: "14236",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213040",
-      confirmAt: "1213040",
-      status: "inProgress",
-    },
-    {
-      id: "4",
-      orderId: "14237",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213041",
-      confirmAt: "1213041",
-      status: "inProgress",
-    },
-    {
-      id: "5",
-      orderId: "14238",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213042",
-      confirmAt: "1213042",
-      status: "all",
-    },
-    {
-      id: "6",
-      orderId: "14239",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213043",
-      confirmAt: "1213043",
-      status: "finished",
-    },
-    {
-      id: "7",
-      orderId: "14240",
-      deliveryRelayer: "BIGF...H大鱼#4",
-      confirmationRelayer: "BIGF...H大鱼#5",
-      createdAt: "1213044",
-      confirmAt: "1213044",
-      status: "finished",
-    },
-  ]);
+  const [orderDataSource, setOrderDataSource] = useState<Order[]>([]);
 
   useEffect(() => {
     setOrderDataSource(ordersTableData);
