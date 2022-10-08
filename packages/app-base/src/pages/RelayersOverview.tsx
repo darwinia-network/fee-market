@@ -33,7 +33,6 @@ interface Relayer {
 const RelayersOverview = () => {
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState("1");
-  const [isLoading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState("");
   const navigate = useNavigate();
 
@@ -56,20 +55,24 @@ const RelayersOverview = () => {
         currentPage: pageNumber,
       };
     });
-    setLoading(true);
-    // TODO this has to  be deleted
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    console.log("page number changed=====", pageNumber);
   }, []);
 
   const [tablePagination, setTablePagination] = useState<PaginationProps>({
     currentPage: 1,
     pageSize: 10,
-    totalPages: 1000,
+    totalPages: 0,
     onChange: onPageChange,
   });
+
+  useEffect(() => {
+    if (activeTabId === "1") {
+      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverviewData.allRelayersDataSource.length }));
+    } else if (activeTabId === "2") {
+      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverviewData.assignedRelayersDataSource.length }));
+    } else {
+      setTablePagination((prev) => ({ ...prev, totalPages: 0 }));
+    }
+  }, [activeTabId, relayersOverviewData]);
 
   const tabs: Tab[] = [
     {
@@ -85,14 +88,17 @@ const RelayersOverview = () => {
   const [dataSource, setDataSource] = useState<Relayer[]>([]);
 
   useEffect(() => {
+    const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
+    const end = start + tablePagination.pageSize;
+
     if (activeTabId === "1") {
-      setDataSource(relayersOverviewData.allRelayersDataSource);
+      setDataSource(relayersOverviewData.allRelayersDataSource.slice(start, end));
     } else if (activeTabId === "2") {
-      setDataSource(relayersOverviewData.assignedRelayersDataSource);
+      setDataSource(relayersOverviewData.assignedRelayersDataSource.slice(start, end));
     } else {
       setDataSource([]);
     }
-  }, [relayersOverviewData, activeTabId]);
+  }, [relayersOverviewData, activeTabId, tablePagination]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -227,7 +233,7 @@ const RelayersOverview = () => {
       </div>
 
       <Table
-        isLoading={isLoading}
+        isLoading={relayersOverviewData.loading}
         headerSlot={getTableTabs()}
         onSort={onSort}
         minWidth={"1120px"}

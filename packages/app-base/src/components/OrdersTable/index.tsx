@@ -32,7 +32,7 @@ interface Props {
   ordersTableData: Order[];
 }
 
-const OrdersTable = ({ ordersTableData }: Props) => {
+const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -104,6 +104,10 @@ const OrdersTable = ({ ordersTableData }: Props) => {
 
   const [isLoading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setLoading(ordersTableLoading ?? false);
+  }, [ordersTableLoading]);
+
   const onPageChange = useCallback((pageNumber: number) => {
     setTablePagination((oldValues) => {
       return {
@@ -111,18 +115,12 @@ const OrdersTable = ({ ordersTableData }: Props) => {
         currentPage: pageNumber,
       };
     });
-    setLoading(true);
-    // TODO this has to  be deleted
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    console.log("page number changed=====", pageNumber);
   }, []);
 
   const [tablePagination, setTablePagination] = useState<PaginationProps>({
     currentPage: 1,
     pageSize: 10,
-    totalPages: 1000,
+    totalPages: ordersTableData.length,
     onChange: onPageChange,
   });
 
@@ -225,8 +223,10 @@ const OrdersTable = ({ ordersTableData }: Props) => {
   const [orderDataSource, setOrderDataSource] = useState<Order[]>([]);
 
   useEffect(() => {
-    setOrderDataSource(ordersTableData);
-  }, [ordersTableData]);
+    const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
+    const end = start + tablePagination.pageSize;
+    setOrderDataSource(ordersTableData.slice(start, end));
+  }, [ordersTableData, tablePagination]);
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
