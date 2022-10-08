@@ -15,6 +15,7 @@ import ModalEnhanced from "./components/ModalEnhanced";
 import SlideDownUp from "./components/SlideDownUp";
 import Tooltip from "./components/Tooltip";
 import DatePicker from "./components/DatePicker";
+import Dropdown from "./components/Dropdown";
 
 export {
   Button,
@@ -32,6 +33,7 @@ export {
   SlideDownUp,
   Tooltip,
   DatePicker,
+  Dropdown,
 };
 
 /*Types*/
@@ -49,6 +51,7 @@ import { Placeholder } from "./types";
 import { OptionProps } from "./components/Select";
 import { ModalEnhancedProps, ModalEnhancedRefs } from "./components/ModalEnhanced";
 import { DatePickEvent, DatePickerProps } from "./components/DatePicker";
+import { DropdownProps } from "./components/Dropdown";
 
 export type {
   PopoverReport,
@@ -78,4 +81,5 @@ export type {
   ModalEnhancedRefs,
   DatePickEvent,
   DatePickerProps,
+  DropdownProps,
 };

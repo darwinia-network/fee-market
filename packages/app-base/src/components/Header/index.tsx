@@ -172,7 +172,7 @@ const Header = ({ title }: Props) => {
         }}
         isVisible={isMobileNetworkSelectionModalVisible}
       >
-        <div>
+        <div className={"flex justify-center"}>
           <NetworkSwitchDialog
             transferSelection={transferSelection}
             onNetworkSelectionCompleted={onNetworkSelectionCompleted}
