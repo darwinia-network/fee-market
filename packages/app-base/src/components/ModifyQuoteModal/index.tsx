@@ -2,18 +2,31 @@ import { Input, ModalEnhanced } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState } from "react";
-import AccountMini from "../AccountMini";
+
+import { BigNumber, utils as ethersUtils } from "ethers";
+import {} from "@feemarket/app-utils";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
 
 export interface ModifyQuoteModalProps {
   isVisible: boolean;
+  currentQuote: BigNumber;
   onClose: () => void;
 }
 
-const ModifyQuoteModal = ({ isVisible, onClose }: ModifyQuoteModalProps) => {
+const ModifyQuoteModal = ({ isVisible, currentQuote, onClose }: ModifyQuoteModalProps) => {
   const { t } = useTranslation();
+  const { currentMarket } = useFeeMarket();
+  const { api } = useApi();
   const [isModalVisible, setModalVisibility] = useState(false);
   const [quote, setQuote] = useState("");
   const [quoteError, setQuoteError] = useState<JSX.Element | null>(null);
+
+  const nativeToken =
+    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
+    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+    null;
 
   useEffect(() => {
     setModalVisibility(isVisible);
@@ -58,8 +71,12 @@ const ModifyQuoteModal = ({ isVisible, onClose }: ModifyQuoteModalProps) => {
         <div className={"flex flex-col gap-[0.625rem]"}>
           <div className={"text-12-bold"}>{t(localeKeys.yourCurrentQuote)}</div>
           <div className={"flex bg-divider rounded-[0.3125rem] h-[2.5rem] items-center justify-end px-[0.625rem]"}>
-            <div className={"flex-1 text-14-bold"}>1,000</div>
-            <div className={"flex-1 text-right text-14-bold"}>{t(localeKeys.perOrder, { currency: "RING" })}</div>
+            <div className={"flex-1 text-14-bold"}>
+              {ethersUtils.commify(ethersUtils.formatUnits(currentQuote, nativeToken?.decimals))}
+            </div>
+            <div className={"flex-1 text-right text-14-bold"}>
+              {t(localeKeys.perOrder, { currency: nativeToken?.symbol ?? "-" })}
+            </div>
           </div>
         </div>
 
@@ -74,7 +91,7 @@ const ModifyQuoteModal = ({ isVisible, onClose }: ModifyQuoteModalProps) => {
             onChange={onQuoteChanged}
             rightSlot={
               <div className={"text-14-bold flex items-center px-[0.625rem]"}>
-                {t(localeKeys.perOrder, { currency: "RING" })}
+                {t(localeKeys.perOrder, { currency: nativeToken?.symbol ?? "-" })}
               </div>
             }
           />

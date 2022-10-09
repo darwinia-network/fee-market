@@ -155,7 +155,11 @@ const Balance = ({ relayerAddress }: Props) => {
         </div>
       </div>
       {/*Modify quote modal*/}
-      <ModifyQuoteModal onClose={onModifyQuoteModalClose} isVisible={isModifyQuoteModalVisible} />
+      <ModifyQuoteModal
+        onClose={onModifyQuoteModalClose}
+        isVisible={isModifyQuoteModalVisible}
+        currentQuote={currentQuoteAmount || BigNumber.from(0)}
+      />
       {/*Modify balance modal*/}
       <ModifyCollateralBalanceModal
         onClose={onModifyCollateralBalanceModalClose}
