@@ -2,9 +2,9 @@ import { lazy } from "react";
 import { createHashRouter } from "react-router-dom";
 import { Suspense } from "react";
 import App from "../App";
-import NotFound from "../pages/NotFound";
 import ErrorCatcher from "../pages/ErrorCatcher";
 import { Spinner } from "@darwinia/ui";
+import NotFoundRoot from "../pages/NotFoundRoot";
 
 const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
   /* rollup is strict to dynamic imports
@@ -58,12 +58,12 @@ const browserRouter = createHashRouter([
   },
   {
     path: "*",
-    element: NotFound(),
+    element: NotFoundRoot(),
   },
 ]);
 
 const getPageLoadingSpinner = () => {
-  // change isLoading to true to show the spinner
+  //TODO change isLoading to true to show the spinner
   return (
     <Spinner isLoading={false}>
       <div className={`flex h-[calc(100vh-119px)] lg:h-[calc(100vh-110px)] justify-center items-center`} />

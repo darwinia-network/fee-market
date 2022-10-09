@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Scrollbars } from "react-custom-scrollbars";
 import Menu from "../Menu";
-import logo from "../../assets/images/logo.svg";
+import logo from "../../assets/images/logo.png";
 import useMenuList from "../../data/useMenuList";
 
 const Sidebar = () => {

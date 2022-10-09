@@ -122,6 +122,8 @@ const localeKeys = {
   extrinsic: "extrinsic",
   treasury: "treasury",
   cancelRelayer: "cancelRelayer",
+  pageNotFound: "pageNotFound",
+  goHome: "goHome",
 };
 
 export default localeKeys;
