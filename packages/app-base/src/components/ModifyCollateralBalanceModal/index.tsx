@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState } from "react";
 
-import { formatBalance, isEthApi, isEthChain } from "@feemarket/app-utils";
+import { formatBalance, isEthApi, isEthChain, isPolkadotChain, triggerContract } from "@feemarket/app-utils";
 import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
-import { forkJoin, Subscription, from, of, switchMap, zip } from "rxjs";
+import { Subscription, from, of, switchMap, zip } from "rxjs";
 
 export interface ModifyCollateralBalanceModalProps {
   isVisible: boolean;
@@ -44,12 +44,64 @@ const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }:
   };
 
   const onModifyQuote = () => {
-    if (parseInt(deposit) < 15) {
-      setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `15 ${nativeToken?.symbol}` })));
-      return;
+    if (currentMarket?.source && isEthChain(currentMarket.source) && deposit) {
+      if (Number(deposit) < 0.2) {
+        setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `0.2 ${nativeToken?.symbol}` })));
+        return;
+      }
+
+      if (isEthApi(api) && nativeToken?.decimals && deposit) {
+        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+
+        const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
+
+        if (depositAmount.gt(currentCollateral)) {
+          triggerContract(
+            contract,
+            "deposit",
+            [],
+            {
+              errorCallback: ({ error }) => {
+                console.error("call deposit:", error);
+              },
+              responseCallback: ({ response }) => {
+                onCloseModal();
+                console.log("call deposit response:", response);
+              },
+              successCallback: ({ receipt }) => {
+                console.log("call deposit receipt:", receipt);
+              },
+            },
+            { value: depositAmount.sub(currentCollateral).toString() }
+          );
+        } else if (depositAmount.lt(currentCollateral)) {
+          triggerContract(contract, "withdraw", [currentCollateral.sub(depositAmount)], {
+            errorCallback: ({ error }) => {
+              console.error("call withdraw:", error);
+            },
+            responseCallback: ({ response }) => {
+              onCloseModal();
+              console.log("call withdraw response:", response);
+            },
+            successCallback: ({ receipt }) => {
+              console.log("call withdraw receipt:", receipt);
+            },
+          });
+        } else {
+          onCloseModal();
+        }
+      }
+    } else if (currentMarket?.source && isPolkadotChain(currentMarket.source) && deposit) {
+      if (Number(deposit) < 15) {
+        setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `15 ${nativeToken?.symbol}` })));
+        return;
+      }
+
+      onCloseModal();
+    } else {
+      onCloseModal();
     }
-    console.log("quote====", deposit);
-    onCloseModal();
   };
 
   const onDepositChanged = (e: ChangeEvent<HTMLInputElement>) => {
