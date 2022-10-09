@@ -160,6 +160,7 @@ const Balance = ({ relayerAddress }: Props) => {
       <ModifyCollateralBalanceModal
         onClose={onModifyCollateralBalanceModalClose}
         isVisible={isModifyCollateralBalanceModalVisible}
+        currentCollateral={collateralAmount || BigNumber.from(0)}
       />
     </div>
   );

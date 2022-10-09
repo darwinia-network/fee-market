@@ -4,3 +4,5 @@ export const POLKADOT_PRECISION = 9;
 export const ETH_PRECISION = 18;
 
 export const DATE_TIME_FORMATE = "yyyy/MM/dd HH:mm:ss";
+
+export const BALANCE_DECIMALS = 4;
