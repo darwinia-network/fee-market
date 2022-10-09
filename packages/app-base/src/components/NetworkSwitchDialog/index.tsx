@@ -1,5 +1,5 @@
 import { Button, Radio } from "@darwinia/ui";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useNetworkList from "../../data/useNetworkList";
 import { Destination, Network, NetworkOption } from "../../data/types";
 import { Scrollbars } from "react-custom-scrollbars";
