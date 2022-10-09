@@ -49,19 +49,22 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
   };
 
   const onSwitchNetworkType = () => {
+    /* setDefaultSelectedNetwork method will be called automatically by the useEffect */
     switch (networkType) {
       case "liveNets": {
         setNetworkType("testNets");
-        setDefaultSelectedNetwork("testNets");
         break;
       }
       case "testNets": {
         setNetworkType("liveNets");
-        setDefaultSelectedNetwork("liveNets");
         break;
       }
     }
   };
+
+  useEffect(() => {
+    setDefaultSelectedNetwork(networkType);
+  }, [networkType]);
 
   const onFinishNetworkSelection = () => {
     if (!selectedNetworkObj.current || !selectedDestinationObj.current) {

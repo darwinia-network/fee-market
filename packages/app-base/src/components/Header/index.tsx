@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import logoIcon from "../../assets/images/logo.svg";
+import logoIcon from "../../assets/images/logo.png";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { Drawer, Modal } from "@darwinia/ui";
@@ -20,11 +20,12 @@ import { useFeeMarket } from "@feemarket/app-provider";
 
 interface Props {
   title: string;
+  isNotFoundPage?: boolean;
 }
 
 /*This will be the nav bar container on mobile devices BUT will
   be the page title container on the PC */
-const Header = ({ title }: Props) => {
+const Header = ({ title, isNotFoundPage = false }: Props) => {
   const { t } = useTranslation();
   const { menuList } = useMenuList();
   const { currentMarket, setCurrentMarket } = useFeeMarket();
@@ -109,8 +110,10 @@ const Header = ({ title }: Props) => {
     setMobileNetworkSelectionModalVisibility(false);
   };
 
+  const headerHeightClass = isNotFoundPage ? "h-[3.125rem] lg:h-0" : "h-[3.125rem] lg:h-[5rem]";
+
   return (
-    <div className={"h-[3.125rem] lg:h-[5rem] bg-black shrink-0"}>
+    <div className={`${headerHeightClass} bg-black shrink-0`}>
       {/*mobile navigation bar*/}
       {/*For some reasons hidden class wasn't responding until it was made important*/}
       <div className={"lg:!hidden bg-primary flex flex-1 h-full shrink-0 items-center justify-between pl-[0.625rem]"}>
@@ -157,15 +160,17 @@ const Header = ({ title }: Props) => {
             <Menu menuList={menuList} />
           </div>
           {/*Nav footer*/}
-          <div className={"shrink-0 px-[0.875rem] py-[1.5rem]"}>
-            <NetworkSwitchButton
-              from={networkSelectionBtnText.from}
-              to={networkSelectionBtnText.to}
-              onClick={() => {
-                onMobileNetworkSwitchButtonClicked();
-              }}
-            />
-          </div>
+          {!isNotFoundPage && (
+            <div className={"shrink-0 px-[0.875rem] py-[1.5rem]"}>
+              <NetworkSwitchButton
+                from={networkSelectionBtnText.from}
+                to={networkSelectionBtnText.to}
+                onClick={() => {
+                  onMobileNetworkSwitchButtonClicked();
+                }}
+              />
+            </div>
+          )}
         </div>
       </Drawer>
 
@@ -175,6 +180,7 @@ const Header = ({ title }: Props) => {
           onMobileNetworkSelectionModalClosed();
         }}
         isVisible={isMobileNetworkSelectionModalVisible}
+        className={"!max-w-[21.5625rem]"}
       >
         <div className={"flex justify-center"}>
           <NetworkSwitchDialog
@@ -185,27 +191,29 @@ const Header = ({ title }: Props) => {
       </Modal>
 
       {/*PC Page title, this content will be fixed to the top*/}
-      <div className={"hidden lg:flex items-center h-full px-[1.875rem] justify-between"}>
-        <div className={"page-title"}>{title}</div>
-        <div ref={setPopperTriggerElement}>
-          {/* Don't bind an onClick event here since the onclick event is already implemented in the
+      {!isNotFoundPage && (
+        <div className={"hidden lg:flex items-center h-full px-[1.875rem] justify-between"}>
+          <div className={"page-title"}>{title}</div>
+          <div ref={setPopperTriggerElement}>
+            {/* Don't bind an onClick event here since the onclick event is already implemented in the
           Popover component */}
-          <NetworkSwitchButton
-            from={networkSelectionBtnText.from}
-            to={networkSelectionBtnText.to}
-            isEqualSized={false}
-          />
-        </div>
-
-        <Popover triggerEvent={"click"} triggerElementState={popperTriggerElement}>
-          <div>
-            <NetworkSwitchDialog
-              transferSelection={transferSelection}
-              onNetworkSelectionCompleted={onNetworkSelectionCompleted}
+            <NetworkSwitchButton
+              from={networkSelectionBtnText.from}
+              to={networkSelectionBtnText.to}
+              isEqualSized={false}
             />
           </div>
-        </Popover>
-      </div>
+
+          <Popover triggerEvent={"click"} triggerElementState={popperTriggerElement}>
+            <div>
+              <NetworkSwitchDialog
+                transferSelection={transferSelection}
+                onNetworkSelectionCompleted={onNetworkSelectionCompleted}
+              />
+            </div>
+          </Popover>
+        </div>
+      )}
     </div>
   );
 };
