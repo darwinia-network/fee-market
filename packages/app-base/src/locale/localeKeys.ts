@@ -121,6 +121,7 @@ const localeKeys = {
   slotAt: "slotAt",
   extrinsic: "extrinsic",
   treasury: "treasury",
+  cancelRelayer: "cancelRelayer",
 };
 
 export default localeKeys;
