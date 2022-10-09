@@ -2,7 +2,7 @@ import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useState } from "react";
-import { Button, Tooltip } from "@darwinia/ui";
+import { Button, Dropdown, Tooltip } from "@darwinia/ui";
 import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
@@ -14,7 +14,7 @@ interface AccountProps {
 
 const Account = ({ advanced = false }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(false);
+  const [isRegistered, setRegistered] = useState(true);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
@@ -40,12 +40,23 @@ const Account = ({ advanced = false }: AccountProps) => {
     setCancelRelayerModalVisible(false);
   };
 
-  const onMoreActions = () => {
+  const onCancelRelayer = () => {
+    console.log("onCancelRelayer=====");
     setCancelRelayerModalVisible(true);
   };
 
   const onRunBridger = () => {
     console.log("run bridger====");
+  };
+
+  const getMoreActionsDropdown = () => {
+    return (
+      <div>
+        <Button className={"!px-[0.9375rem] min-w-[150px]"} plain={true} onClick={onCancelRelayer}>
+          {t(localeKeys.cancelRelayer)}
+        </Button>
+      </div>
+    );
   };
 
   return (
@@ -105,15 +116,24 @@ const Account = ({ advanced = false }: AccountProps) => {
             </Tooltip>
           </Button>
           {isRegistered ? (
-            <Button
-              onClick={onMoreActions}
-              className={
-                "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-              }
-              plain={true}
+            <Dropdown
+              placement={"right"}
+              className={"w-full lg:w-auto"}
+              triggerEvent={"click"}
+              closeOnInteraction={true}
+              overlay={getMoreActionsDropdown()}
+              offset={[0, 10]}
+              dropdownClassName={"w-full lg:w-auto"}
             >
-              {t(localeKeys.moreActions)}
-            </Button>
+              <Button
+                className={
+                  "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
+                }
+                plain={true}
+              >
+                {t(localeKeys.moreActions)}
+              </Button>
+            </Dropdown>
           ) : (
             <Button
               onClick={onRegisterRelayer}

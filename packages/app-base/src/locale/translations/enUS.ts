@@ -123,6 +123,7 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.slotAt]: "slot at",
   [localeKeys.extrinsic]: "extrinsic",
   [localeKeys.treasury]: "treasury",
+  [localeKeys.cancelRelayer]: "cancel relayer",
 };
 
 export default enUs;
