@@ -16,6 +16,7 @@
     "@feemarket/app-provider": "^1.0.0",
     "@feemarket/app-types": "^1.0.0",
     "@feemarket/app-utils": "^1.0.0",
+    "@polkadot/extension-dapp": "^0.44.6",
     "@popperjs/core": "^2.11.6",
     "@types/react-transition-group": "^4.4.5",
     "i18next": "^21.9.2",

@@ -2,10 +2,13 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { providers, BigNumber } from "ethers";
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { useFeeMarket } from "./feemarket";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, DAPP_NAME } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { isEthApi, isPolkadotApi, isEthChain, isPolkadotChain } from "@feemarket/app-utils";
 import { from, Subscription } from "rxjs";
+import { web3Accounts, web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
+import type { u16 } from "@polkadot/types";
+import { encodeAddress } from "@polkadot/util-crypto";
 
 export interface ApiCtx {
   apiPolkadot: ApiPromise | null;
@@ -42,8 +45,10 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     if (isEthApi(api)) {
       setAccounts(await api.send("eth_requestAccounts", []));
     } else if (isPolkadotApi(api)) {
-      // TODO
-      setAccounts([]);
+      await web3Enable(DAPP_NAME);
+      const allAccounts = await web3Accounts();
+      const ss58Prefix = (api.consts.system.ss58Prefix as u16).toNumber();
+      setAccounts(allAccounts.map((item) => encodeAddress(item.address, ss58Prefix)));
     } else {
       setAccounts(null);
     }
