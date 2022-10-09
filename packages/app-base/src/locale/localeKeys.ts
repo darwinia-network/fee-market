@@ -122,6 +122,7 @@ const localeKeys = {
   extrinsic: "extrinsic",
   treasury: "treasury",
   cancelRelayer: "cancelRelayer",
+  insufficientBalance: "insufficientBalance",
 };
 
 export default localeKeys;

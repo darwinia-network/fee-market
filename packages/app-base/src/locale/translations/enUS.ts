@@ -124,6 +124,7 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.extrinsic]: "extrinsic",
   [localeKeys.treasury]: "treasury",
   [localeKeys.cancelRelayer]: "cancel relayer",
+  [localeKeys.insufficientBalance]: "Insufficient balance.",
 };
 
 export default enUs;

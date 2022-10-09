@@ -19,7 +19,7 @@ export interface ModifyCollateralBalanceModalProps {
 const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }: ModifyCollateralBalanceModalProps) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { api, accountBalance } = useApi();
   const [isModalVisible, setModalVisibility] = useState(false);
   const [deposit, setDeposit] = useState("");
   const [feeEstimation, setFeeEstimation] = useState<BigNumber | null>(null);
@@ -110,7 +110,10 @@ const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }:
     setDeposit(value);
 
     if (value) {
-      // const depositAmount = ethersUtils.parseUnits(value, nativeToken.decimals);
+      const depositAmount = ethersUtils.parseUnits(value, nativeToken.decimals);
+      if (depositAmount.gt(currentCollateral) && depositAmount.sub(currentCollateral).gte(accountBalance)) {
+        setDepositError(generateError(t(localeKeys.insufficientBalance)));
+      }
     }
   };
 
