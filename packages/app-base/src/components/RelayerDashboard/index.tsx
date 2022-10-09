@@ -7,10 +7,12 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useEffect, useState } from "react";
 
-import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import type { FeeMarketSourceChainPolkadot, AddEthereumChainParameter } from "@feemarket/app-types";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
+import { isEthApi, isEthChain } from "@feemarket/app-utils";
+import { utils as ethersUtils } from "ethers";
 
 const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
 
@@ -29,8 +31,37 @@ const RelayerDashboard = () => {
     ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
     : null;
 
-  const onSwitchNetwork = () => {
-    console.log("switch network====");
+  const onSwitchNetwork = async () => {
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
+      const chainId = ethersUtils.hexValue(ETH_CHAIN_CONF[currentMarket.source].chainId);
+
+      try {
+        await api.send("wallet_switchEthereumChain", [{ chainId }]);
+      } catch (switchError) {
+        console.error("switch network:", switchError);
+        // This error code indicates that the chain has not been added to MetaMask.
+        if ((switchError as { code: number }).code === 4902) {
+          try {
+            const params: AddEthereumChainParameter = {
+              chainId,
+              chainName: ETH_CHAIN_CONF[currentMarket.source].chainName,
+              nativeCurrency: {
+                name: ETH_CHAIN_CONF[currentMarket.source].nativeToken.symbol,
+                symbol: ETH_CHAIN_CONF[currentMarket.source].nativeToken.symbol,
+                decimals: 18,
+              },
+              rpcUrls: [ETH_CHAIN_CONF[currentMarket.source].provider.rpc],
+              blockExplorerUrls: [ETH_CHAIN_CONF[currentMarket.source].explorer.url],
+            };
+            await api.send("wallet_addEthereumChain", [params]);
+          } catch (addError) {
+            console.error("add network:", addError);
+            // handle "add" error
+          }
+        }
+        // handle other "switch" errors
+      }
+    }
   };
 
   const onShowNotification = () => {
@@ -42,12 +73,16 @@ const RelayerDashboard = () => {
   };
 
   useEffect(() => {
-    if (Object.values(ETH_CHAIN_CONF).some((item) => item.chainId === currentChainId)) {
-      onHideNotification();
-    } else {
+    if (
+      currentMarket?.source &&
+      isEthChain(currentMarket.source) &&
+      ETH_CHAIN_CONF[currentMarket.source].chainId !== currentChainId
+    ) {
       onShowNotification();
+    } else {
+      onHideNotification();
     }
-  }, [currentChainId]);
+  }, [currentMarket?.source, currentChainId]);
 
   return (
     /*Don't use flex gap to avoid a "junky gap animation" when the notification slides down */
