@@ -50,6 +50,8 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   }, [api]);
 
   useEffect(() => {
+    let sub$$: Subscription;
+
     if (currentMarket?.source) {
       if (ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]) {
         if (typeof window.ethereum !== "undefined") {
@@ -67,20 +69,31 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         const provider = new WsProvider(
           POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot].provider.rpc
         );
-        ApiPromise.create({ provider })
-          .then((api) => {
+        sub$$ = from(ApiPromise.create({ provider })).subscribe({
+          next: (api) => {
             setApi(api);
             setApiPolkadot(api);
-          })
-          .catch((error) => {
+          },
+          error: (error) => {
             console.error("Create api:", error);
-          });
+          },
+        });
+      } else {
+        setApi(null);
+        setApiEth(null);
+        setApiPolkadot(null);
       }
     } else {
       setApi(null);
       setApiEth(null);
       setApiPolkadot(null);
     }
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
   }, [currentMarket]);
 
   useEffect(() => {
@@ -90,6 +103,8 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       sub$$ = from(api.getNetwork()).subscribe(({ chainId }) => {
         setCurrentChainId(chainId);
       });
+    } else if (isPolkadotApi(api)) {
+      setCurrentChainId(null);
     } else {
       setCurrentChainId(null);
     }
