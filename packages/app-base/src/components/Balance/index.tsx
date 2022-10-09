@@ -7,22 +7,11 @@ import { useEffect, useState } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
 import { Tooltip } from "@darwinia/ui";
 
-import { BigNumber, utils as ethersUtils, Contract } from "ethers";
+import { BigNumber, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
-import { isEthApi, isEthChain } from "@feemarket/app-utils";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
-
-const formatBalance = (
-  amount: BigNumber | null | undefined,
-  decimals: number | null | undefined,
-  symbol: string | null | undefined
-): string => {
-  if (amount && decimals && symbol) {
-    return `${ethersUtils.commify(ethersUtils.formatUnits(amount, decimals))} ${symbol}`;
-  }
-  return "-";
-};
 
 interface Props {
   relayerAddress: string;
@@ -102,7 +91,9 @@ const Balance = ({ relayerAddress }: Props) => {
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>
-              {formatBalance(collateralAmount, nativeToken?.decimals, nativeToken?.symbol)}
+              {formatBalance(collateralAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                precision: BALANCE_DECIMALS,
+              })}
             </div>
             <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
               <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
@@ -123,7 +114,9 @@ const Balance = ({ relayerAddress }: Props) => {
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>
-              {formatBalance(currentLockedAmount, nativeToken?.decimals, nativeToken?.symbol)}
+              {formatBalance(currentLockedAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                precision: BALANCE_DECIMALS,
+              })}
             </div>
           </div>
         </div>
@@ -145,7 +138,9 @@ const Balance = ({ relayerAddress }: Props) => {
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>
               {t(localeKeys.quotePhrase, {
-                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol),
+                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                  precision: BALANCE_DECIMALS,
+                }),
               })}
             </div>
             <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
@@ -157,6 +152,7 @@ const Balance = ({ relayerAddress }: Props) => {
       {/*Modify quote modal*/}
       <ModifyQuoteModal
         onClose={onModifyQuoteModalClose}
+        relayerAddress={relayerAddress}
         isVisible={isModifyQuoteModalVisible}
         currentQuote={currentQuoteAmount || BigNumber.from(0)}
       />

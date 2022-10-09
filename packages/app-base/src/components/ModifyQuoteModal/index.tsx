@@ -3,19 +3,25 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState } from "react";
 
-import { BigNumber, utils as ethersUtils } from "ethers";
-import {} from "@feemarket/app-utils";
+import { BigNumber, utils as ethersUtils, Contract } from "ethers";
+import { isEthApi, isPolkadotApi, isEthChain, isPolkadotChain, triggerContract } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
+import { from, switchMap, forkJoin } from "rxjs";
+
+const SENTINEL_HEAD = "0x0000000000000000000000000000000000000001";
+// const SENTINEL_HEAD = '0000000000000000000000000000000000000000000000000000000000000001';
+// const SENTINEL_TAIL = '0x02';
 
 export interface ModifyQuoteModalProps {
   isVisible: boolean;
   currentQuote: BigNumber;
+  relayerAddress: string;
   onClose: () => void;
 }
 
-const ModifyQuoteModal = ({ isVisible, currentQuote, onClose }: ModifyQuoteModalProps) => {
+const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: ModifyQuoteModalProps) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -42,12 +48,83 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, onClose }: ModifyQuoteModal
   };
 
   const onModifyQuote = () => {
-    if (quote === "") {
-      setQuoteError(generateError(t(localeKeys.quoteAmountLimitError, { amount: "15 RING" })));
-      return;
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && quote && relayerAddress) {
+      if (Number(quote) <= 0) {
+        setQuoteError(
+          generateError(t(localeKeys.quoteAmountLimitError, { amount: `0 ${nativeToken?.symbol ?? "-"}` }))
+        );
+        return;
+      }
+      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+
+      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
+
+      from(contract.relayerCount() as Promise<BigNumber>)
+        .pipe(
+          switchMap((relayerCount) =>
+            forkJoin(
+              new Array(relayerCount.toNumber())
+                .fill(0)
+                .map(
+                  (_, index) =>
+                    contract.getOrderBook(index + 1, true) as Promise<
+                      [BigNumber, string[], BigNumber[], BigNumber[], BigNumber[]]
+                    >
+                )
+            )
+          )
+        )
+        .subscribe({
+          next: (book) => {
+            const oldIndex = book.findIndex((item) => item[1].some((item) => item === relayerAddress));
+            let oldPrev: string | null = null;
+            if (oldIndex === 0) {
+              oldPrev = SENTINEL_HEAD;
+            } else if (oldIndex > 0) {
+              oldPrev = book[oldIndex - 1][1][0];
+            }
+
+            let newIndex = 0;
+            for (let i = 0; i < book.length; i++) {
+              if (quoteAmount.gte(book[i][2][0])) {
+                newIndex = i;
+              }
+            }
+            const newPrev = newIndex === 0 ? SENTINEL_HEAD : book[newIndex - 1][1][0];
+
+            console.log("book:", book);
+            console.log("move prev:", oldPrev, newPrev);
+
+            triggerContract(contract, "move", [oldPrev, newPrev, quoteAmount], {
+              errorCallback: ({ error }) => {
+                console.error("call move:", error);
+              },
+              responseCallback: ({ response }) => {
+                onCloseModal();
+                console.log("call move response:", response);
+              },
+              successCallback: ({ receipt }) => {
+                console.log("call move receipt:", receipt);
+              },
+            });
+          },
+          error: (error) => {
+            console.error("get all relayers:", error);
+          },
+        });
+    } else if (currentMarket?.source && isPolkadotChain(currentMarket.source) && isPolkadotApi(api) && quote) {
+      if (Number(quote) <= 0) {
+        setQuoteError(
+          generateError(t(localeKeys.quoteAmountLimitError, { amount: `0 ${nativeToken?.symbol ?? "-"}` }))
+        );
+        return;
+      }
+
+      onCloseModal();
+    } else {
+      onCloseModal();
     }
-    console.log("quote====", quote);
-    onCloseModal();
   };
 
   const onQuoteChanged = (e: ChangeEvent<HTMLInputElement>) => {
