@@ -1,5 +1,6 @@
 @import "../../assets/styles/common";
 $scaleDuration: 300ms;
+$translateDuration: 300ms;
 $opacityDuration: 300ms;
 
 .dw-select-wrapper {
@@ -73,37 +74,37 @@ $opacityDuration: 300ms;
   }
 
   .dw-drop-down-enter {
-    transform: scale3d(1, 0.8, 1);
+    transform: translateY(-20px);
     opacity: 0;
   }
 
   .dw-drop-down-enter-active {
-    transform: scale3d(1, 1, 1);
+    transform: translateY(0);
     opacity: 1;
-    transition: transform $scaleDuration ease-in-out, opacity $opacityDuration ease-in-out;
-    transform-origin: top center;
+    transition: transform $translateDuration ease-in-out, opacity $opacityDuration ease-in-out;
+    pointer-events: none;
   }
 
   .dw-drop-down-enter-done {
     opacity: 1;
-    transform: scale3d(1, 1, 1);
+    transform: translateY(0);
   }
 
   .dw-drop-down-exit {
     opacity: 1;
-    transform: scale3d(1, 1, 1);
+    transform: translateY(0);
   }
 
   .dw-drop-down-exit-active {
-    transform: scale3d(1, 0.8, 1);
+    transform: translateY(-20px);
     opacity: 0;
-    transition: transform $scaleDuration ease-in-out, opacity $opacityDuration ease-in-out;
-    transform-origin: top center;
+    transition: transform $translateDuration ease-in-out, opacity $opacityDuration ease-in-out;
+    pointer-events: none;
   }
 
   .dw-drop-down-exit-done {
     opacity: 0;
-    transform: scale3d(1, 0.8, 1);
+    transform: translateY(-20px);
   }
 }
 
