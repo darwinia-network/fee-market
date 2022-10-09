@@ -108,6 +108,10 @@ const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }:
     setDepositError(null);
     const value = e.target.value;
     setDeposit(value);
+
+    if (value) {
+      // const depositAmount = ethersUtils.parseUnits(value, nativeToken.decimals);
+    }
   };
 
   // Estimate fee

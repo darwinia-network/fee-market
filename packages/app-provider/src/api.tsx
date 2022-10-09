@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { providers } from "ethers";
+import { providers, BigNumber } from "ethers";
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { useFeeMarket } from "./feemarket";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
@@ -12,6 +12,7 @@ export interface ApiCtx {
   apiEth: providers.Web3Provider | null;
   api: providers.Web3Provider | ApiPromise | null;
   accounts: string[] | null;
+  accountBalance: BigNumber;
   currentChainId: number | null;
   requestAccounts: () => Promise<void>;
 }
@@ -22,6 +23,7 @@ const defaultValue: ApiCtx = {
   apiPolkadot: null,
   accounts: null,
   currentChainId: null,
+  accountBalance: BigNumber.from(0),
   requestAccounts: async () => undefined,
 };
 
@@ -33,6 +35,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [apiPolkadot, setApiPolkadot] = useState<ApiPromise | null>(null);
   const [api, setApi] = useState<providers.Web3Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<string[] | null>(null);
+  const [accountBalance, setAccountBalance] = useState<BigNumber>(BigNumber.from(0));
   const [currentChainId, setCurrentChainId] = useState<number | null>(null);
 
   const requestAccounts = useCallback(async () => {
@@ -99,6 +102,28 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   }, [api]);
 
   useEffect(() => {
+    let sub$$: Subscription;
+
+    if (api && accounts?.length) {
+      if (isEthApi(api)) {
+        sub$$ = from(api.getBalance(accounts[0])).subscribe(setAccountBalance);
+      } else if (isPolkadotApi(api)) {
+        // TODO
+      } else {
+        setAccountBalance(BigNumber.from(0));
+      }
+    } else {
+      setAccountBalance(BigNumber.from(0));
+    }
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
+  }, [api, accounts]);
+
+  useEffect(() => {
     if (isEthChain(currentMarket?.source)) {
       console.log(currentMarket?.source, "is Eth Chain");
     } else if (isPolkadotChain(currentMarket?.source)) {
@@ -115,6 +140,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         apiEth,
         apiPolkadot,
         accounts,
+        accountBalance,
         currentChainId,
         requestAccounts,
       }}
