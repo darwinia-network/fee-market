@@ -192,7 +192,11 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
       {/*Account selection modal*/}
       <AccountSelectionModal onClose={onSwitchNetworkModalClose} isVisible={isActiveAccountModalVisible} />
       {/*Register relayer modal*/}
-      <RegisterRelayerModal onClose={onRegisterRelayerModalClose} isVisible={isRegisterRelayerModalVisible} />
+      <RegisterRelayerModal
+        onClose={onRegisterRelayerModalClose}
+        isVisible={isRegisterRelayerModalVisible}
+        relayerAddress={relayerAddress}
+      />
       {/*Register relayer modal*/}
       <CancelRelayerModal onClose={onCancelRelayerModalClose} isVisible={isCancelRelayerModalVisible} />
     </div>

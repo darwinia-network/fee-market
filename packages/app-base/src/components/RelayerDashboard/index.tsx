@@ -33,7 +33,7 @@ const RelayerDashboard = () => {
   });
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
 
-  const [testRelayerAddress, setTestRelayerAddress] = useState("");
+  const [testRelayerAddress, setTestRelayerAddress] = useState("0xf422673CB7a673f595852f7B00906408A0b073db");
 
   const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
     ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
@@ -44,15 +44,15 @@ const RelayerDashboard = () => {
       const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
-      if (chainConfig.isSmartChain) {
-        (contract.getTopRelayers() as Promise<string[]>).then((res) => {
-          setTestRelayerAddress(res[0] || "");
-        });
-      } else {
-        (contract.getTopRelayer() as Promise<string>).then((res) => {
-          setTestRelayerAddress(res);
-        });
-      }
+      // if (chainConfig.isSmartChain) {
+      //   (contract.getTopRelayers() as Promise<string[]>).then((res) => {
+      //     setTestRelayerAddress(res[0] || "");
+      //   });
+      // } else {
+      //   (contract.getTopRelayer() as Promise<string>).then((res) => {
+      //     setTestRelayerAddress(res);
+      //   });
+      // }
     }
   }, [api, currentMarket]);
 

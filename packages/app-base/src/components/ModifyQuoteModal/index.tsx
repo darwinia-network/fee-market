@@ -85,13 +85,14 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
               oldPrev = book[oldIndex - 1][1][0];
             }
 
-            let newIndex = 0;
+            let newIndex = -1;
             for (let i = 0; i < book.length; i++) {
-              if (quoteAmount.gte(book[i][2][0])) {
+              if (quoteAmount.gt(book[i][2][0])) {
                 newIndex = i;
+                break;
               }
             }
-            const newPrev = newIndex === 0 ? SENTINEL_HEAD : book[newIndex - 1][1][0];
+            const newPrev = newIndex === -1 ? SENTINEL_HEAD : book[newIndex][1][0];
 
             console.log("book:", book);
             console.log("move prev:", oldPrev, newPrev);
