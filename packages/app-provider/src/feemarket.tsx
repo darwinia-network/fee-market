@@ -49,11 +49,11 @@ export const FeeMarketProvider = ({ children }: PropsWithChildren<unknown>) => {
         navigate(`${pathname}?${urlSearchParams.toString()}`);
       }
     },
-    [search, navigate]
+    [navigate]
   );
 
   useEffect(() => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
+    const urlSearchParams = new URLSearchParams(search);
     const source = urlSearchParams.get(UrlSearchParamsKey.FROM);
     const destination = urlSearchParams.get(UrlSearchParamsKey.TO);
 

@@ -44,6 +44,28 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
           },
         ],
       },
+      {
+        id: "Ethereum",
+        name: t(localeKeys.ethereum),
+        logo: ethereumLogo,
+        destinations: [
+          {
+            id: "Darwinia Smart Chain",
+            name: t(localeKeys.darwiniaSmartChain),
+          },
+        ],
+      },
+      {
+        id: "Darwinia Smart Chain",
+        name: t(localeKeys.darwiniaSmartChain),
+        logo: darwiniaLogo,
+        destinations: [
+          {
+            id: "Ethereum",
+            name: t(localeKeys.ethereum),
+          },
+        ],
+      },
     ],
     /*All the logos below need to be changed accordingly*/
     testNets: [
@@ -81,6 +103,17 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
           {
             id: "Pangoro Smart Chain",
             name: t(localeKeys.pangoroSmartChain),
+          },
+        ],
+      },
+      {
+        id: "Pangoro Smart Chain",
+        name: t(localeKeys.pangoroSmartChain),
+        logo: pangoroLogo,
+        destinations: [
+          {
+            id: "Goerli",
+            name: t(localeKeys.goerli),
           },
         ],
       },

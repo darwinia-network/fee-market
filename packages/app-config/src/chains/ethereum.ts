@@ -4,9 +4,9 @@ import chainLogo from "../images/network/ethereum.svg";
 import contractInterface from "../abi/eth.json";
 
 const config: EthChainConfig = {
-  chainId: ChainID.GOERLI,
-  chainName: "Goerli",
-  displayName: "Goerli Testnet",
+  chainId: ChainID.ETHEREUM,
+  chainName: "Ethereum",
+  displayName: "Ethereum",
   chainLogo,
   graphql: {
     endpoint: "",
@@ -16,12 +16,12 @@ const config: EthChainConfig = {
     decimals: 18,
   },
   explorer: {
-    url: "https://goerli.etherscan.io/",
+    url: "https://etherscan.io/",
   },
   provider: {
-    rpc: "https://goerli.infura.io/v3/",
+    rpc: "https://mainnet.infura.io/v3/",
   },
-  contractAddress: "0xdb5E16A6E25ABF29dbe26e701D1DDCad03180E92",
+  contractAddress: "0xCD97185B7d05f8ea91d241C8dfD51a2Cc9c0547a",
   contractInterface,
 };
 

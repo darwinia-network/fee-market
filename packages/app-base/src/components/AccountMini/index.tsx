@@ -1,9 +1,14 @@
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
-const AccountMini = () => {
+
+interface Props {
+  address?: string;
+}
+
+const AccountMini = ({ address }: Props) => {
   const info = {
     avatar: relayerAvatar,
-    name: "🚀KUBE-VALI 2",
-    account: "5D9p3ZX1grjYThXUyQzVmKB4Bu8x9u9r4Jc41grjYThXUyQzVmKB4Bu8",
+    name: "🚀Account name",
+    account: address ?? "5D9p3ZX1grjYThXUyQzVmKB4Bu8x9u9r4Jc41grjYThXUyQzVmKB4Bu8",
   };
 
   return (
@@ -12,8 +17,8 @@ const AccountMini = () => {
         <img className={"w-full rounded-full"} src={info.avatar} alt="image" />
       </div>
       <div className={"flex items-center flex-1 min-w-0"}>
-        <div className={"shrink-0 max-w-[40%] truncate"}>{info.name}</div>
-        <div className={"shrink-0 px-[3px]"}>-</div>
+        {/* <div className={"shrink-0 max-w-[40%] truncate"}>{info.name}</div> */}
+        {/* <div className={"shrink-0 px-[3px]"}>-</div> */}
         <div className={"flex-1 min-w-0"}>
           <div className={"truncate"}>{info.account}</div>
         </div>

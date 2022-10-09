@@ -124,6 +124,7 @@ const localeKeys = {
   cancelRelayer: "cancelRelayer",
   pageNotFound: "pageNotFound",
   goHome: "goHome",
+  insufficientBalance: "insufficientBalance",
 };
 
 export default localeKeys;

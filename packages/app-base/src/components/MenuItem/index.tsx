@@ -42,7 +42,7 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }
 
           return `select-none max-w-full flex flex-1 ${activeClass} ${linkSpecialClasses} items-center gap-[0.625rem]`;
         }}
-        to={path}
+        to={`${path}${location.search}`}
       >
         {getNavItem(text, icon, hasSubMenu, isOpen, isChildMenu)}
       </NavLink>

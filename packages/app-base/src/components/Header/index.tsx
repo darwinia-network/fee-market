@@ -3,7 +3,7 @@ import logoIcon from "../../assets/images/logo.png";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { Drawer, Modal } from "@darwinia/ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
@@ -28,7 +28,7 @@ interface Props {
 const Header = ({ title, isNotFoundPage = false }: Props) => {
   const { t } = useTranslation();
   const { menuList } = useMenuList();
-  const { setCurrentMarket } = useFeeMarket();
+  const { currentMarket, setCurrentMarket } = useFeeMarket();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const [popperTriggerElement, setPopperTriggerElement] = useState<HTMLElement | null>(null);
@@ -44,6 +44,10 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
 
   /* Set default network selection */
   useEffect(() => {
+    if (currentMarket) {
+      return;
+    }
+
     /* select the first network by default  */
     const networks = networkList[defaultNetworkType];
     if (networks.length > 0) {
@@ -65,7 +69,7 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
         });
       }
     }
-  }, [setCurrentMarket]);
+  }, [currentMarket, setCurrentMarket]);
 
   useEffect(() => {
     setDrawerVisibility(false);

@@ -3,14 +3,34 @@ import localeKeys from "../../locale/localeKeys";
 import helpIcon from "../../assets/images/help.svg";
 import editIcon from "../../assets/images/edit.svg";
 import ModifyQuoteModal from "../ModifyQuoteModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
 import { Tooltip } from "@darwinia/ui";
 
-const Balance = () => {
+import { BigNumber, Contract } from "ethers";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
+import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
+
+interface Props {
+  relayerAddress: string;
+}
+
+const Balance = ({ relayerAddress }: Props) => {
   const { t } = useTranslation();
+  const { currentMarket } = useFeeMarket();
+  const { api } = useApi();
   const [isModifyQuoteModalVisible, setModifyQuoteModalVisible] = useState(false);
   const [isModifyCollateralBalanceModalVisible, setModifyCollateralBalanceModalVisible] = useState(false);
+  const [collateralAmount, setCollateralAmount] = useState<BigNumber | null>(null);
+  const [currentLockedAmount, setCurrentLockedAmount] = useState<BigNumber | null>(null);
+  const [currentQuoteAmount, setCurrentQuoteAmount] = useState<BigNumber | null>(null);
+
+  const nativeToken =
+    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
+    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+    null;
 
   const onShowModifyQuoteModal = () => {
     setModifyQuoteModalVisible(true);
@@ -27,6 +47,28 @@ const Balance = () => {
   const onModifyCollateralBalanceModalClose = () => {
     setModifyCollateralBalanceModalVisible(false);
   };
+
+  useEffect(() => {
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
+      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      (contract.balanceOf(relayerAddress) as Promise<BigNumber>).then(setCollateralAmount).catch((error) => {
+        setCollateralAmount(null);
+        console.error("get collateral:", error);
+      });
+
+      (contract.lockedOf(relayerAddress) as Promise<BigNumber>).then(setCurrentLockedAmount).catch((error) => {
+        setCurrentLockedAmount(null);
+        console.error("get currently locked:", error);
+      });
+
+      (contract.feeOf(relayerAddress) as Promise<BigNumber>).then(setCurrentQuoteAmount).catch((error) => {
+        setCurrentQuoteAmount(null);
+        console.error("get current quote:", error);
+      });
+    }
+  }, [api, currentMarket, relayerAddress]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>
@@ -48,7 +90,11 @@ const Balance = () => {
             </Tooltip>
           </div>
           <div className={"flex"}>
-            <div className={"text-24-bold uppercase"}>4,300 RING</div>
+            <div className={"text-24-bold uppercase"}>
+              {formatBalance(collateralAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                precision: BALANCE_DECIMALS,
+              })}
+            </div>
             <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
               <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
             </div>
@@ -67,7 +113,11 @@ const Balance = () => {
             </Tooltip>
           </div>
           <div className={"flex"}>
-            <div className={"text-24-bold uppercase"}>130 RING</div>
+            <div className={"text-24-bold uppercase"}>
+              {formatBalance(currentLockedAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                precision: BALANCE_DECIMALS,
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -86,7 +136,13 @@ const Balance = () => {
             </Tooltip>
           </div>
           <div className={"flex"}>
-            <div className={"text-24-bold uppercase"}>{t(localeKeys.quotePhrase, { amount: "55 RING" })}</div>
+            <div className={"text-24-bold uppercase"}>
+              {t(localeKeys.quotePhrase, {
+                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                  precision: BALANCE_DECIMALS,
+                }),
+              })}
+            </div>
             <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
               <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
             </div>
@@ -94,11 +150,17 @@ const Balance = () => {
         </div>
       </div>
       {/*Modify quote modal*/}
-      <ModifyQuoteModal onClose={onModifyQuoteModalClose} isVisible={isModifyQuoteModalVisible} />
+      <ModifyQuoteModal
+        onClose={onModifyQuoteModalClose}
+        relayerAddress={relayerAddress}
+        isVisible={isModifyQuoteModalVisible}
+        currentQuote={currentQuoteAmount || BigNumber.from(0)}
+      />
       {/*Modify balance modal*/}
       <ModifyCollateralBalanceModal
         onClose={onModifyCollateralBalanceModalClose}
         isVisible={isModifyCollateralBalanceModalVisible}
+        currentCollateral={collateralAmount || BigNumber.from(0)}
       />
     </div>
   );

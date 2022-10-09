@@ -24,7 +24,7 @@ const RelayerDetails = () => {
   return (
     <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
       {/*Basic Info*/}
-      <Account />
+      <Account relayerAddress={relayerAddress} />
 
       {/*Charts*/}
       <RelayerDetailsChart
