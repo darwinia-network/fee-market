@@ -27,7 +27,7 @@ interface Props {
 const Header = ({ title }: Props) => {
   const { t } = useTranslation();
   const { menuList } = useMenuList();
-  const { setCurrentMarket } = useFeeMarket();
+  const { currentMarket, setCurrentMarket } = useFeeMarket();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const [popperTriggerElement, setPopperTriggerElement] = useState<HTMLElement | null>(null);
@@ -43,6 +43,10 @@ const Header = ({ title }: Props) => {
 
   /* Set default network selection */
   useEffect(() => {
+    if (currentMarket) {
+      return;
+    }
+
     /* select the first network by default  */
     const networks = networkList[defaultNetworkType];
     if (networks.length > 0) {
@@ -64,7 +68,7 @@ const Header = ({ title }: Props) => {
         });
       }
     }
-  }, [setCurrentMarket]);
+  }, [currentMarket, setCurrentMarket]);
 
   useEffect(() => {
     setDrawerVisibility(false);
