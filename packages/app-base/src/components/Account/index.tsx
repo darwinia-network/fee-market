@@ -1,24 +1,58 @@
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Dropdown, Tooltip } from "@darwinia/ui";
 import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
 
+import { BigNumber, Contract } from "ethers";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
+import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
+import { from, Subscription } from "rxjs";
+
 interface AccountProps {
   advanced?: boolean;
+  relayerAddress: string;
 }
 
-const Account = ({ advanced = false }: AccountProps) => {
+const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(true);
+  const [isRegistered, setRegistered] = useState(false);
+
+  const { currentMarket } = useFeeMarket();
+  const { api } = useApi();
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
   const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(false);
+
+  useEffect(() => {
+    let sub$$: Subscription;
+
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
+      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      sub$$ = from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
+        next: setRegistered,
+        error: (error) => {
+          setRegistered(false);
+          console.error("check is relayer:", error);
+        },
+      });
+    }
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
+  }, [relayerAddress, currentMarket?.source, api]);
 
   const onSwitchAccount = () => {
     setActiveAccountModalVisible(true);
@@ -71,7 +105,7 @@ const Account = ({ advanced = false }: AccountProps) => {
           } gap-[0.3125rem]`}
         >
           <div className={"flex gap-[0.3125rem] lg:gap-[0.625rem] flex-col lg:flex-row"}>
-            <div className={"uppercase text-18-bold"}>🚀KUBE-VALI 2</div>
+            <div className={"uppercase text-18-bold"}>🚀Account name</div>
             {advanced && (
               <div>
                 <span
@@ -84,7 +118,7 @@ const Account = ({ advanced = false }: AccountProps) => {
               </div>
             )}
           </div>
-          <div className={"break-words"}>16ZL8yLyXv3V3L3z9ofR1ovFLziyXaN1DPq4yffMAZ9czzBD</div>
+          <div className={"break-words"}>{relayerAddress}</div>
         </div>
       </div>
       {advanced && (
