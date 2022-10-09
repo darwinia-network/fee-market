@@ -51,7 +51,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
           </div>
         );
       },
-      width: "12.727%",
+      width: "10%",
     },
     {
       id: "2",
@@ -60,7 +60,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       render: (row) => {
         return getRelayerRolesColumn(row);
       },
-      width: "38.18%",
+      width: "32%",
     },
     {
       id: "3",
@@ -141,6 +141,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     console.log("page number changed=====", pageNumber);
   }, []);
 
+  //TODO make sure the pageSize and totalPages are changed accordingly, refer the onPageChange method
   const [tablePagination, setTablePagination] = useState<PaginationProps>({
     currentPage: 1,
     pageSize: 10,
@@ -172,7 +173,7 @@ const RoleOrderMapping: Record<string, number> = {
 
 const getRelayerRolesColumn = (row: Order) => {
   return (
-    <div className={"flex-wrap flex flex-row gap-[0.625rem]"}>
+    <div className={"flex-wrap flex flex-row gap-[0.625rem] text-12"}>
       {row.relayerRoles
         .sort((a, b) => RoleOrderMapping[a] - RoleOrderMapping[b])
         .map((role, index) => {

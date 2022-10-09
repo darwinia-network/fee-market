@@ -8,7 +8,7 @@ export interface ButtonProps extends DetailedHTMLProps<ButtonHTMLAttributes<HTML
 
 const Button = ({ children, style, className, plain, size = "large", ...rest }: ButtonProps) => {
   const sizeClass = size === "large" ? "px-[1.25rem] h-[2.5rem]" : "px-[1.25rem] h-[2.5rem]";
-  const btnBg = plain ? "" : "bg-primary";
+  const btnBg = plain ? "bg-blackSecondary" : "bg-primary";
   return (
     <button
       style={{ ...style }}
