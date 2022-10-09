@@ -18,6 +18,9 @@ const config: EthChainConfig = {
   explorer: {
     url: "https://pangoro.subscan.io/",
   },
+  provider: {
+    rpc: "https://pangoro-rpc.darwinia.network/",
+  },
   contractAddress: "0x25ee4212CfA2DC29E6a5e4A857b9656E439259c9",
   contractInterface,
 };

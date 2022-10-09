@@ -59,13 +59,13 @@ export interface ChainConfig {
   explorer: {
     url: string;
   };
+  provider: {
+    rpc: string;
+  };
 }
 
 export interface PolkadotChainConfig extends ChainConfig {
   chainName: FeeMarketPolkadotChain;
-  provider: {
-    rpc: string;
-  };
 }
 
 export interface EthChainConfig extends ChainConfig {

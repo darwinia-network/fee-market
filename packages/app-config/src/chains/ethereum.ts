@@ -18,6 +18,9 @@ const config: EthChainConfig = {
   explorer: {
     url: "https://etherscan.io/",
   },
+  provider: {
+    rpc: "https://mainnet.infura.io/v3/",
+  },
   contractAddress: "0xCD97185B7d05f8ea91d241C8dfD51a2Cc9c0547a",
   contractInterface,
 };
