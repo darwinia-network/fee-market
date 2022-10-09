@@ -12,7 +12,7 @@ const config: EthChainConfig = {
     endpoint: "",
   },
   nativeToken: {
-    symbol: "GoerliETH",
+    symbol: "ETH",
     decimals: 18,
   },
   explorer: {

@@ -73,4 +73,5 @@ export interface EthChainConfig extends ChainConfig {
   chainName: FeeMarketEthChain;
   contractAddress: string;
   contractInterface: ContractInterface;
+  isSmartChain?: boolean;
 }

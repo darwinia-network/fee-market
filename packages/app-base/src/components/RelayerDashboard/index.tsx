@@ -12,9 +12,15 @@ import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
 import { isEthApi, isEthChain } from "@feemarket/app-utils";
-import { utils as ethersUtils } from "ethers";
+import { utils as ethersUtils, Contract } from "ethers";
 
 const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
+
+const goerliRelayerAddress = "0x7181932Da75beE6D3604F4ae56077B52fB0c5a3b";
+const ethereumRelayerAddress = "0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9";
+const darwiniaSmartChainRelayerAdrress = "0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9";
+
+const ethRelayerAddress = darwiniaSmartChainRelayerAdrress;
 
 const RelayerDashboard = () => {
   const { t } = useTranslation();
@@ -27,9 +33,28 @@ const RelayerDashboard = () => {
   });
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
 
+  const [testRelayerAddress, setTestRelayerAddress] = useState("");
+
   const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
     ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
     : null;
+
+  useEffect(() => {
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
+      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      if (chainConfig.isSmartChain) {
+        (contract.getTopRelayers() as Promise<string[]>).then((res) => {
+          setTestRelayerAddress(res[0] || "");
+        });
+      } else {
+        (contract.getTopRelayer() as Promise<string>).then((res) => {
+          setTestRelayerAddress(res);
+        });
+      }
+    }
+  }, [api, currentMarket]);
 
   const onSwitchNetwork = async () => {
     if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
@@ -108,7 +133,7 @@ const RelayerDashboard = () => {
         <Account advanced={true} />
       </div>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Balance />
+        <Balance relayerAddress={testRelayerAddress} />
       </div>
       {/*Charts*/}
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
