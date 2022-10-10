@@ -20,6 +20,7 @@ export interface ApiCtx {
   accountBalance: BigNumber;
   currentChainId: number | null;
   requestAccounts: () => Promise<void>;
+  setCurrentAccount: (account: string) => void;
 }
 
 const defaultValue: ApiCtx = {
@@ -31,6 +32,7 @@ const defaultValue: ApiCtx = {
   currentChainId: null,
   accountBalance: BigNumber.from(0),
   requestAccounts: async () => undefined,
+  setCurrentAccount: () => undefined,
 };
 
 export const ApiContext = createContext<ApiCtx>(defaultValue);
@@ -169,6 +171,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         accountBalance,
         currentChainId,
         requestAccounts,
+        setCurrentAccount,
       }}
     >
       {children}
