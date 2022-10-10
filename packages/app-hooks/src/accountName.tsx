@@ -1,13 +1,13 @@
 import keyring from "@polkadot/ui-keyring";
 import { isFunction } from "@polkadot/util";
 import { useApi } from "@feemarket/app-provider";
-import { isPolkadotApi } from "@feemarket/app-utils";
+import { isPolkadotApi, formatShortAddress } from "@feemarket/app-utils";
 import { useEffect, useState } from "react";
 import { from, Subscription } from "rxjs";
 
 export const useAccountName = (address: string) => {
   const { api } = useApi();
-  const [displayName, setDisplayName] = useState(address);
+  const [displayName, setDisplayName] = useState(formatShortAddress(address));
 
   useEffect(() => {
     let sub$$: Subscription;
@@ -23,12 +23,18 @@ export const useAccountName = (address: string) => {
           if (identity.display) {
             setDisplayName(identity.displayParent ? `${identity.displayParent}/${identity.display}` : identity.display);
           } else {
-            setDisplayName(accountIndex ? `${cacheAddr} ${accountIndex.toNumber()}` : cacheAddr);
+            setDisplayName(
+              accountIndex
+                ? `${formatShortAddress(cacheAddr)} ${accountIndex.toNumber()}`
+                : formatShortAddress(cacheAddr)
+            );
           }
         } else if (nickname) {
           setDisplayName(nickname);
         } else {
-          setDisplayName(accountIndex ? `${cacheAddr} ${accountIndex.toNumber()}` : cacheAddr);
+          setDisplayName(
+            accountIndex ? `${formatShortAddress(cacheAddr)} ${accountIndex.toNumber()}` : formatShortAddress(cacheAddr)
+          );
         }
       });
     }
