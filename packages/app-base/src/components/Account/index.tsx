@@ -198,7 +198,11 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
         relayerAddress={relayerAddress}
       />
       {/*Register relayer modal*/}
-      <CancelRelayerModal onClose={onCancelRelayerModalClose} isVisible={isCancelRelayerModalVisible} />
+      <CancelRelayerModal
+        onClose={onCancelRelayerModalClose}
+        isVisible={isCancelRelayerModalVisible}
+        relayerAddress={relayerAddress}
+      />
     </div>
   );
 };
