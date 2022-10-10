@@ -9,6 +9,7 @@ import { from, Subscription } from "rxjs";
 import { web3Accounts, web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
 import type { u16 } from "@polkadot/types";
 import { encodeAddress } from "@polkadot/util-crypto";
+import keyring from "@polkadot/ui-keyring";
 
 export interface ApiCtx {
   apiPolkadot: ApiPromise | null;
@@ -48,6 +49,9 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       await web3Enable(DAPP_NAME);
       const allAccounts = await web3Accounts();
       const ss58Prefix = (api.consts.system.ss58Prefix as u16).toNumber();
+      allAccounts.forEach((item) => {
+        keyring.saveAddress(encodeAddress(item.address, ss58Prefix), item.meta);
+      });
       setAccounts(allAccounts.map((item) => encodeAddress(item.address, ss58Prefix)));
     } else {
       setAccounts(null);

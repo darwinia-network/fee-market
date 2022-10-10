@@ -1800,7 +1800,7 @@
     "@polkadot/util" "10.1.9"
     "@polkadot/util-crypto" "10.1.9"
 
-"@polkadot/networks@10.1.10":
+"@polkadot/networks@10.1.10", "@polkadot/networks@^10.1.10":
   version "10.1.10"
   resolved "https://registry.yarnpkg.com/@polkadot/networks/-/networks-10.1.10.tgz#421ce200f8b26759edd1d9d9408d934527f5b455"
   integrity sha512-Db78t2XnFIZbdSdu1aFuj3/1cNwcSzG/+wNrpCQ9dPhnGPy5S1GVbmU8pyxTftPKdTFc+8RdBr+5bc0d5ijGiA==
@@ -1990,6 +1990,31 @@
     "@polkadot/util" "^10.1.10"
     "@polkadot/util-crypto" "^10.1.10"
     rxjs "^7.5.7"
+
+"@polkadot/ui-keyring@^2.9.11":
+  version "2.9.11"
+  resolved "https://registry.yarnpkg.com/@polkadot/ui-keyring/-/ui-keyring-2.9.11.tgz#185fd6620bc5452c1db51a3c7a1baba01b4a622e"
+  integrity sha512-rw/uMgAYDNc6TCxSeaUHgRa65pvQzKQC+J3LyTvoSACTiWGJempCMrcEuvSSPLP/I0MksDMzGS2yGwR3RisZzQ==
+  dependencies:
+    "@babel/runtime" "^7.19.0"
+    "@polkadot/keyring" "^10.1.10"
+    "@polkadot/ui-settings" "2.9.11"
+    "@polkadot/util" "^10.1.10"
+    "@polkadot/util-crypto" "^10.1.10"
+    mkdirp "^1.0.4"
+    rxjs "^7.5.7"
+    store "^2.0.12"
+
+"@polkadot/ui-settings@2.9.11":
+  version "2.9.11"
+  resolved "https://registry.yarnpkg.com/@polkadot/ui-settings/-/ui-settings-2.9.11.tgz#06bbf6a5556def091709d5fef6b798fcce056c9b"
+  integrity sha512-9VN/4pth8Dkq9dQbJW+QywNE7dHB1pyRVl/HHg7zt7QB8BAWHn6JK6DxUxrqmLV8TSfiUVGdXazwyXO/DGqpvQ==
+  dependencies:
+    "@babel/runtime" "^7.19.0"
+    "@polkadot/networks" "^10.1.10"
+    "@polkadot/util" "^10.1.10"
+    eventemitter3 "^4.0.7"
+    store "^2.0.12"
 
 "@polkadot/util-crypto@10.1.10", "@polkadot/util-crypto@^10.1.10", "@polkadot/util-crypto@^10.1.5":
   version "10.1.10"
@@ -7224,6 +7249,11 @@ ssri@^9.0.0, ssri@^9.0.1:
   integrity sha512-o57Wcn66jMQvfHG1FlYbWeZWW/dHZhJXjpIcTfXldXEk5nz5lStPo3mK0OJQfGR3RbZUlbISexbljkJzuEj/8Q==
   dependencies:
     minipass "^3.1.1"
+
+store@^2.0.12:
+  version "2.0.12"
+  resolved "https://registry.yarnpkg.com/store/-/store-2.0.12.tgz#8c534e2a0b831f72b75fc5f1119857c44ef5d593"
+  integrity sha512-eO9xlzDpXLiMr9W1nQ3Nfp9EzZieIQc10zPPMP5jsVV7bLOziSFFBP0XoDXACEIFtdI+rIz0NwWVA/QVJ8zJtw==
 
 string-argv@^0.3.1:
   version "0.3.1"
