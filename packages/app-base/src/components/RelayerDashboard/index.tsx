@@ -14,13 +14,14 @@ import { useRelayersDetailData } from "@feemarket/app-hooks";
 import { isEthApi, isEthChain } from "@feemarket/app-utils";
 import { utils as ethersUtils, Contract } from "ethers";
 
-const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
+// const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
+const relayerAddress = "5EXcfZrGWncD4FQTFMvcSCSGRMHJK8XMpGmFvtnhPZGhUNht";
 
 const goerliRelayerAddress = "0x7181932Da75beE6D3604F4ae56077B52fB0c5a3b";
 const ethereumRelayerAddress = "0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9";
 const darwiniaSmartChainRelayerAdrress = "0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9";
 
-const ethRelayerAddress = darwiniaSmartChainRelayerAdrress;
+const ethRelayerAddress = relayerAddress;
 
 const RelayerDashboard = () => {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ const RelayerDashboard = () => {
   });
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
 
-  const [testRelayerAddress, setTestRelayerAddress] = useState("0xf422673CB7a673f595852f7B00906408A0b073db");
+  const [testRelayerAddress, setTestRelayerAddress] = useState("5EXcfZrGWncD4FQTFMvcSCSGRMHJK8XMpGmFvtnhPZGhUNht");
 
   const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
     ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken

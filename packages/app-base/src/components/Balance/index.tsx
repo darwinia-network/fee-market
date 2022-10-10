@@ -10,8 +10,20 @@ import { Tooltip } from "@darwinia/ui";
 import { BigNumber, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
-import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
-import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
+import {
+  isEthApi,
+  isEthChain,
+  formatBalance,
+  isPolkadotApi,
+  getFeeMarketApiSection,
+  isPolkadotChain,
+} from "@feemarket/app-utils";
+import type {
+  FeeMarketSourceChainPolkadot,
+  FeeMarketSourceChainEth,
+  PalletFeeMarketRelayer,
+} from "@feemarket/app-types";
+import { from, Subscription } from "rxjs";
 
 interface Props {
   relayerAddress: string;
@@ -49,6 +61,8 @@ const Balance = ({ relayerAddress }: Props) => {
   };
 
   useEffect(() => {
+    let sub$$: Subscription;
+
     if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
       const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
@@ -67,7 +81,24 @@ const Balance = ({ relayerAddress }: Props) => {
         setCurrentQuoteAmount(null);
         console.error("get current quote:", error);
       });
+    } else if (currentMarket?.destination && isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
+      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+      if (apiSection) {
+        sub$$ = from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe(
+          ({ collateral, fee }) => {
+            setCollateralAmount(BigNumber.from(collateral.toString()));
+            setCurrentQuoteAmount(BigNumber.from(fee.toString()));
+          }
+        );
+      }
+      setCurrentLockedAmount(null);
     }
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
   }, [api, currentMarket, relayerAddress]);
 
   return (
