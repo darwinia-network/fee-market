@@ -39,6 +39,6 @@ jobs:
           prod_mode: true
           script_run: false
           enable_cache: true
-          enable_notify_slack: false
-          slack_channel: website
+          enable_notify_slack: true
+          slack_channel: darwinia-apps
           slack_webhook: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
