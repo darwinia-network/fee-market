@@ -139,16 +139,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     };
   }, [api, accounts]);
 
-  useEffect(() => {
-    if (isEthChain(currentMarket?.source)) {
-      console.log(currentMarket?.source, "is Eth Chain");
-    } else if (isPolkadotChain(currentMarket?.source)) {
-      console.log(currentMarket?.source, "is Polkadot Chain");
-    } else {
-      console.log(currentMarket?.source, "is Unknown Chain");
-    }
-  }, [currentMarket?.source]);
-
   return (
     <ApiContext.Provider
       value={{

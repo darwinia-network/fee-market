@@ -18,41 +18,15 @@ import { from, Subscription } from "rxjs";
 interface AccountProps {
   advanced?: boolean;
   relayerAddress: string;
+  isRegistered?: boolean;
 }
 
-const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
+const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(false);
-
-  const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
   const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(false);
-
-  useEffect(() => {
-    let sub$$: Subscription;
-
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      sub$$ = from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
-        next: setRegistered,
-        error: (error) => {
-          setRegistered(false);
-          console.error("check is relayer:", error);
-        },
-      });
-    }
-
-    return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
-    };
-  }, [relayerAddress, currentMarket?.source, api]);
 
   const onSwitchAccount = () => {
     setActiveAccountModalVisible(true);

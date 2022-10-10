@@ -10,7 +10,7 @@ const RelayerDashboard = () => {
   return (
     <>
       {accounts !== null ? (
-        <Dashboard />
+        <Dashboard relayerAddress={accounts[0] || ""} />
       ) : (
         <ConnectWallet loading={api === null} sourceChain={currentMarket?.source} onConnected={requestAccounts} />
       )}

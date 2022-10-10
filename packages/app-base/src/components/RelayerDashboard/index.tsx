@@ -7,23 +7,24 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useEffect, useState } from "react";
 
-import type { FeeMarketSourceChainPolkadot, AddEthereumChainParameter } from "@feemarket/app-types";
+import { BN_ZERO } from "@polkadot/util";
+import type {
+  FeeMarketSourceChainPolkadot,
+  AddEthereumChainParameter,
+  PalletFeeMarketRelayer,
+} from "@feemarket/app-types";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
-import { isEthApi, isEthChain } from "@feemarket/app-utils";
+import { isEthApi, isEthChain, isPolkadotApi, isPolkadotChain, getFeeMarketApiSection } from "@feemarket/app-utils";
 import { utils as ethersUtils, Contract } from "ethers";
+import { Subscription, from } from "rxjs";
 
-// const relayerAddress = "5D2ZU3QVvebrKu8bLMFntMDEAXyQnhSx7C2Nk9t3gWTchMDS";
-const relayerAddress = "5EXcfZrGWncD4FQTFMvcSCSGRMHJK8XMpGmFvtnhPZGhUNht";
+interface Props {
+  relayerAddress: string;
+}
 
-const goerliRelayerAddress = "0x7181932Da75beE6D3604F4ae56077B52fB0c5a3b";
-const ethereumRelayerAddress = "0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9";
-const darwiniaSmartChainRelayerAdrress = "0x2EaBE5C6818731E282B80De1a03f8190426e0Dd9";
-
-const ethRelayerAddress = relayerAddress;
-
-const RelayerDashboard = () => {
+const RelayerDashboard = ({ relayerAddress }: Props) => {
   const { t } = useTranslation();
   const { currentMarket, setRefresh } = useFeeMarket();
   const { api, currentChainId } = useApi();
@@ -32,30 +33,12 @@ const RelayerDashboard = () => {
     currentMarket,
     setRefresh,
   });
+  const [isRegistered, setRegistered] = useState(false);
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
-
-  const [testRelayerAddress, setTestRelayerAddress] = useState("5EXcfZrGWncD4FQTFMvcSCSGRMHJK8XMpGmFvtnhPZGhUNht");
 
   const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
     ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
     : null;
-
-  useEffect(() => {
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      // if (chainConfig.isSmartChain) {
-      //   (contract.getTopRelayers() as Promise<string[]>).then((res) => {
-      //     setTestRelayerAddress(res[0] || "");
-      //   });
-      // } else {
-      //   (contract.getTopRelayer() as Promise<string>).then((res) => {
-      //     setTestRelayerAddress(res);
-      //   });
-      // }
-    }
-  }, [api, currentMarket]);
 
   const onSwitchNetwork = async () => {
     if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
@@ -110,6 +93,42 @@ const RelayerDashboard = () => {
     }
   }, [currentMarket?.source, currentChainId]);
 
+  useEffect(() => {
+    let sub$$: Subscription;
+
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && !isNotificationVisible) {
+      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      sub$$ = from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
+        next: setRegistered,
+        error: (error) => {
+          setRegistered(false);
+          console.error("check is relayer:", error);
+        },
+      });
+    } else if (currentMarket?.destination && isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
+      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+      if (apiSection) {
+        sub$$ = from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe(
+          ({ collateral }) => {
+            if (collateral.gt(BN_ZERO)) {
+              setRegistered(true);
+            } else {
+              setRegistered(false);
+            }
+          }
+        );
+      }
+    }
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
+  }, [relayerAddress, currentMarket?.source, api, isNotificationVisible]);
+
   return (
     /*Don't use flex gap to avoid a "junky gap animation" when the notification slides down */
     <div className={"flex flex-col"}>
@@ -131,10 +150,10 @@ const RelayerDashboard = () => {
         </div>
       </SlideDownUp>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Account advanced={!isNotificationVisible} relayerAddress={testRelayerAddress} />
+        <Account advanced={!isNotificationVisible} relayerAddress={relayerAddress} isRegistered={isRegistered} />
       </div>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Balance relayerAddress={testRelayerAddress} />
+        <Balance relayerAddress={relayerAddress} isRegistered={isRegistered} />
       </div>
       {/*Charts*/}
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>

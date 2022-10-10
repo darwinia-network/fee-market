@@ -23,13 +23,14 @@ import type {
   FeeMarketSourceChainEth,
   PalletFeeMarketRelayer,
 } from "@feemarket/app-types";
-import { from, Subscription } from "rxjs";
+import { from, Subscription, forkJoin } from "rxjs";
 
 interface Props {
   relayerAddress: string;
+  isRegistered?: boolean;
 }
 
-const Balance = ({ relayerAddress }: Props) => {
+const Balance = ({ relayerAddress, isRegistered }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -63,9 +64,34 @@ const Balance = ({ relayerAddress }: Props) => {
   useEffect(() => {
     let sub$$: Subscription;
 
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
+    if (!isRegistered || !currentMarket) {
+      setCollateralAmount(null);
+      setCurrentLockedAmount(null);
+      setCurrentQuoteAmount(null);
+      return;
+    }
+
+    if (isEthChain(currentMarket.source) && isEthApi(api)) {
       const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      forkJoin([
+        from(contract.balanceOf(relayerAddress) as Promise<BigNumber>),
+        from(contract.lockedOf(relayerAddress) as Promise<BigNumber>),
+        from(contract.feeOf(relayerAddress) as Promise<BigNumber>),
+      ]).subscribe({
+        next: ([collateral, locked, quote]) => {
+          setCollateralAmount(collateral);
+          setCurrentLockedAmount(locked);
+          setCurrentQuoteAmount(quote);
+        },
+        error: (error) => {
+          setCollateralAmount(null);
+          setCurrentLockedAmount(null);
+          setCurrentQuoteAmount(null);
+          console.error("[collateral, locked, quote]:", error);
+        },
+      });
 
       (contract.balanceOf(relayerAddress) as Promise<BigNumber>).then(setCollateralAmount).catch((error) => {
         setCollateralAmount(null);
@@ -81,7 +107,7 @@ const Balance = ({ relayerAddress }: Props) => {
         setCurrentQuoteAmount(null);
         console.error("get current quote:", error);
       });
-    } else if (currentMarket?.destination && isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
+    } else if (isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
       if (apiSection) {
         sub$$ = from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe(
@@ -99,7 +125,7 @@ const Balance = ({ relayerAddress }: Props) => {
         sub$$.unsubscribe();
       }
     };
-  }, [api, currentMarket, relayerAddress]);
+  }, [api, currentMarket, relayerAddress, isRegistered]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>
