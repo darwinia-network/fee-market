@@ -50,7 +50,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       const allAccounts = await web3Accounts();
       const ss58Prefix = (api.consts.system.ss58Prefix as u16).toNumber();
       allAccounts.forEach((item) => {
-        keyring.saveAddress(encodeAddress(item.address, ss58Prefix), item.meta);
+        keyring.saveAddress(encodeAddress(item.address, ss58Prefix), item.meta, item.type);
       });
       setAccounts(allAccounts.map((item) => encodeAddress(item.address, ss58Prefix)));
     } else {
