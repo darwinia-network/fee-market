@@ -15,7 +15,7 @@ interface AccountProps {
   advanced?: boolean;
   relayerAddress: string;
   isRegistered?: boolean;
-  sourceChain: FeeMarketSourceChan | undefined;
+  sourceChain?: FeeMarketSourceChan;
 }
 
 const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }: AccountProps) => {
