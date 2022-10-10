@@ -126,9 +126,11 @@ const Balance = ({ relayerAddress }: Props) => {
                 precision: BALANCE_DECIMALS,
               })}
             </div>
-            <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
-              <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
-            </div>
+            {!!collateralAmount && (
+              <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
+                <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
+              </div>
+            )}
           </div>
         </div>
         {/*currently locked*/}
@@ -174,9 +176,11 @@ const Balance = ({ relayerAddress }: Props) => {
                 }),
               })}
             </div>
-            <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
-              <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
-            </div>
+            {!!currentQuoteAmount && (
+              <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
+                <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
+              </div>
+            )}
           </div>
         </div>
       </div>

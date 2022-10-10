@@ -131,7 +131,7 @@ const RelayerDashboard = () => {
         </div>
       </SlideDownUp>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Account advanced={true} relayerAddress={testRelayerAddress} />
+        <Account advanced={!isNotificationVisible} relayerAddress={testRelayerAddress} />
       </div>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
         <Balance relayerAddress={testRelayerAddress} />
