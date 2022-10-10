@@ -57,6 +57,10 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   useEffect(() => {
     let sub$$: Subscription;
 
+    setApi(null);
+    setApiEth(null);
+    setApiPolkadot(null);
+
     if (currentMarket?.source) {
       if (ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]) {
         if (typeof window.ethereum !== "undefined") {
@@ -83,15 +87,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
             console.error("Create api:", error);
           },
         });
-      } else {
-        setApi(null);
-        setApiEth(null);
-        setApiPolkadot(null);
       }
-    } else {
-      setApi(null);
-      setApiEth(null);
-      setApiPolkadot(null);
     }
 
     return () => {
