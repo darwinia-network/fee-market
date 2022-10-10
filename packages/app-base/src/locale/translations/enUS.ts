@@ -72,6 +72,7 @@ const enUs = {
   [localeKeys.confirmAt]: "confirm at",
   [localeKeys.loginInfo]: `Login your account to check your relaying data and update your Collateral & Quote in the current Fee Market. `,
   [localeKeys.connectMetamask]: "connect metamask",
+  [localeKeys.connectWallet]: "connect wallet",
   [localeKeys.unregistered]: "unregistered",
   [localeKeys.registered]: "registered",
   [localeKeys.switchAccount]: "switch account",
