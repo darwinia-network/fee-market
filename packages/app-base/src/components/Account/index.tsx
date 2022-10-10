@@ -14,6 +14,7 @@ import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarke
 import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
 import { from, Subscription } from "rxjs";
+import { useAccountName } from "@feemarket/app-hooks";
 
 interface AccountProps {
   advanced?: boolean;
@@ -23,6 +24,7 @@ interface AccountProps {
 
 const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProps) => {
   const { t } = useTranslation();
+  const { displayName } = useAccountName(relayerAddress);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
@@ -79,7 +81,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
           } gap-[0.3125rem]`}
         >
           <div className={"flex gap-[0.3125rem] lg:gap-[0.625rem] flex-col lg:flex-row"}>
-            <div className={"uppercase text-18-bold"}>🚀Account name</div>
+            <div className={"uppercase text-18-bold"}>{displayName}</div>
             {advanced && (
               <div>
                 <span

@@ -47,7 +47,9 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
 
   const requestAccounts = useCallback(async () => {
     if (isEthApi(api)) {
-      setAccounts(await api.send("eth_requestAccounts", []));
+      const allAccounts = await api.send("eth_requestAccounts", []);
+      setAccounts(allAccounts);
+      setCurrentAccount(allAccounts.length ? allAccounts[0].address : null);
     } else if (isPolkadotApi(api)) {
       await web3Enable(DAPP_NAME);
 
