@@ -1,19 +1,12 @@
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Dropdown, Tooltip } from "@darwinia/ui";
 import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
-
-import { BigNumber, Contract } from "ethers";
-import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
-import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
-import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
-import { from, Subscription } from "rxjs";
 import { useAccountName } from "@feemarket/app-hooks";
 
 interface AccountProps {
@@ -101,7 +94,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
         <div className={"shrink-0 justify-end flex-wrap flex flex-1 flex-col lg:flex-row gap-[0.9375rem] items-center"}>
           <Button
             className={
-              "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
+              "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
             }
             plain={true}
             onClick={onSwitchAccount}
@@ -110,9 +103,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
           </Button>
           <Button
             onClick={onRunBridger}
-            className={
-              "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0"
-            }
+            className={"px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0"}
             plain={true}
           >
             <div>{t(localeKeys.runBridger)}</div>
@@ -137,7 +128,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
             >
               <Button
                 className={
-                  "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
+                  "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
                 }
                 plain={true}
               >
@@ -148,7 +139,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
             <Button
               onClick={onRegisterRelayer}
               className={
-                "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
+                "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
               }
             >
               <div>{t(localeKeys.registerRelayer)}</div>
