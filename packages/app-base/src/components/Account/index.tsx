@@ -8,14 +8,17 @@ import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
 import { useAccountName } from "@feemarket/app-hooks";
+import { isEthChain } from "@feemarket/app-utils";
+import type { FeeMarketSourceChan } from "@feemarket/app-types";
 
 interface AccountProps {
   advanced?: boolean;
   relayerAddress: string;
   isRegistered?: boolean;
+  sourceChain: FeeMarketSourceChan | undefined;
 }
 
-const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProps) => {
+const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }: AccountProps) => {
   const { t } = useTranslation();
   const { displayName } = useAccountName(relayerAddress);
 
@@ -96,6 +99,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
               "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
             }
             plain={true}
+            disabled={isEthChain(sourceChain)}
             onClick={onSwitchAccount}
           >
             {t(localeKeys.switchAccount)}

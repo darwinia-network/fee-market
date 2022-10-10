@@ -150,7 +150,12 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
         </div>
       </SlideDownUp>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Account advanced={!isNotificationVisible} relayerAddress={relayerAddress} isRegistered={isRegistered} />
+        <Account
+          advanced={!isNotificationVisible}
+          relayerAddress={relayerAddress}
+          isRegistered={isRegistered}
+          sourceChain={currentMarket?.source}
+        />
       </div>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
         <Balance relayerAddress={relayerAddress} isRegistered={isRegistered} />
