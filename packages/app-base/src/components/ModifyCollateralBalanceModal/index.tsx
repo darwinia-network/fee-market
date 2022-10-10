@@ -59,6 +59,10 @@ const ModifyCollateralBalanceModal = ({
   };
 
   const onModifyQuote = () => {
+    if (depositError) {
+      return;
+    }
+
     if (currentMarket?.source && isEthChain(currentMarket.source) && deposit) {
       if (Number(deposit) < 0.2) {
         setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `0.2 ${nativeToken?.symbol}` })));

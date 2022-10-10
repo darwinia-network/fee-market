@@ -58,6 +58,10 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
   };
 
   const onModifyQuote = () => {
+    if (quoteError) {
+      return;
+    }
+
     if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && quote && relayerAddress) {
       if (Number(quote) <= 0) {
         setQuoteError(
@@ -169,79 +173,82 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
   };
 
   // Estimate fee
-  // useEffect(() => {
-  //   let sub$$: Subscription;
+  useEffect(() => {
+    let sub$$: Subscription;
+    if (quote !== null) {
+      return;
+    }
 
-  //   if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && nativeToken?.decimals && quote) {
-  //     const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && nativeToken?.decimals && quote) {
+      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
 
-  //     const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-  //     const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
-  //     sub$$ = from(contract.relayerCount() as Promise<BigNumber>)
-  //       .pipe(
-  //         switchMap((relayerCount) =>
-  //           zip(
-  //             from(api.getGasPrice()),
-  //             forkJoin(
-  //               new Array(relayerCount.toNumber())
-  //                 .fill(0)
-  //                 .map(
-  //                   (_, index) =>
-  //                     contract.getOrderBook(index + 1, true) as Promise<
-  //                       [BigNumber, string[], BigNumber[], BigNumber[], BigNumber[]]
-  //                     >
-  //                 )
-  //             )
-  //           )
-  //         ),
-  //         switchMap(([gasPrice, book]) => {
-  //           const oldIndex = book.findIndex((item) => item[1].some((item) => item === relayerAddress));
-  //           let oldPrev: string | null = null;
-  //           if (oldIndex === 0) {
-  //             oldPrev = SENTINEL_HEAD;
-  //           } else if (oldIndex > 0) {
-  //             oldPrev = book[oldIndex - 1][1][0];
-  //           }
+      sub$$ = from(contract.relayerCount() as Promise<BigNumber>)
+        .pipe(
+          switchMap((relayerCount) =>
+            zip(
+              from(api.getGasPrice()),
+              forkJoin(
+                new Array(relayerCount.toNumber())
+                  .fill(0)
+                  .map(
+                    (_, index) =>
+                      contract.getOrderBook(index + 1, true) as Promise<
+                        [BigNumber, string[], BigNumber[], BigNumber[], BigNumber[]]
+                      >
+                  )
+              )
+            )
+          ),
+          switchMap(([gasPrice, book]) => {
+            const oldIndex = book.findIndex((item) => item[1].some((item) => item === relayerAddress));
+            let oldPrev: string | null = null;
+            if (oldIndex === 0) {
+              oldPrev = SENTINEL_HEAD;
+            } else if (oldIndex > 0) {
+              oldPrev = book[oldIndex - 1][1][0];
+            }
 
-  //           let newIndex = -1;
-  //           for (let i = 0; i < book.length; i++) {
-  //             if (quoteAmount.gt(book[i][2][0])) {
-  //               newIndex = i;
-  //               break;
-  //             }
-  //           }
-  //           const newPrev = newIndex === -1 ? SENTINEL_HEAD : book[newIndex][1][0];
+            let newIndex = -1;
+            for (let i = 0; i < book.length; i++) {
+              if (quoteAmount.gt(book[i][2][0])) {
+                newIndex = i;
+                break;
+              }
+            }
+            const newPrev = newIndex === -1 ? SENTINEL_HEAD : book[newIndex][1][0];
 
-  //           return zip(
-  //             of(gasPrice),
-  //             from(
-  //               contract.estimateGas.move(oldPrev, newPrev, quoteAmount, {
-  //                 gasPrice,
-  //               }) as Promise<BigNumber>
-  //             )
-  //           );
-  //         })
-  //       )
-  //       .subscribe({
-  //         next: ([gasPrice, gas]) => {
-  //           setFeeEstimation(gas.mul(gasPrice));
-  //         },
-  //         error: (error) => {
-  //           setFeeEstimation(null);
-  //           console.error("estimate move:", error);
-  //         },
-  //       });
-  //   } else {
-  //     setFeeEstimation(null);
-  //   }
+            return zip(
+              of(gasPrice),
+              from(
+                contract.estimateGas.move(oldPrev, newPrev, quoteAmount, {
+                  gasPrice,
+                }) as Promise<BigNumber>
+              )
+            );
+          })
+        )
+        .subscribe({
+          next: ([gasPrice, gas]) => {
+            setFeeEstimation(gas.mul(gasPrice));
+          },
+          error: (error) => {
+            setFeeEstimation(null);
+            console.error("estimate move:", error);
+          },
+        });
+    } else {
+      setFeeEstimation(null);
+    }
 
-  //   return () => {
-  //     if (sub$$) {
-  //       sub$$.unsubscribe();
-  //     }
-  //   };
-  // }, [quote, api, currentMarket]);
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
+  }, [quote, api, currentMarket]);
 
   return (
     <ModalEnhanced

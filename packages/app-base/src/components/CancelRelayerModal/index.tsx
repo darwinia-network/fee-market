@@ -133,14 +133,14 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose }: CancelRelaye
       <div className={"flex flex-col gap-[1.25rem]"}>
         <div className={"flex flex-col gap-[0.625rem]"}>
           <div className={"text-12-bold"}>{t(localeKeys.account)}</div>
-          <AccountMini />
+          <AccountMini address={relayerAddress} />
         </div>
         {/*warning*/}
         <div className={"flex flex-col gap-[0.625rem]"}>{t(localeKeys.cancelRelayerWarning)}</div>
 
         <div className={"bg-divider w-full h-[1px]"} />
 
-        <div className={"flex flex-col gap-[0.625rem]"}>{t(localeKeys.feeEstimation, { amount: "0.12551 RING" })}</div>
+        {/* <div className={"flex flex-col gap-[0.625rem]"}>{t(localeKeys.feeEstimation, { amount: "0.12551 RING" })}</div> */}
       </div>
     </ModalEnhanced>
   );
