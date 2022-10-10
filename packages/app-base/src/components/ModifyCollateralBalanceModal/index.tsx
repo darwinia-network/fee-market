@@ -3,20 +3,35 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState } from "react";
 
-import { formatBalance, isEthApi, isEthChain, isPolkadotChain, triggerContract } from "@feemarket/app-utils";
+import {
+  formatBalance,
+  isEthApi,
+  isEthChain,
+  isPolkadotApi,
+  isPolkadotChain,
+  triggerContract,
+  getFeeMarketApiSection,
+} from "@feemarket/app-utils";
 import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { Subscription, from, of, switchMap, zip } from "rxjs";
+import { web3FromAddress } from "@polkadot/extension-dapp";
 
 export interface ModifyCollateralBalanceModalProps {
   isVisible: boolean;
   currentCollateral: BigNumber;
+  relayerAddress: string;
   onClose: () => void;
 }
 
-const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }: ModifyCollateralBalanceModalProps) => {
+const ModifyCollateralBalanceModal = ({
+  isVisible,
+  currentCollateral,
+  relayerAddress,
+  onClose,
+}: ModifyCollateralBalanceModalProps) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api, accountBalance } = useApi();
@@ -44,6 +59,10 @@ const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }:
   };
 
   const onModifyQuote = () => {
+    if (depositError) {
+      return;
+    }
+
     if (currentMarket?.source && isEthChain(currentMarket.source) && deposit) {
       if (Number(deposit) < 0.2) {
         setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `0.2 ${nativeToken?.symbol}` })));
@@ -92,13 +111,37 @@ const ModifyCollateralBalanceModal = ({ isVisible, currentCollateral, onClose }:
           onCloseModal();
         }
       }
-    } else if (currentMarket?.source && isPolkadotChain(currentMarket.source) && deposit) {
+    } else if (
+      currentMarket?.destination &&
+      isPolkadotChain(currentMarket.destination) &&
+      isPolkadotApi(api) &&
+      deposit
+    ) {
       if (Number(deposit) < 15) {
         setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `15 ${nativeToken?.symbol}` })));
         return;
       }
 
-      onCloseModal();
+      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+      if (apiSection) {
+        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+
+        const extrinsic = api.tx[apiSection].updateLockedCollateral(depositAmount.toString());
+        from(web3FromAddress(relayerAddress))
+          .pipe(switchMap((injector) => from(extrinsic.signAndSend(relayerAddress, { signer: injector.signer }))))
+          .subscribe({
+            next: (result) => {
+              console.log("sign and send collateral update:", result.toString());
+            },
+            error: (error) => {
+              onCloseModal();
+              console.error("sign and send collateral uodate:", error);
+            },
+            complete: () => {
+              onCloseModal();
+            },
+          });
+      }
     } else {
       onCloseModal();
     }

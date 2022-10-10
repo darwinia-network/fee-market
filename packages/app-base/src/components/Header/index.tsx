@@ -12,7 +12,7 @@ import NetworkSwitchButton from "../NetworkSwitchButton";
 import NetworkSwitchDialog, { TransferSelection } from "../NetworkSwitchDialog";
 import { Popover } from "@darwinia/ui";
 import useNetworkList from "../../data/useNetworkList";
-import { NetworkOption } from "../../data/types";
+import { NetworkOption, Destination } from "../../data/types";
 import useMenuList from "../../data/useMenuList";
 
 import type { Market } from "@feemarket/app-provider";
@@ -33,7 +33,7 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const [popperTriggerElement, setPopperTriggerElement] = useState<HTMLElement | null>(null);
   const { networkList } = useNetworkList();
-  const defaultNetworkType: keyof NetworkOption = "liveNets";
+  const [defaultNetworkType, setDefaultNetworkType] = useState<keyof NetworkOption>("liveNets");
   const [networkSelectionBtnText, setNetworkSelectionBtnText] = useState<{ from: string; to: string }>({
     from: "",
     to: "",
@@ -45,6 +45,42 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
   /* Set default network selection */
   useEffect(() => {
     if (currentMarket) {
+      const selectedLiveNetwork = networkList["liveNets"].find((item) => item.id === currentMarket.source);
+      const selectedTestNetwork = networkList["testNets"].find((item) => item.id === currentMarket.source);
+
+      if (selectedLiveNetwork) {
+        const defaultDestination = selectedLiveNetwork.destinations.find(
+          (item) => item.id === currentMarket.destination
+        ) as Destination;
+
+        setDefaultNetworkType("liveNets");
+
+        setTransferSelection({
+          networkType: "liveNets",
+          selectedNetwork: selectedLiveNetwork,
+          selectedDestination: defaultDestination,
+        });
+        setNetworkSelectionBtnText({
+          from: selectedLiveNetwork.name,
+          to: defaultDestination.name,
+        });
+      } else if (selectedTestNetwork) {
+        const defaultDestination = selectedTestNetwork.destinations.find(
+          (item) => item.id === currentMarket.destination
+        ) as Destination;
+
+        setDefaultNetworkType("testNets");
+
+        setTransferSelection({
+          networkType: "testNets",
+          selectedNetwork: selectedTestNetwork,
+          selectedDestination: defaultDestination,
+        });
+        setNetworkSelectionBtnText({
+          from: selectedTestNetwork.name,
+          to: defaultDestination.name,
+        });
+      }
       return;
     }
 
@@ -184,6 +220,7 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
       >
         <div className={"flex justify-center"}>
           <NetworkSwitchDialog
+            defaultNetworkType={defaultNetworkType}
             transferSelection={transferSelection}
             onNetworkSelectionCompleted={onNetworkSelectionCompleted}
           />
@@ -207,6 +244,7 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
           <Popover triggerEvent={"click"} triggerElementState={popperTriggerElement}>
             <div>
               <NetworkSwitchDialog
+                defaultNetworkType={defaultNetworkType}
                 transferSelection={transferSelection}
                 onNetworkSelectionCompleted={onNetworkSelectionCompleted}
               />

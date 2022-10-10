@@ -5,12 +5,13 @@ import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react"
 import relayerAvatar from "../assets/images/relayer-avatar.svg";
 import { useNavigate } from "react-router-dom";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { useRelayersOverviewData } from "@feemarket/app-hooks";
+import { useRelayersOverviewData, useAccountName } from "@feemarket/app-hooks";
 import type { BN } from "@polkadot/util";
 import type { Balance } from "@polkadot/types/interfaces";
 import { utils as ethersUtils } from "ethers";
-import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { UrlSearchParamsKey } from "@feemarket/app-types";
 
 const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
   if (decimals) {
@@ -106,8 +107,13 @@ const RelayersOverview = () => {
   };
 
   const onRelayerClicked = useCallback((relayer: Relayer) => {
-    console.log("You clicked relayer:====", relayer);
-    navigate(`/relayers-overview/details`);
+    if (currentMarket) {
+      const urlSearchParams = new URLSearchParams();
+      urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.source]);
+      urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.destination]);
+      urlSearchParams.set(UrlSearchParamsKey.ID, relayer.relayer);
+      navigate(`/relayers-overview/details?${urlSearchParams.toString()}`);
+    }
   }, []);
 
   const columns: Column<Relayer>[] = [
@@ -245,6 +251,11 @@ const RelayersOverview = () => {
   );
 };
 
+const AccountName = ({ address }: { address: string }) => {
+  const { displayName } = useAccountName(address);
+  return <div className={"flex-1 text-primary text-14-bold truncate"}>{displayName}</div>;
+};
+
 const getRelayerColumn = (row: Relayer, avatar: string, onRelayerClick: (row: Relayer) => void) => {
   return (
     <div
@@ -256,7 +267,7 @@ const getRelayerColumn = (row: Relayer, avatar: string, onRelayerClick: (row: Re
       <div className={"rounded-full w-[1.375rem] h-[1.375rem] shrink-0"}>
         <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
       </div>
-      <div className={"flex-1 text-primary text-14-bold truncate"}>{row.relayer}</div>
+      <AccountName address={row.relayer} />
     </div>
   );
 };

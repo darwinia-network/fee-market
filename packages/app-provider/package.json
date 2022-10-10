@@ -25,6 +25,7 @@
     "@feemarket/app-config": "^1.0.0",
     "@feemarket/app-types": "^1.0.0",
     "@feemarket/app-utils": "^1.0.0",
+    "@polkadot/ui-keyring": "^2.9.11",
     "react": "^18.2.0"
   }
 }

@@ -10,14 +10,27 @@ import { Tooltip } from "@darwinia/ui";
 import { BigNumber, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
-import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
-import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
+import {
+  isEthApi,
+  isEthChain,
+  formatBalance,
+  isPolkadotApi,
+  getFeeMarketApiSection,
+  isPolkadotChain,
+} from "@feemarket/app-utils";
+import type {
+  FeeMarketSourceChainPolkadot,
+  FeeMarketSourceChainEth,
+  PalletFeeMarketRelayer,
+} from "@feemarket/app-types";
+import { from, Subscription, forkJoin } from "rxjs";
 
 interface Props {
   relayerAddress: string;
+  isRegistered?: boolean;
 }
 
-const Balance = ({ relayerAddress }: Props) => {
+const Balance = ({ relayerAddress, isRegistered }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -49,9 +62,36 @@ const Balance = ({ relayerAddress }: Props) => {
   };
 
   useEffect(() => {
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
+    let sub$$: Subscription;
+
+    if (!isRegistered || !currentMarket) {
+      setCollateralAmount(null);
+      setCurrentLockedAmount(null);
+      setCurrentQuoteAmount(null);
+      return;
+    }
+
+    if (isEthChain(currentMarket.source) && isEthApi(api)) {
       const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      forkJoin([
+        from(contract.balanceOf(relayerAddress) as Promise<BigNumber>),
+        from(contract.lockedOf(relayerAddress) as Promise<BigNumber>),
+        from(contract.feeOf(relayerAddress) as Promise<BigNumber>),
+      ]).subscribe({
+        next: ([collateral, locked, quote]) => {
+          setCollateralAmount(collateral);
+          setCurrentLockedAmount(locked);
+          setCurrentQuoteAmount(quote);
+        },
+        error: (error) => {
+          setCollateralAmount(null);
+          setCurrentLockedAmount(null);
+          setCurrentQuoteAmount(null);
+          console.error("[collateral, locked, quote]:", error);
+        },
+      });
 
       (contract.balanceOf(relayerAddress) as Promise<BigNumber>).then(setCollateralAmount).catch((error) => {
         setCollateralAmount(null);
@@ -67,8 +107,25 @@ const Balance = ({ relayerAddress }: Props) => {
         setCurrentQuoteAmount(null);
         console.error("get current quote:", error);
       });
+    } else if (isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
+      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+      if (apiSection) {
+        sub$$ = from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe(
+          ({ collateral, fee }) => {
+            setCollateralAmount(BigNumber.from(collateral.toString()));
+            setCurrentQuoteAmount(BigNumber.from(fee.toString()));
+          }
+        );
+      }
+      setCurrentLockedAmount(null);
     }
-  }, [api, currentMarket, relayerAddress]);
+
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+    };
+  }, [api, currentMarket, relayerAddress, isRegistered]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>
@@ -95,9 +152,11 @@ const Balance = ({ relayerAddress }: Props) => {
                 precision: BALANCE_DECIMALS,
               })}
             </div>
-            <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
-              <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
-            </div>
+            {!!collateralAmount && (
+              <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
+                <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
+              </div>
+            )}
           </div>
         </div>
         {/*currently locked*/}
@@ -143,9 +202,11 @@ const Balance = ({ relayerAddress }: Props) => {
                 }),
               })}
             </div>
-            <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
-              <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
-            </div>
+            {!!currentQuoteAmount && (
+              <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
+                <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -159,6 +220,7 @@ const Balance = ({ relayerAddress }: Props) => {
       {/*Modify balance modal*/}
       <ModifyCollateralBalanceModal
         onClose={onModifyCollateralBalanceModalClose}
+        relayerAddress={relayerAddress}
         isVisible={isModifyCollateralBalanceModalVisible}
         currentCollateral={collateralAmount || BigNumber.from(0)}
       />
