@@ -5,11 +5,19 @@ import { ChangeEvent, useEffect, useState } from "react";
 import AccountMini from "../AccountMini";
 
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
-import { isEthApi, isPolkadotApi, isEthChain, isPolkadotChain, triggerContract } from "@feemarket/app-utils";
+import {
+  isEthApi,
+  isPolkadotApi,
+  isEthChain,
+  isPolkadotChain,
+  triggerContract,
+  getFeeMarketApiSection,
+} from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
 import { from, switchMap, forkJoin } from "rxjs";
+import { web3FromAddress } from "@polkadot/extension-dapp";
 
 const SENTINEL_HEAD = "0x0000000000000000000000000000000000000001";
 // const SENTINEL_HEAD = "0000000000000000000000000000000000000000000000000000000000000001";
@@ -110,13 +118,33 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
           },
         });
     } else if (
-      currentMarket?.source &&
-      isPolkadotChain(currentMarket.source) &&
+      currentMarket?.destination &&
+      isPolkadotChain(currentMarket.destination) &&
       isPolkadotApi(api) &&
       deposit &&
       quote
     ) {
-      //
+      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+      if (apiSection) {
+        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+        const extrinsic = api.tx[apiSection].enrollAndLockCollateral(depositAmount.toString(), quoteAmount.toString());
+
+        from(web3FromAddress(relayerAddress))
+          .pipe(switchMap((injector) => from(extrinsic.signAndSend(relayerAddress, { signer: injector.signer }))))
+          .subscribe({
+            next: (result) => {
+              console.log("enroll and lock collateral:", result.toString());
+            },
+            error: (error) => {
+              onCloseModal();
+              console.error("enroll and lock collateral:", error);
+            },
+            complete: () => {
+              onCloseModal();
+            },
+          });
+      }
     } else {
       onCloseModal();
     }
