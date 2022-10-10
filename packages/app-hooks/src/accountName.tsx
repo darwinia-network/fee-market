@@ -44,7 +44,7 @@ export const useAccountName = (address: string) => {
         sub$$.unsubscribe();
       }
     };
-  }, [api]);
+  }, [api, address]);
 
   return { displayName };
 };
