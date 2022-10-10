@@ -49,7 +49,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     if (isEthApi(api)) {
       const allAccounts = await api.send("eth_requestAccounts", []);
       setAccounts(allAccounts);
-      setCurrentAccount(allAccounts.length ? allAccounts[0].address : null);
+      setCurrentAccount(allAccounts.length ? allAccounts[0] : null);
     } else if (isPolkadotApi(api)) {
       await web3Enable(DAPP_NAME);
 
@@ -77,6 +77,8 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     setApi(null);
     setApiEth(null);
     setApiPolkadot(null);
+    setAccounts(null);
+    setCurrentAccount(null);
 
     if (currentMarket?.source) {
       if (ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]) {
