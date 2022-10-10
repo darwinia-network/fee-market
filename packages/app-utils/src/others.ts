@@ -69,3 +69,7 @@ export const formatBalance = (
   }
   return "-";
 };
+
+export const formatShortAddress = (address: string): string => {
+  return `${address.slice(0, 4)}...${address.slice(-6)}`;
+};
