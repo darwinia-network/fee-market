@@ -190,6 +190,7 @@ const Balance = ({ relayerAddress }: Props) => {
       {/*Modify balance modal*/}
       <ModifyCollateralBalanceModal
         onClose={onModifyCollateralBalanceModalClose}
+        relayerAddress={relayerAddress}
         isVisible={isModifyCollateralBalanceModalVisible}
         currentCollateral={collateralAmount || BigNumber.from(0)}
       />
