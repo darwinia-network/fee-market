@@ -16,6 +16,7 @@ export interface ApiCtx {
   apiEth: providers.Web3Provider | null;
   api: providers.Web3Provider | ApiPromise | null;
   accounts: string[] | null;
+  currentAccount: string | null;
   accountBalance: BigNumber;
   currentChainId: number | null;
   requestAccounts: () => Promise<void>;
@@ -26,6 +27,7 @@ const defaultValue: ApiCtx = {
   apiEth: null,
   apiPolkadot: null,
   accounts: null,
+  currentAccount: null,
   currentChainId: null,
   accountBalance: BigNumber.from(0),
   requestAccounts: async () => undefined,
@@ -39,6 +41,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [apiPolkadot, setApiPolkadot] = useState<ApiPromise | null>(null);
   const [api, setApi] = useState<providers.Web3Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<string[] | null>(null);
+  const [currentAccount, setCurrentAccount] = useState<string | null>(null);
   const [accountBalance, setAccountBalance] = useState<BigNumber>(BigNumber.from(0));
   const [currentChainId, setCurrentChainId] = useState<number | null>(null);
 
@@ -47,14 +50,22 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       setAccounts(await api.send("eth_requestAccounts", []));
     } else if (isPolkadotApi(api)) {
       await web3Enable(DAPP_NAME);
-      const allAccounts = await web3Accounts();
+
       const ss58Prefix = (api.consts.system.ss58Prefix as u16).toNumber();
+      const allAccounts = (await web3Accounts()).map((item) => ({
+        ...item,
+        address: encodeAddress(item.address, ss58Prefix),
+      }));
+
       allAccounts.forEach((item) => {
-        keyring.saveAddress(encodeAddress(item.address, ss58Prefix), item.meta, item.type);
+        keyring.saveAddress(item.address, item.meta);
       });
-      setAccounts(allAccounts.map((item) => encodeAddress(item.address, ss58Prefix)));
+
+      setAccounts(allAccounts.map((item) => item.address));
+      setCurrentAccount(allAccounts.length ? allAccounts[0].address : null);
     } else {
       setAccounts(null);
+      setCurrentAccount(null);
     }
   }, [api]);
 
@@ -150,6 +161,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         apiEth,
         apiPolkadot,
         accounts,
+        currentAccount,
         accountBalance,
         currentChainId,
         requestAccounts,
