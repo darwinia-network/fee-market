@@ -1,20 +1,16 @@
 import { DetailedHTMLProps, ButtonHTMLAttributes } from "react";
+import "./styles.scss";
 
 export type ButtonSize = "small" | "large";
+export type ButtonType = "primary" | "secondary";
 export interface ButtonProps extends DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
   size?: ButtonSize;
-  plain?: boolean;
+  btnType?: ButtonType;
 }
 
-const Button = ({ children, style, className, plain, size = "large", ...rest }: ButtonProps) => {
-  const sizeClass = size === "large" ? "px-[1.25rem] h-[2.5rem]" : "px-[1.25rem] h-[2.5rem]";
-  const btnBg = plain ? "bg-blackSecondary" : "bg-primary";
+const Button = ({ children, style, className, btnType = "primary", size = "large", ...rest }: ButtonProps) => {
   return (
-    <button
-      style={{ ...style }}
-      className={`w-full items-center capitalize disabled:!opacity-60 disabled:cursor-default cursor-pointer select-none border border-primary lg:hover:opacity-80 lg:active:opacity-50 active:opacity-50 rounded-[0.3125rem] ${btnBg} ${sizeClass}  ${className}`}
-      {...rest}
-    >
+    <button style={{ ...style }} className={`dw-btn ${size} ${btnType} ${className}`} {...rest}>
       {children}
     </button>
   );

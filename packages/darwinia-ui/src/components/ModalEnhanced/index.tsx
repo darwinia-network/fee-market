@@ -116,7 +116,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
                 )}
                 {onCancel && (
                   <Button
-                    plain={true}
+                    btnType={"secondary"}
                     onClick={() => {
                       onCancelClicked();
                     }}

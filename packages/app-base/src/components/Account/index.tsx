@@ -86,7 +86,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
   const getMoreActionsDropdown = () => {
     return (
       <div>
-        <Button className={"!px-[0.9375rem] min-w-[150px]"} plain={true} onClick={onCancelRelayer}>
+        <Button btnType={"secondary"} className={"!px-[0.9375rem] w-full min-w-[150px]"} onClick={onCancelRelayer}>
           {t(localeKeys.cancelRelayer)}
         </Button>
       </div>
@@ -124,20 +124,16 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
       {advanced && (
         <div className={"shrink-0 justify-end flex-wrap flex flex-1 flex-col lg:flex-row gap-[0.9375rem] items-center"}>
           <Button
-            className={
-              "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-            }
-            plain={true}
+            className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
+            btnType={"secondary"}
             onClick={onSwitchAccount}
           >
             {t(localeKeys.switchAccount)}
           </Button>
           <Button
             onClick={onRunBridger}
-            className={
-              "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0"
-            }
-            plain={true}
+            className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
+            btnType={"secondary"}
           >
             <div>{t(localeKeys.runBridger)}</div>
             <Tooltip
@@ -149,7 +145,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
               <img className={"w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
             </Tooltip>
           </Button>
-          {isRegistered ? (
+          {!isRegistered ? (
             <Dropdown
               placement={"right"}
               className={"w-full lg:w-auto"}
@@ -159,21 +155,14 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
               offset={[0, 10]}
               dropdownClassName={"w-full lg:w-auto"}
             >
-              <Button
-                className={
-                  "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-                }
-                plain={true}
-              >
+              <Button className={"px-[0.9375rem] w-full lg:w-auto shrink-0"} btnType={"secondary"}>
                 {t(localeKeys.moreActions)}
               </Button>
             </Dropdown>
           ) : (
             <Button
               onClick={onRegisterRelayer}
-              className={
-                "px-[0.9375rem] justify-center lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-              }
+              className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
             >
               <div>{t(localeKeys.registerRelayer)}</div>
               <Tooltip

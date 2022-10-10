@@ -149,6 +149,7 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
       </div>
       <div>
         <Button
+          className={"w-full"}
           onClick={() => {
             onFinishNetworkSelection();
           }}

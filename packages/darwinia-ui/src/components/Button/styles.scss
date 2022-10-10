@@ -1,0 +1,42 @@
+@import "../../assets/styles/common";
+
+.dw-btn {
+  cursor: pointer;
+  user-select: none;
+  border: var(--border1px);
+  border-color: var(--primary);
+  border-radius: var(--borderRadius5px);
+  padding: 0 var(--20px);
+  height: var(--40px);
+  background-color: var(--primary);
+  text-transform: capitalize;
+  text-align: center;
+
+  &.secondary,
+  &.plain {
+    background-color: var(--blackSecondary);
+  }
+
+  &.small {
+    height: var(--36px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+
+  @include dwLg() {
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &:active {
+      opacity: 0.5;
+    }
+  }
+}
