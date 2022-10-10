@@ -29,7 +29,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
-  const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(true);
+  const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(false);
 
   useEffect(() => {
     let sub$$: Subscription;
