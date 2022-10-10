@@ -44,7 +44,6 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
   };
 
   const onCancelRelayer = () => {
-    console.log("onCancelRelayer=====");
     setCancelRelayerModalVisible(true);
   };
 
@@ -105,6 +104,7 @@ const Account = ({ advanced = false, relayerAddress, isRegistered }: AccountProp
             onClick={onRunBridger}
             className={"px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0"}
             plain={true}
+            disabled
           >
             <div>{t(localeKeys.runBridger)}</div>
             <Tooltip
