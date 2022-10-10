@@ -11,11 +11,13 @@ import {
   isPolkadotChain,
   triggerContract,
   formatBalance,
+  getFeeMarketApiSection,
 } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
 import { from, switchMap, forkJoin, Subscription, zip, of } from "rxjs";
+import { web3FromAddress } from "@polkadot/extension-dapp";
 
 const SENTINEL_HEAD = "0x0000000000000000000000000000000000000001";
 // const SENTINEL_HEAD = '0000000000000000000000000000000000000000000000000000000000000001';
@@ -122,7 +124,12 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
             console.error("get all relayers:", error);
           },
         });
-    } else if (currentMarket?.source && isPolkadotChain(currentMarket.source) && isPolkadotApi(api) && quote) {
+    } else if (
+      currentMarket?.destination &&
+      isPolkadotChain(currentMarket.destination) &&
+      isPolkadotApi(api) &&
+      quote
+    ) {
       if (Number(quote) <= 0) {
         setQuoteError(
           generateError(t(localeKeys.quoteAmountLimitError, { amount: `0 ${nativeToken?.symbol ?? "-"}` }))
@@ -130,7 +137,26 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
         return;
       }
 
-      onCloseModal();
+      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+      if (apiSection) {
+        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+        const extrinsic = api.tx[apiSection].updateRelayFee(quoteAmount.toString());
+
+        from(web3FromAddress(relayerAddress))
+          .pipe(switchMap((injector) => from(extrinsic.signAndSend(relayerAddress, { signer: injector.signer }))))
+          .subscribe({
+            next: (result) => {
+              console.log("sign and send quote update:", result.toString());
+            },
+            error: (error) => {
+              onCloseModal();
+              console.error("sign and send quote uodate:", error);
+            },
+            complete: () => {
+              onCloseModal();
+            },
+          });
+      }
     } else {
       onCloseModal();
     }
