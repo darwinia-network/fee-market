@@ -4,9 +4,9 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect, u
 import { useFeeMarket } from "./feemarket";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, DAPP_NAME } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
-import { isEthApi, isPolkadotApi, isEthChain, isPolkadotChain } from "@feemarket/app-utils";
+import { isEthApi, isPolkadotApi } from "@feemarket/app-utils";
 import { from, Subscription } from "rxjs";
-import { web3Accounts, web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
+import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
 import type { u16 } from "@polkadot/types";
 import { encodeAddress } from "@polkadot/util-crypto";
 import keyring from "@polkadot/ui-keyring";
