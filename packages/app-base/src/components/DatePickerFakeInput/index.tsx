@@ -1,5 +1,5 @@
 import localeKeys from "../../locale/localeKeys";
-import { DatePicker, DatePickEvent, Popover, Select } from "@darwinia/ui";
+import { DatePicker, DatePickEvent, Popover } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 

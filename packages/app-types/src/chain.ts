@@ -30,7 +30,7 @@ export type FeeMarketSourceChainEth = Extract<
 >;
 export type FeeMarketSourceChainPolkadot = Extract<
   FeeMarketPolkadotChain,
-  "Crab" | "Darwinia" | "Pangolin" | "Pangoro"
+  "Crab" | "Darwinia" | "Pangolin" | "Pangoro" | "Crab Parachain" | "Pangolin Parachain"
 >;
 export type FeeMarketSourceChan = FeeMarketSourceChainEth | FeeMarketSourceChainPolkadot;
 

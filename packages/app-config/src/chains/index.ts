@@ -16,6 +16,8 @@ import crab from "./crab";
 import darwinia from "./darwinia";
 import pangolin from "./pangolin";
 import pangoro from "./pangoro";
+import crabParachain from "./crabParachain";
+import pangolinParachain from "./pangolinParachain";
 
 export const ETH_CHAIN_CONF: Record<FeeMarketSourceChainEth, EthChainConfig> = {
   Goerli: goerli,
@@ -29,4 +31,6 @@ export const POLKADOT_CHAIN_CONF: Record<FeeMarketSourceChainPolkadot, PolkadotC
   Darwinia: darwinia,
   Pangolin: pangolin,
   Pangoro: pangoro,
+  "Crab Parachain": crabParachain,
+  "Pangolin Parachain": pangolinParachain,
 };

@@ -6,8 +6,8 @@ import type { Balance } from "@polkadot/types/interfaces";
 
 import localeKeys from "../../locale/localeKeys";
 import type { Market } from "@feemarket/app-provider";
-import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
-import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 
 const formatRelayers = (active?: number | null, total?: number | null): string => {
   const a = active || active === 0 ? `${active}` : "-";
@@ -80,8 +80,10 @@ const OverviewSummary = ({
 }: Props) => {
   const { t } = useTranslation();
 
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   const summaryData = [

@@ -12,9 +12,10 @@ import type {
   SlashEntity,
   RelayerEntity,
   RewardEntity,
+  FeeMarketSourceChainEth,
   FeeMarketSourceChainPolkadot,
 } from "@feemarket/app-types";
-import { ORDER_DETAIL, DATE_TIME_FORMATE, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { ORDER_DETAIL, DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import {} from "@feemarket/app-utils";
 import { useGrapgQuery } from "@feemarket/app-hooks";
 import { formatDistance, format } from "date-fns";
@@ -49,8 +50,10 @@ const OrderDetails = () => {
   });
   const { currentMarket, setRefresh } = useFeeMarket();
 
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   useEffect(() => {

@@ -38,10 +38,11 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
   const [quote, setQuote] = useState("");
   const [quoteError, setQuoteError] = useState<JSX.Element | null>(null);
 
-  const nativeToken =
-    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
-    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-    null;
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
+    : null;
 
   useEffect(() => {
     setModalVisibility(isVisible);
@@ -58,8 +59,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
 
   const onRegister = () => {
     if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && deposit && quote) {
-      const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
-      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+      const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
+      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken?.decimals);
 
       const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
@@ -126,8 +127,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
     ) {
       const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
       if (apiSection) {
-        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
-        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
+        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken?.decimals);
         const extrinsic = api.tx[apiSection].enrollAndLockCollateral(depositAmount.toString(), quoteAmount.toString());
 
         from(web3FromAddress(relayerAddress))

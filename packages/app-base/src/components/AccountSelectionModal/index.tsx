@@ -3,8 +3,13 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useEffect, useState } from "react";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
-import { useApi } from "@feemarket/app-provider";
-import { useAccountName } from "@feemarket/app-hooks";
+import { Scrollbars } from "react-custom-scrollbars";
+
+import { formatBalance } from "@feemarket/app-utils";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { useBalance, useAccountName } from "@feemarket/app-hooks";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 export interface AccountSelectionModalProps {
   isVisible: boolean;
   onClose: () => void;
@@ -13,6 +18,24 @@ export interface AccountSelectionModalProps {
 const AccountName = ({ address }: { address: string }) => {
   const { displayName } = useAccountName(address);
   return <div className={"text-18-bold"}>{displayName}</div>;
+};
+
+const AccountBalance = ({ address }: { address: string }) => {
+  const { currentMarket } = useFeeMarket();
+  const { api } = useApi();
+  const { balance } = useBalance(api, address);
+
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
+    : null;
+
+  return balance.available ? (
+    <div className={"text-12 text-halfWhite"}>
+      {formatBalance(balance.available, nativeToken?.decimals, nativeToken?.symbol, { precision: BALANCE_DECIMALS })}
+    </div>
+  ) : null;
 };
 
 const AccountSelectionModal = ({ isVisible, onClose }: AccountSelectionModalProps) => {
@@ -51,15 +74,22 @@ const AccountSelectionModal = ({ isVisible, onClose }: AccountSelectionModalProp
         <div className={"flex flex-col gap-[0.3125rem]"}>
           <AccountName address={item} />
           <div className={"text-14"}>{item}</div>
-          {/* <div className={"text-12 text-halfWhite"}>{item.balance}</div> */}
+          <AccountBalance address={item} />
         </div>
       </div>
     );
   });
 
   return (
-    <ModalEnhanced onClose={onCloseModal} isVisible={isModalVisible} modalTitle={t(localeKeys.selectActiveAccount)}>
-      <div className={"flex flex-col gap-[1.25rem]"}>{accountsList}</div>
+    <ModalEnhanced
+      onClose={onCloseModal}
+      isVisible={isModalVisible}
+      modalTitle={t(localeKeys.selectActiveAccount)}
+      contentClassName="!px-0"
+    >
+      <Scrollbars autoHeight={true} autoHeightMax="70vh">
+        <div className={"flex flex-col gap-[1.25rem] mx-[0.9375rem]"}>{accountsList}</div>
+      </Scrollbars>
     </ModalEnhanced>
   );
 };

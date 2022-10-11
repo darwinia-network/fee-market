@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 
 import type { Market } from "@feemarket/app-provider";
-import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { RewardAndSlashChart } from "../Chart/RewardAndSlashChart";
 import { QuoteHistoryChart } from "../Chart/QuoteHistoryChart";
-import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 
 interface Props {
   currentMarket: Market | null;
@@ -16,8 +16,10 @@ interface Props {
 
 const RelayerDetailsChart = ({ currentMarket, rewardsData, slashesData, quoteHistoryData }: Props) => {
   const { t } = useTranslation();
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   return (

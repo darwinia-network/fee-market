@@ -15,6 +15,7 @@ import {
 import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { useBalance } from "@feemarket/app-hooks";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { Subscription, from, of, switchMap, zip } from "rxjs";
 import { web3FromAddress } from "@polkadot/extension-dapp";
@@ -35,15 +36,17 @@ const ModifyCollateralBalanceModal = ({
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api, accountBalance } = useApi();
+  const { balance: relayerBalance } = useBalance(api, relayerAddress);
   const [isModalVisible, setModalVisibility] = useState(false);
   const [deposit, setDeposit] = useState("");
   const [feeEstimation, setFeeEstimation] = useState<BigNumber | null>(null);
   const [depositError, setDepositError] = useState<JSX.Element | null>(null);
 
-  const nativeToken =
-    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
-    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-    null;
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
+    : null;
 
   useEffect(() => {
     setModalVisibility(isVisible);
@@ -124,7 +127,7 @@ const ModifyCollateralBalanceModal = ({
 
       const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
       if (apiSection) {
-        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
 
         const extrinsic = api.tx[apiSection].updateLockedCollateral(depositAmount.toString());
         from(web3FromAddress(relayerAddress))
@@ -153,7 +156,7 @@ const ModifyCollateralBalanceModal = ({
     setDeposit(value);
 
     if (value) {
-      const depositAmount = ethersUtils.parseUnits(value, nativeToken.decimals);
+      const depositAmount = ethersUtils.parseUnits(value, nativeToken?.decimals);
       if (depositAmount.gt(currentCollateral) && depositAmount.sub(currentCollateral).gte(accountBalance)) {
         setDepositError(generateError(t(localeKeys.insufficientBalance)));
       }
@@ -259,7 +262,11 @@ const ModifyCollateralBalanceModal = ({
 
         {/*Your new balancce*/}
         <div className={"flex flex-col gap-[0.625rem]"}>
-          <div className={"text-12-bold"}>{t(localeKeys.youModifyBalanceTo)}</div>
+          <div className={"text-12-bold"}>
+            {t(localeKeys.youModifyBalanceTo)} ({t(localeKeys.available)}{" "}
+            {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, { precision: BALANCE_DECIMALS })}
+            )
+          </div>
           <Input
             value={deposit}
             error={depositError}
