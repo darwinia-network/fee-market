@@ -7,7 +7,10 @@ import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
+
 import { UrlSearchParamsKey } from "@feemarket/app-types";
+import { useApi } from "@feemarket/app-provider";
+import { useAccountName } from "@feemarket/app-hooks";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -167,17 +170,13 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
       id: "2",
       key: "deliveryRelayer",
       title: t([localeKeys.deliveryRelayer]),
-      render: (row) => {
-        return getRelayerColumn(row, "deliveryRelayer", relayerAvatar);
-      },
+      render: (row) => <RelayerAccount address={row.deliveryRelayer} />,
     },
     {
       id: "3",
       key: "confirmationRelayer",
       title: t([localeKeys.confirmationRelayer]),
-      render: (row) => {
-        return getRelayerColumn(row, "confirmationRelayer", relayerAvatar);
-      },
+      render: (row) => <RelayerAccount address={row.confirmationRelayer} />,
     },
     {
       id: "4",
@@ -428,13 +427,15 @@ export const createStatusLabel = (status: Status, t: TFunction<"translation">) =
   );
 };
 
-const getRelayerColumn = (row: Order, key: keyof Order, avatar: string) => {
+const RelayerAccount = ({ address }: { address: string }) => {
+  const { displayName } = useAccountName(address);
+
   return (
     <div className={"flex items-center gap-[0.3125rem] clickable"}>
       <div className={"w-[1.375rem] h-[1.375rem] shrink-0"}>
-        <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
+        <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={relayerAvatar} alt="image" />
       </div>
-      <div className={"flex-1 text-14-bold truncate"}>{row[key]}</div>
+      <div className={"flex-1 text-14-bold truncate"}>{displayName}</div>
     </div>
   );
 };
