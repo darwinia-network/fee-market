@@ -40,6 +40,8 @@ const Orders = () => {
                   : "-",
                 createdAt: node.createBlockTime,
                 confirmAt: node.finishBlockTime,
+                createBlock: node.createBlockNumber,
+                confirmBlock: node.finishBlockNumber,
                 status: node.status === "Finished" ? "finished" : node.status === "InProgress" ? "inProgress" : "all",
               };
             })}

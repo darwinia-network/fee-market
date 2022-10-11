@@ -9,8 +9,11 @@ import DatePickerFakeInput from "../DatePickerFakeInput";
 import { Identicon } from "@polkadot/react-identicon";
 import { isPolkadotChain } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { useFeeMarket } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
+import { DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { format } from "date-fns";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -27,6 +30,8 @@ interface Order {
   confirmationRelayer: string;
   createdAt: string;
   confirmAt: string;
+  createBlock: number;
+  confirmBlock: number;
   status: Status;
 }
 
@@ -35,11 +40,21 @@ interface Props {
   ordersTableData: Order[];
 }
 
+const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
+
 const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   const { t } = useTranslation();
+  const { currentMarket } = useFeeMarket();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [keywords, setKeywords] = useState("");
+
+  const chainConfig = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth] ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot] ??
+      null
+    : null;
+
   const dropdownMaxHeight = 200;
   const timeDimensionOptions: OptionProps[] = [
     {
@@ -182,35 +197,37 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
       id: "4",
       key: "createdAt",
       title: t([localeKeys.createdAt]),
-      render: (row) => {
-        return (
-          <div
-            onClick={() => {
-              onCreatedAtClicked(row);
-            }}
-            className={"text-primary text-14-bold clickable"}
+      render: (row) => (
+        <div className="flex flex-col">
+          <a
+            className="text-primary text-14-bold clickable"
+            rel="noopener noreferrer"
+            target="_blank"
+            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.createBlock}` : "#"}
           >
-            #{row.createdAt}
-          </div>
-        );
-      },
+            #{row.createBlock}
+          </a>
+          <span className="text-12">{formatDateTime(row.createdAt)}</span>
+        </div>
+      ),
     },
     {
       id: "5",
       key: "confirmAt",
       title: t([localeKeys.confirmAt]),
-      render: (row) => {
-        return (
-          <div
-            onClick={() => {
-              onConfirmedAtClicked(row);
-            }}
-            className={"text-primary text-14-bold clickable"}
+      render: (row) => (
+        <div className="flex flex-col">
+          <a
+            className="text-primary text-14-bold clickable"
+            rel="noopener noreferrer"
+            target="_blank"
+            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmBlock}` : "#"}
           >
-            #{row.confirmAt}
-          </div>
-        );
-      },
+            #{row.createBlock}
+          </a>
+          <span className="text-12">{formatDateTime(row.confirmAt)}</span>
+        </div>
+      ),
     },
     {
       id: "6",
