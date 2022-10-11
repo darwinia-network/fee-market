@@ -16,8 +16,10 @@ import nextIcon from "../../assets/images/caret-right.svg";
 import "./styles.scss";
 
 export interface DatePickEvent {
-  startDate: Date | string;
-  endDate: Date | string;
+  startDate?: Date;
+  endDate?: Date;
+  startDateString?: string;
+  endDateString?: string;
 }
 
 export interface CalendarProps {
@@ -35,7 +37,7 @@ export interface CalendarProps {
 const Calendar = ({
   startDate: passedInStartDate,
   endDate: passedInEndDate,
-  format,
+  format = "YYYY/MM/DD",
   onDateChange,
   style,
   className,
@@ -101,11 +103,13 @@ const Calendar = ({
       return;
     }
 
-    const reportStartDate = format ? moment(startDate).clone().format(format) : startDate;
-    const reportEndDate = format ? moment(endDate).clone().format(format) : endDate;
+    const startDateString = moment(startDate).clone().format(format);
+    const endDateString = moment(endDate).clone().format(format);
     onDateChange({
-      startDate: reportStartDate,
-      endDate: reportEndDate,
+      startDate: startDate,
+      endDate: endDate,
+      startDateString,
+      endDateString,
     });
   };
 

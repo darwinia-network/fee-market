@@ -6,6 +6,7 @@ $translateDuration: 300ms;
   user-select: none;
   display: flex;
   flex-direction: column;
+  width: 100%;
 
   .dw-date-picker-input-container {
     display: flex;
@@ -33,6 +34,10 @@ $translateDuration: 300ms;
     position: absolute;
     top: 10px;
     z-index: 200;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
   }
 
   .dw-calendar-drop-down-enter {

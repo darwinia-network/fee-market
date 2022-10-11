@@ -14,22 +14,16 @@ import Calendar, { DatePickEvent } from "../Calendar";
 import moment from "moment";
 import { CSSTransition } from "react-transition-group";
 
-export interface DateRangePickEvent {
-  startDate: Date | string;
-  endDate: Date | string;
-  isDone?: boolean;
-}
-
 export interface DateRangePickerProps {
   format?: string;
   startDate?: Date | string;
   endDate?: Date | string;
-  onDateChange: (event: DateRangePickEvent) => void;
+  onDateChange: (event: DatePickEvent) => void;
   style?: CSSProperties;
   className?: string;
   monthClassName?: string;
-  dateRender?: (value: { startDate: Date | undefined; endDate: Date | undefined }) => JSX.Element;
-  onDone: (event: DateRangePickEvent) => void;
+  dateRender?: (value?: DatePickEvent) => JSX.Element;
+  onDone: (event: DatePickEvent) => void;
   monthsToShow?: number;
 }
 
@@ -43,7 +37,7 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     {
       startDate: passedInStartDate,
       endDate: passedInEndDate,
-      format,
+      format = "YYYY/MM/DD",
       onDateChange,
       onDone,
       style,
@@ -54,7 +48,6 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     }: DateRangePickerProps,
     ref
   ) => {
-    const dateInputDateFormat = "YYYY/MM/DD";
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
     const [isCalendarVisible, setCalendarVisibility] = useState(false);
@@ -62,7 +55,7 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     const calendarRef = useRef<HTMLDivElement | null>(null);
 
     const getFormattedDate = (date: Date): string => {
-      return moment(date).clone().format(dateInputDateFormat);
+      return moment(date).clone().format(format);
     };
 
     const setCalendarStartDate = (newStartDate: Date | string) => {
@@ -91,6 +84,7 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     });
 
     useEffect(() => {
+      console.log(passedInStartDate);
       if (passedInStartDate) {
         if (typeof passedInStartDate === "string") {
           const dateStandard = new Date(passedInStartDate);
@@ -130,10 +124,8 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     };
 
     const onDateChanged = (e: DatePickEvent) => {
-      const newStartDate = typeof e.startDate === "string" ? new Date(e.startDate) : e.startDate;
-      setStartDate(newStartDate);
-      const newEndDate = typeof e.endDate === "string" ? new Date(e.endDate) : e.endDate;
-      setEndDate(newEndDate);
+      setStartDate(e.startDate);
+      setEndDate(e.endDate);
       onDateChange(e);
       lastDatePickEvent.current = e;
     };
@@ -169,16 +161,42 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
       });
     };
 
+    const getRendererDate = (): DatePickEvent => {
+      if (lastDatePickEvent.current) {
+        return lastDatePickEvent.current;
+      }
+
+      const output: DatePickEvent = {};
+
+      if (passedInStartDate) {
+        if (typeof passedInStartDate === "string") {
+          const dateStandard = new Date(passedInStartDate);
+          output.startDateString = passedInStartDate;
+          output.startDate = dateStandard;
+        } else {
+          output.startDate = passedInStartDate;
+          output.startDateString = getFormattedDate(passedInStartDate);
+        }
+      }
+      if (passedInEndDate) {
+        if (typeof passedInEndDate === "string") {
+          const dateStandard = new Date(passedInEndDate);
+          output.endDateString = passedInEndDate;
+          output.endDate = dateStandard;
+        } else {
+          output.endDate = passedInEndDate;
+          output.endDateString = getFormattedDate(passedInEndDate);
+        }
+      }
+
+      return output;
+    };
+
     return (
       <div className={"dw-date-picker-wrapper"}>
-        {dateRender ? buildCustomDateRender(dateRender({ startDate, endDate })) : getDefaultDateRenderer()}
+        {dateRender ? buildCustomDateRender(dateRender(getRendererDate())) : getDefaultDateRenderer()}
 
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          className={"dw-date-picker-calendar-parent"}
-        >
+        <div className={"dw-date-picker-calendar-parent"}>
           <CSSTransition
             unmountOnExit={true}
             nodeRef={calendarRef}
@@ -186,18 +204,24 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
             in={isCalendarVisible}
             classNames={"dw-calendar-drop-down"}
           >
-            <div className={"dw-calendar-drop-down-container"} style={{ alignSelf: "flex-start" }} ref={calendarRef}>
-              <Calendar
-                format={format}
-                isVisible={isCalendarVisible}
-                startDate={startDate}
-                endDate={endDate}
-                onDateChange={onDateChanged}
-                className={className}
-                style={style}
-                monthClassName={monthClassName}
-                monthsToShow={monthsToShow}
-              />
+            <div className={"dw-calendar-drop-down-container"} ref={calendarRef}>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Calendar
+                  format={format}
+                  isVisible={isCalendarVisible}
+                  startDate={startDate}
+                  endDate={endDate}
+                  onDateChange={onDateChanged}
+                  className={className}
+                  style={style}
+                  monthClassName={monthClassName}
+                  monthsToShow={monthsToShow}
+                />
+              </div>
             </div>
           </CSSTransition>
         </div>

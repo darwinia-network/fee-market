@@ -27,28 +27,7 @@ const Orders = () => {
           unfinishedOutOfSlot: ordersSummaryData?.market?.unfinishedOutOfSlotOrders,
         }}
       />
-      <OrdersTable
-        ordersTableLoading={ordersTableLoading}
-        ordersTableData={(ordersTableData?.orders?.nodes || [])
-          .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
-          .map((node, index) => {
-            return {
-              id: index.toString(),
-              orderId: node.nonce,
-              lane: node.lane,
-              nonce: node.nonce,
-              deliveryRelayer: node.deliveryRelayers?.nodes.length
-                ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
-                : "-",
-              confirmationRelayer: node.confirmationRelayers?.nodes.length
-                ? node.confirmationRelayers.nodes[0].confirmationRelayer.address
-                : "-",
-              createdAt: node.createBlockTime,
-              confirmAt: node.finishBlockTime,
-              status: node.status === "Finished" ? "finished" : node.status === "InProgress" ? "inProgress" : "all",
-            };
-          })}
-      />
+      <OrdersTable ordersTableLoading={ordersTableLoading} ordersTableData={[]} />
     </div>
   );
 };

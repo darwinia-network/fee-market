@@ -52,8 +52,10 @@ import { SpinnerProps } from "./components/Spinner";
 import { Placeholder } from "./types";
 import { OptionProps } from "./components/Select";
 import { ModalEnhancedProps, ModalEnhancedRefs } from "./components/ModalEnhanced";
-import { DatePickEvent, DatePickerProps } from "./components/DatePicker";
+import { DatePickerProps } from "./components/DatePicker";
 import { DropdownProps } from "./components/Dropdown";
+import { DatePickEvent } from "./components/Calendar";
+import { DateRangePickerRef, DateRangePickerProps } from "./components/DateRangePicker";
 
 export type {
   PopoverReport,
@@ -84,4 +86,6 @@ export type {
   DatePickEvent,
   DatePickerProps,
   DropdownProps,
+  DateRangePickerRef,
+  DateRangePickerProps,
 };
