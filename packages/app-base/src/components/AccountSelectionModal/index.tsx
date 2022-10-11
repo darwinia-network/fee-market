@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useApi } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
+import { Scrollbars } from "react-custom-scrollbars";
 export interface AccountSelectionModalProps {
   isVisible: boolean;
   onClose: () => void;
@@ -58,8 +59,15 @@ const AccountSelectionModal = ({ isVisible, onClose }: AccountSelectionModalProp
   });
 
   return (
-    <ModalEnhanced onClose={onCloseModal} isVisible={isModalVisible} modalTitle={t(localeKeys.selectActiveAccount)}>
-      <div className={"flex flex-col gap-[1.25rem]"}>{accountsList}</div>
+    <ModalEnhanced
+      onClose={onCloseModal}
+      isVisible={isModalVisible}
+      modalTitle={t(localeKeys.selectActiveAccount)}
+      contentClassName="!px-0"
+    >
+      <Scrollbars autoHeight={true} autoHeightMax="70vh">
+        <div className={"flex flex-col gap-[1.25rem] mx-[0.9375rem]"}>{accountsList}</div>
+      </Scrollbars>
     </ModalEnhanced>
   );
 };
