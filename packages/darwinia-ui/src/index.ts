@@ -16,6 +16,7 @@ import SlideDownUp from "./components/SlideDownUp";
 import Tooltip from "./components/Tooltip";
 import DatePicker from "./components/DatePicker";
 import Dropdown from "./components/Dropdown";
+import DateRangePicker from "./components/DateRangePicker";
 
 export {
   Button,
@@ -34,6 +35,7 @@ export {
   Tooltip,
   DatePicker,
   Dropdown,
+  DateRangePicker,
 };
 
 /*Types*/

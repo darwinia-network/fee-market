@@ -1,13 +1,13 @@
 import moment from "moment";
 
-export interface Month {
-  month: Date;
-  dates: MonthDate[][];
-}
-
 export interface MonthDate {
   isCurrentMonth: boolean;
   date: Date;
+}
+
+export interface Month {
+  month: Date;
+  dates: MonthDate[][];
 }
 
 const getTotalDaysInMonth = (month: number, year: number) => {
@@ -47,7 +47,7 @@ const getNextMonth = (currentMonth: number, currentYear: number) => {
   };
 };
 
-export const getMonthDaysArray = (month: number, year: number) => {
+const getMonthDaysArray = (month: number, year: number) => {
   const totalDaysInThisMonth = getTotalDaysInMonth(month, year);
   const firstDayOfThisMonth = getFirstWeekDayOfMonth(month, year);
   const result: MonthDate[] = [];
@@ -101,18 +101,18 @@ export const getMonthDaysArray = (month: number, year: number) => {
   return output;
 };
 
-export const getMonths = (date: Date, monthsCount = 1) => {
+export const getCalendar = (initialDate: Date, monthsCount = 1) => {
   const calendar: Month[] = [];
   let momentLastMonth = 0;
   let momentLastYear = 0;
   for (let i = 0; i < monthsCount; i++) {
     if (i === 0) {
       // JS date months are index based, add 1 to change them accordingly
-      momentLastMonth = date.getMonth() + 1;
-      momentLastYear = date.getFullYear();
+      momentLastMonth = initialDate.getMonth() + 1;
+      momentLastYear = initialDate.getFullYear();
       calendar.push({
-        month: new Date(date.getFullYear(), date.getMonth()),
-        dates: getMonthDaysArray(date.getMonth() + 1, date.getFullYear()),
+        month: new Date(initialDate.getFullYear(), initialDate.getMonth()),
+        dates: getMonthDaysArray(initialDate.getMonth() + 1, initialDate.getFullYear()),
       });
     } else {
       //months are not index based
