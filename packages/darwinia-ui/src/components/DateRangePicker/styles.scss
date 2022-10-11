@@ -1,0 +1,76 @@
+@import "../../assets/styles/common";
+$opacityDuration: 300ms;
+$translateDuration: 300ms;
+
+.dw-date-picker-wrapper {
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .dw-date-picker-input-container {
+    display: flex;
+    gap: var(--10px);
+    align-items: center;
+
+    .dw-fake-date-input {
+      flex: 1;
+      height: var(--40px);
+      border-radius: var(--5px);
+      padding: 0 var(--10px);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      border: var(--border1px);
+      background-color: var(--blackSecondary);
+    }
+  }
+
+  .dw-date-picker-calendar-parent {
+    position: relative;
+  }
+
+  .dw-calendar-drop-down-container {
+    position: absolute;
+    top: 10px;
+    z-index: 200;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .dw-calendar-drop-down-enter {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  .dw-calendar-drop-down-enter-active {
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform $translateDuration ease-in-out, opacity $opacityDuration ease-in-out;
+    pointer-events: none;
+  }
+
+  .dw-calendar-drop-down-enter-done {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .dw-calendar-drop-down-exit {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .dw-calendar-drop-down-exit-active {
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform $translateDuration ease-in-out, opacity $opacityDuration ease-in-out;
+    pointer-events: none;
+  }
+
+  .dw-calendar-drop-down-exit-done {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}

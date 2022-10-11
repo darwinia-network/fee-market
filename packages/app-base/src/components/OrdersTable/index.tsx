@@ -313,7 +313,7 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
         </div>
         {/*filter button*/}
         <div className={"lg:hidden"}>
-          <Button onClick={onShowFilterModal} plain={true}>
+          <Button onClick={onShowFilterModal} btnType={"secondary"}>
             {t(localeKeys.filter)}
           </Button>
         </div>

@@ -1,20 +1,31 @@
 @import "../../assets/styles/common";
 
-.dw-date-picker {
+.dw-calendar {
   border: 1px solid var(--halfWhite);
   border-radius: var(--borderRadius5px);
-  padding: var(--10px);
   display: flex;
   flex-direction: column;
   user-select: none;
   background-color: var(--blackSecondary);
+  align-self: flex-start;
+  overflow: hidden;
+
+  .dw-months-grid {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .dw-single-month {
+    padding: 0 var(--10px) var(--10px) var(--10px);
+  }
 
   .dw-calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--divider);
-    padding-bottom: var(--10px);
+    height: var(--40px);
+    position: relative;
 
     .dw-date-summary {
       @extend .dw-text-14-bold;
@@ -25,14 +36,32 @@
       gap: var(--15px);
     }
 
-    .dw-calendar-btn {
-      width: var(--24px);
-      height: var(--24px);
-      border-radius: 50%;
-      padding: 2.5px;
+    .dw-calendar-header-btns {
+      height: var(--40px);
+      display: flex;
+      justify-content: center;
+      align-self: center;
+      position: absolute;
 
-      img {
-        width: 100%;
+      &.left {
+        left: 0;
+      }
+
+      &.right {
+        right: 0;
+      }
+
+      .previous,
+      .next {
+        width: var(--36px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        img {
+          width: var(--16px);
+          align-self: center;
+        }
       }
     }
   }
@@ -43,7 +72,7 @@
     .dw-week-day-wrapper {
       flex: 1;
       text-align: center;
-      padding: var(--10px) 0;
+      padding: var(--8px) 0;
     }
   }
 

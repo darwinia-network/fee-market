@@ -5,6 +5,11 @@ export interface MonthDate {
   date: Date;
 }
 
+export interface Month {
+  month: Date;
+  dates: MonthDate[][];
+}
+
 const getTotalDaysInMonth = (month: number, year: number) => {
   return moment(`${year}-${month}`, "YYYY-MM").clone().daysInMonth();
 };
@@ -42,7 +47,7 @@ const getNextMonth = (currentMonth: number, currentYear: number) => {
   };
 };
 
-export const getMonthDaysArray = (month: number, year: number) => {
+const getMonthDaysArray = (month: number, year: number) => {
   const totalDaysInThisMonth = getTotalDaysInMonth(month, year);
   const firstDayOfThisMonth = getFirstWeekDayOfMonth(month, year);
   const result: MonthDate[] = [];
@@ -94,6 +99,34 @@ export const getMonthDaysArray = (month: number, year: number) => {
   }
 
   return output;
+};
+
+export const getCalendar = (initialDate: Date, monthsCount = 1) => {
+  const calendar: Month[] = [];
+  let momentLastMonth = 0;
+  let momentLastYear = 0;
+  for (let i = 0; i < monthsCount; i++) {
+    if (i === 0) {
+      // JS date months are index based, add 1 to change them accordingly
+      momentLastMonth = initialDate.getMonth() + 1;
+      momentLastYear = initialDate.getFullYear();
+      calendar.push({
+        month: new Date(initialDate.getFullYear(), initialDate.getMonth()),
+        dates: getMonthDaysArray(initialDate.getMonth() + 1, initialDate.getFullYear()),
+      });
+    } else {
+      //months are not index based
+      const next = getNextMonth(momentLastMonth, momentLastYear);
+      calendar.push({
+        month: new Date(next.year, next.month - 1),
+        dates: getMonthDaysArray(next.month, next.year),
+      });
+      momentLastMonth = next.month;
+      momentLastYear = next.year;
+    }
+  }
+
+  return calendar;
 };
 
 export const getYear = (date: Date) => {

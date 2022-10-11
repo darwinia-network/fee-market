@@ -35,7 +35,7 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
     setRefresh,
   });
   const [isRegistered, setRegistered] = useState(false);
-  const [isNotificationVisible, setNotificationVisibility] = useState(true);
+  const [isNotificationVisible, setNotificationVisibility] = useState(false);
 
   const nativeToken = currentMarket?.source
     ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
@@ -145,7 +145,7 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           >
             <div className={"flex-1 flex items-center"}>{t(localeKeys.switchAccountNotice)}</div>
             <div>
-              <Button onClick={onSwitchNetwork} className={"bg-white text-danger lg:h-[1.875rem] h-[2.5rem]"}>
+              <Button onClick={onSwitchNetwork} className={"!bg-white w-full text-danger lg:!h-[1.875rem]"}>
                 {t(localeKeys.switchNetwork)}
               </Button>
             </div>

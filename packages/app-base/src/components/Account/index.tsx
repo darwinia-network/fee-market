@@ -57,7 +57,7 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
   const getMoreActionsDropdown = () => {
     return (
       <div>
-        <Button className={"!px-[0.9375rem] min-w-[150px]"} plain={true} onClick={onCancelRelayer}>
+        <Button btnType={"secondary"} className={"!px-[0.9375rem] w-full min-w-[150px]"} onClick={onCancelRelayer}>
           {t(localeKeys.cancelRelayer)}
         </Button>
       </div>
@@ -95,10 +95,8 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
       {advanced && (
         <div className={"shrink-0 justify-end flex-wrap flex flex-1 flex-col lg:flex-row gap-[0.9375rem] items-center"}>
           <Button
-            className={
-              "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-            }
-            plain={true}
+            className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
+            btnType={"secondary"}
             disabled={isEthChain(sourceChain)}
             onClick={onSwitchAccount}
           >
@@ -106,8 +104,8 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
           </Button>
           <Button
             onClick={onRunBridger}
-            className={"px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0"}
-            plain={true}
+            className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
+            btnType={"secondary"}
             disabled
           >
             <div>{t(localeKeys.runBridger)}</div>
@@ -130,21 +128,14 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
               offset={[0, 10]}
               dropdownClassName={"w-full lg:w-auto"}
             >
-              <Button
-                className={
-                  "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-                }
-                plain={true}
-              >
+              <Button className={"px-[0.9375rem] w-full lg:w-auto shrink-0"} btnType={"secondary"}>
                 {t(localeKeys.moreActions)}
               </Button>
             </Dropdown>
           ) : (
             <Button
               onClick={onRegisterRelayer}
-              className={
-                "px-[0.9375rem] lg:justify-start flex items-center justify-between lg:w-auto shrink-0 gap-[0.375rem]"
-              }
+              className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
             >
               <div>{t(localeKeys.registerRelayer)}</div>
               <Tooltip

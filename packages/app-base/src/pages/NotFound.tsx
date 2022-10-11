@@ -27,7 +27,7 @@ const NotFound = () => {
             <div className={"flex flex-col gap-[1.25rem] text-center justify-center items-center lg:items-start"}>
               <div className={"text-18-bold text-[3.75rem] leading-[5rem]"}>404</div>
               <div className={"text-14-bold lg:text-[1.25rem] leading-[1.625rem]"}>{t(localeKeys.pageNotFound)}</div>
-              <Button className={"px-[0.9375rem] !w-max"} plain={true} onClick={goHome}>
+              <Button className={"px-[0.9375rem]"} btnType={"secondary"} onClick={goHome}>
                 {t(localeKeys.goHome)}
                 <span className={"pl-[8px]"}>{">"}</span>
               </Button>

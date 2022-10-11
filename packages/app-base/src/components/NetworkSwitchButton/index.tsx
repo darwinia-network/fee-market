@@ -23,7 +23,7 @@ const NetworkSwitchButton = ({ onClick, from = "", to = "", isEqualSized = true 
       onClick={() => {
         onClickHandler();
       }}
-      className={"text-14-bold flex justify-between align-center gap-[0.625rem]"}
+      className={"text-14-bold flex justify-between items-center align-center gap-[0.625rem]"}
     >
       {/*Network names*/}
       <div className={"shrink-0 flex-1 overflow-hidden flex gap-[0.625rem] justify-between"}>
