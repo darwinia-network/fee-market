@@ -19,7 +19,7 @@ interface PalletBalancesBalanceLock extends Struct {
   readonly reasons: PalletBalancesReasons;
 }
 
-interface BalanceResult<T> {
+export interface BalanceResult<T> {
   total: T;
   available: T;
 }
@@ -41,7 +41,7 @@ const calcMax = (lockItem: any, current: BN) => {
   return max;
 };
 
-export const geEthBalance = async (api: providers.Provider, addressOrName: string | Promise<string>) => {
+export const getEthBalance = async (api: providers.Provider, addressOrName: string | Promise<string>) => {
   const balance = await api.getBalance(addressOrName);
 
   return { total: balance, available: balance } as BalanceResult<BigNumber>;
