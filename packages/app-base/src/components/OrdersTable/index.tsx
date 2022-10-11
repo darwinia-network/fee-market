@@ -124,6 +124,10 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     onChange: onPageChange,
   });
 
+  useEffect(() => {
+    setTablePagination((prev) => ({ ...prev, totalPages: ordersTableData.length }));
+  }, [ordersTableData]);
+
   const onCreatedAtClicked = (row: Order) => {
     console.log("onCreatedAtClicked=====", row);
   };
