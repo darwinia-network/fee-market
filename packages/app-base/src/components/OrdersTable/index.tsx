@@ -146,14 +146,6 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     setTablePagination((prev) => ({ ...prev, totalPages: ordersTableData.length }));
   }, [ordersTableData]);
 
-  const onCreatedAtClicked = (row: Order) => {
-    console.log("onCreatedAtClicked=====", row);
-  };
-
-  const onConfirmedAtClicked = (row: Order) => {
-    console.log("onConfirmedAtClicked=====", row);
-  };
-
   const onOrderNumberClicked = (row: Order) => {
     console.log("onOrderNumberClicked=====", row);
     const urlSearchParams = new URLSearchParams();
