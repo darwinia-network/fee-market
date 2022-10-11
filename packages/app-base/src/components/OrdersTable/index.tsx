@@ -3,13 +3,13 @@ import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
-import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
-
+import { Identicon } from "@polkadot/react-identicon";
+import { isPolkadotChain } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
-import { useApi } from "@feemarket/app-provider";
+import { useFeeMarket } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
 
 type Status = "all" | "finished" | "inProgress";
@@ -428,13 +428,12 @@ export const createStatusLabel = (status: Status, t: TFunction<"translation">) =
 };
 
 const RelayerAccount = ({ address }: { address: string }) => {
+  const { currentMarket } = useFeeMarket();
   const { displayName } = useAccountName(address);
 
   return (
     <div className={"flex items-center gap-[0.3125rem] clickable"}>
-      <div className={"w-[1.375rem] h-[1.375rem] shrink-0"}>
-        <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={relayerAvatar} alt="image" />
-      </div>
+      <Identicon value={address} size={22} theme={isPolkadotChain(currentMarket?.source) ? "polkadot" : "ethereum"} />
       <div className={"flex-1 text-14-bold truncate"}>{displayName}</div>
     </div>
   );
