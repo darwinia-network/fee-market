@@ -32,6 +32,7 @@ const Orders = () => {
                 orderId: node.nonce,
                 lane: node.lane,
                 nonce: node.nonce,
+                sender: node.sender,
                 deliveryRelayer: node.deliveryRelayers?.nodes.length
                   ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
                   : "-",

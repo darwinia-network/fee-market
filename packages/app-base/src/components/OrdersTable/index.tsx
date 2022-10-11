@@ -1,7 +1,7 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState, useRef } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -33,6 +33,7 @@ interface Order {
   createBlock: number;
   confirmBlock: number;
   status: Status;
+  sender: string | null;
 }
 
 interface Props {
@@ -48,6 +49,7 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [keywords, setKeywords] = useState("");
+  const dataSourceRef = useRef<Order[]>([]);
 
   const chainConfig = currentMarket?.source
     ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth] ??
@@ -237,8 +239,22 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   useEffect(() => {
     const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
     const end = start + tablePagination.pageSize;
-    setOrderDataSource(ordersTableData.slice(start, end));
+
+    dataSourceRef.current = ordersTableData.slice(start, end);
+    setOrderDataSource(dataSourceRef.current);
   }, [ordersTableData, tablePagination]);
+
+  useEffect(() => {
+    if (keywords) {
+      setOrderDataSource(
+        dataSourceRef.current.filter(
+          (item) => item.nonce.includes(keywords) || (item.sender && item.sender.includes(keywords))
+        )
+      );
+    } else {
+      setOrderDataSource(dataSourceRef.current);
+    }
+  }, [keywords]);
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
