@@ -17,6 +17,12 @@ export const MARKET_API_SECTIONS = {
   Pangoro: {
     Pangolin: ["feeMarket", "pangolinFeeMarket"],
   },
+  "Crab Parachain": {
+    Crab: ["crabFeeMarket"],
+  },
+  "Pangolin Parachain": {
+    Pangolin: ["pangolinFeeMarket"],
+  },
 } as Record<FeeMarketPolkadotChain, Record<FeeMarketPolkadotChain, FeeMarketApiSection[]>>;
 
 const MAPPING_URL_SEARCH_PARAM_2_CHAIN = {} as Record<string, FeeMarketChain>;

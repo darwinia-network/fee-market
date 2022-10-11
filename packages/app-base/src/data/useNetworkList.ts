@@ -66,6 +66,17 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
           },
         ],
       },
+      {
+        id: "Crab Parachain",
+        name: t(localeKeys.crabParachain),
+        logo: crabLogo,
+        destinations: [
+          {
+            id: "Crab",
+            name: t(localeKeys.crabChain),
+          },
+        ],
+      },
     ],
     /*All the logos below need to be changed accordingly*/
     testNets: [
@@ -114,6 +125,17 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
           {
             id: "Goerli",
             name: t(localeKeys.goerli),
+          },
+        ],
+      },
+      {
+        id: "Pangolin Parachain",
+        name: t(localeKeys.pangolinParachain),
+        logo: pangolinLogo,
+        destinations: [
+          {
+            id: "Pangolin",
+            name: t(localeKeys.pangolinChain),
           },
         ],
       },
