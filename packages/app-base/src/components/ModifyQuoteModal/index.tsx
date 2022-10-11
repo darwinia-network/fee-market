@@ -39,10 +39,11 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
   const [feeEstimation, setFeeEstimation] = useState<BigNumber | null>(null);
   const [quoteError, setQuoteError] = useState<JSX.Element | null>(null);
 
-  const nativeToken =
-    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
-    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-    null;
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
+    : null;
 
   useEffect(() => {
     setModalVisibility(isVisible);
@@ -69,7 +70,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
         );
         return;
       }
-      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken?.decimals);
 
       const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
@@ -143,7 +144,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
 
       const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
       if (apiSection) {
-        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken.decimals);
+        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken?.decimals);
         const extrinsic = api.tx[apiSection].updateRelayFee(quoteAmount.toString());
 
         from(web3FromAddress(relayerAddress))

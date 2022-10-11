@@ -40,10 +40,11 @@ const ModifyCollateralBalanceModal = ({
   const [feeEstimation, setFeeEstimation] = useState<BigNumber | null>(null);
   const [depositError, setDepositError] = useState<JSX.Element | null>(null);
 
-  const nativeToken =
-    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
-    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-    null;
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
+    : null;
 
   useEffect(() => {
     setModalVisibility(isVisible);
@@ -124,7 +125,7 @@ const ModifyCollateralBalanceModal = ({
 
       const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
       if (apiSection) {
-        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
 
         const extrinsic = api.tx[apiSection].updateLockedCollateral(depositAmount.toString());
         from(web3FromAddress(relayerAddress))
@@ -153,7 +154,7 @@ const ModifyCollateralBalanceModal = ({
     setDeposit(value);
 
     if (value) {
-      const depositAmount = ethersUtils.parseUnits(value, nativeToken.decimals);
+      const depositAmount = ethersUtils.parseUnits(value, nativeToken?.decimals);
       if (depositAmount.gt(currentCollateral) && depositAmount.sub(currentCollateral).gte(accountBalance)) {
         setDepositError(generateError(t(localeKeys.insufficientBalance)));
       }

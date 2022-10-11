@@ -9,8 +9,8 @@ import { useRelayersOverviewData, useAccountName } from "@feemarket/app-hooks";
 import type { BN } from "@polkadot/util";
 import type { Balance } from "@polkadot/types/interfaces";
 import { utils as ethersUtils } from "ethers";
-import { POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
-import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 
 const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
@@ -41,8 +41,10 @@ const RelayersOverview = () => {
   const { apiPolkadot } = useApi();
   const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, apiPolkadot, setRefresh });
 
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {

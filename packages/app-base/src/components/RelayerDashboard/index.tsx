@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 
 import { BN_ZERO } from "@polkadot/util";
 import type {
+  FeeMarketSourceChainEth,
   FeeMarketSourceChainPolkadot,
   AddEthereumChainParameter,
   PalletFeeMarketRelayer,
@@ -36,8 +37,10 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
   const [isRegistered, setRegistered] = useState(false);
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
 
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   const onSwitchNetwork = async () => {
