@@ -84,47 +84,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     // navigate()
   };
 
-  const [dataSource, setDataSource] = useState<Order[]>([
-    {
-      id: "1",
-      orderId: "924",
-      relayerRoles: ["assigned", "confirmation"],
-      slash: "89 RING",
-      reward: "54 RING",
-      time: "2022/08/26",
-    },
-    {
-      id: "2",
-      orderId: "999",
-      relayerRoles: ["confirmation", "assigned", "delivery"],
-      slash: "120 RING",
-      reward: "88 RING",
-      time: "2022/08/26",
-    },
-    {
-      id: "3",
-      orderId: "199",
-      relayerRoles: ["assigned"],
-      slash: "200 RING",
-      reward: "13 RING",
-      time: "2022/08/28",
-    },
-  ]);
-
-  useEffect(() => {
-    setDataSource(
-      relatedOrdersData?.map((item, index) => {
-        return {
-          id: `${index}`,
-          orderId: item.nonce,
-          relayerRoles: item.relayerRoles,
-          slash: formatBalance(item.slash, tokenSymbol, tokenDecimals),
-          reward: formatBalance(item.reward, tokenSymbol, tokenDecimals),
-          time: item.createBlockTime,
-        };
-      }) || []
-    );
-  }, [relatedOrdersData, tokenSymbol, tokenDecimals]);
+  const [dataSource, setDataSource] = useState<Order[]>([]);
 
   const onPageChange = useCallback((pageNumber: number) => {
     setTablePagination((oldValues) => {
@@ -145,9 +105,27 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
   const [tablePagination, setTablePagination] = useState<PaginationProps>({
     currentPage: 1,
     pageSize: 10,
-    totalPages: 1000,
+    totalPages: relatedOrdersData?.length || 0,
     onChange: onPageChange,
   });
+
+  useEffect(() => {
+    const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
+    const end = start + tablePagination.pageSize;
+
+    setDataSource(
+      relatedOrdersData?.slice(start, end)?.map((item, index) => {
+        return {
+          id: `${index}`,
+          orderId: item.nonce,
+          relayerRoles: item.relayerRoles,
+          slash: formatBalance(item.slash, tokenSymbol, tokenDecimals),
+          reward: formatBalance(item.reward, tokenSymbol, tokenDecimals),
+          time: item.createBlockTime,
+        };
+      }) || []
+    );
+  }, [relatedOrdersData, tokenSymbol, tokenDecimals, tablePagination]);
 
   const getTableTitle = () => {
     return <div className={"pb-[0.9375rem]"}>{t(localeKeys.relatedOrders)}</div>;

@@ -1,58 +1,30 @@
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Dropdown, Tooltip } from "@darwinia/ui";
 import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
-
-import { BigNumber, Contract } from "ethers";
-import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
-import { isEthApi, isEthChain, formatBalance } from "@feemarket/app-utils";
-import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
-import { from, Subscription } from "rxjs";
+import { useAccountName } from "@feemarket/app-hooks";
+import { isEthChain } from "@feemarket/app-utils";
+import type { FeeMarketSourceChan } from "@feemarket/app-types";
 
 interface AccountProps {
   advanced?: boolean;
   relayerAddress: string;
+  isRegistered?: boolean;
+  sourceChain?: FeeMarketSourceChan;
 }
 
-const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
+const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }: AccountProps) => {
   const { t } = useTranslation();
-  const [isRegistered, setRegistered] = useState(false);
-
-  const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { displayName } = useAccountName(relayerAddress);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
   const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(false);
-
-  useEffect(() => {
-    let sub$$: Subscription;
-
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      sub$$ = from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
-        next: setRegistered,
-        error: (error) => {
-          setRegistered(false);
-          console.error("check is relayer:", error);
-        },
-      });
-    }
-
-    return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
-    };
-  }, [relayerAddress, currentMarket?.source, api]);
 
   const onSwitchAccount = () => {
     setActiveAccountModalVisible(true);
@@ -75,7 +47,6 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
   };
 
   const onCancelRelayer = () => {
-    console.log("onCancelRelayer=====");
     setCancelRelayerModalVisible(true);
   };
 
@@ -105,7 +76,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
           } gap-[0.3125rem]`}
         >
           <div className={"flex gap-[0.3125rem] lg:gap-[0.625rem] flex-col lg:flex-row"}>
-            <div className={"uppercase text-18-bold"}>🚀Account name</div>
+            <div className={"uppercase text-18-bold"}>{displayName}</div>
             {advanced && (
               <div>
                 <span
@@ -126,6 +97,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
           <Button
             className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
             btnType={"secondary"}
+            disabled={isEthChain(sourceChain)}
             onClick={onSwitchAccount}
           >
             {t(localeKeys.switchAccount)}
@@ -134,6 +106,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
             onClick={onRunBridger}
             className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
             btnType={"secondary"}
+            disabled
           >
             <div>{t(localeKeys.runBridger)}</div>
             <Tooltip
@@ -145,7 +118,7 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
               <img className={"w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
             </Tooltip>
           </Button>
-          {!isRegistered ? (
+          {isRegistered ? (
             <Dropdown
               placement={"right"}
               className={"w-full lg:w-auto"}
@@ -187,7 +160,11 @@ const Account = ({ advanced = false, relayerAddress }: AccountProps) => {
         relayerAddress={relayerAddress}
       />
       {/*Register relayer modal*/}
-      <CancelRelayerModal onClose={onCancelRelayerModalClose} isVisible={isCancelRelayerModalVisible} />
+      <CancelRelayerModal
+        onClose={onCancelRelayerModalClose}
+        isVisible={isCancelRelayerModalVisible}
+        relayerAddress={relayerAddress}
+      />
     </div>
   );
 };

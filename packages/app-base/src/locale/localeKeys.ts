@@ -72,6 +72,7 @@ const localeKeys = {
   confirmAt: "confirmAt",
   loginInfo: "loginInfo",
   connectMetamask: "connectMetamask",
+  connectWallet: "connectWallet",
   unregistered: "unregistered",
   registered: "registered",
   switchAccount: "switchAccount",

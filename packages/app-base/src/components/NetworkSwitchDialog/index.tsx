@@ -14,17 +14,22 @@ export interface TransferSelection {
 }
 interface NetworkSwitchDialogProps {
   transferSelection?: TransferSelection;
+  defaultNetworkType: keyof NetworkOption;
   onNetworkSelectionCompleted: (transferSelection: TransferSelection) => void;
 }
 
-const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }: NetworkSwitchDialogProps) => {
+const NetworkSwitchDialog = ({
+  onNetworkSelectionCompleted,
+  transferSelection,
+  defaultNetworkType,
+}: NetworkSwitchDialogProps) => {
   const { t } = useTranslation();
   const { networkList } = useNetworkList();
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const selectedNetworkObj = useRef<Network | undefined>(undefined);
   const selectedDestinationObj = useRef<Destination | undefined>(undefined);
   const [selectedDestination, setSelectedDestination] = useState("");
-  const [networkType, setNetworkType] = useState<keyof NetworkOption>("liveNets");
+  const [networkType, setNetworkType] = useState<keyof NetworkOption>(defaultNetworkType);
   const onNetworkSelectionChanged = (value: string) => {
     setSelectedNetwork(value);
     /*select the first destination of this network by default */
@@ -65,6 +70,10 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
   useEffect(() => {
     setDefaultSelectedNetwork(networkType);
   }, [networkType]);
+
+  useEffect(() => {
+    setNetworkType(defaultNetworkType);
+  }, [defaultNetworkType]);
 
   const onFinishNetworkSelection = () => {
     if (!selectedNetworkObj.current || !selectedDestinationObj.current) {

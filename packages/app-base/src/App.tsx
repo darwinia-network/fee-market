@@ -1,6 +1,10 @@
 import Root from "./Root";
 import { FeeMarketProvider, GraphqlProvider, ApiProvider } from "@feemarket/app-provider";
 
+import keyring from "@polkadot/ui-keyring";
+
+keyring.loadAll({});
+
 /* WEIRD BUG FIX 🐛🔧
  * For some reasons the App component rejects all React's hooks,
  * it says that App component isn't a functional component.
