@@ -99,6 +99,7 @@ const localeKeys = {
   confirmCancelRelayer: "confirmCancelRelayer",
   cancelRelayerWarning: "cancelRelayerWarning",
   feeEstimation: "feeEstimation",
+  available: "available",
   youModifyQuoteTo: "youModifyQuoteTo",
   modifyYourQuote: "modifyYourQuote",
   yourCurrentQuote: "yourCurrentQuote",

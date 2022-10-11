@@ -15,6 +15,7 @@ import {
 import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
+import { useBalance } from "@feemarket/app-hooks";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { Subscription, from, of, switchMap, zip } from "rxjs";
 import { web3FromAddress } from "@polkadot/extension-dapp";
@@ -35,6 +36,7 @@ const ModifyCollateralBalanceModal = ({
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api, accountBalance } = useApi();
+  const { balance: relayerBalance } = useBalance(api, relayerAddress);
   const [isModalVisible, setModalVisibility] = useState(false);
   const [deposit, setDeposit] = useState("");
   const [feeEstimation, setFeeEstimation] = useState<BigNumber | null>(null);
@@ -260,7 +262,11 @@ const ModifyCollateralBalanceModal = ({
 
         {/*Your new balancce*/}
         <div className={"flex flex-col gap-[0.625rem]"}>
-          <div className={"text-12-bold"}>{t(localeKeys.youModifyBalanceTo)}</div>
+          <div className={"text-12-bold"}>
+            {t(localeKeys.youModifyBalanceTo)} ({t(localeKeys.available)}{" "}
+            {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, { precision: BALANCE_DECIMALS })}
+            )
+          </div>
           <Input
             value={deposit}
             error={depositError}
