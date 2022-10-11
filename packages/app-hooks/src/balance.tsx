@@ -1,14 +1,13 @@
-import { BigNumber } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { BN } from "@polkadot/util";
 import { from, Subscription } from "rxjs";
+import { ApiPromise } from "@polkadot/api";
 
-import { useApi } from "@feemarket/app-provider";
 import type { BalanceResult } from "@feemarket/app-utils";
 import { getEthBalance, getPolkadotBalance, isEthApi, isPolkadotApi } from "@feemarket/app-utils";
 import { useEffect, useState } from "react";
 
-export const useBalance = (address: string) => {
-  const { api } = useApi();
+export const useBalance = (api: providers.Provider | ApiPromise | null, address: string) => {
   const [balance, setBalance] = useState<BalanceResult<BigNumber | BN | null>>({ total: null, available: null });
 
   useEffect(() => {
