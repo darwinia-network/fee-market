@@ -61,6 +61,8 @@ const enUs = {
   [localeKeys.date]: "date",
   [localeKeys.startDate]: "start date",
   [localeKeys.endDate]: "end date",
+  [localeKeys.startBlock]: "start block",
+  [localeKeys.endBlock]: "end block",
   [localeKeys.block]: "block",
   [localeKeys.status]: "status",
   [localeKeys.slot]: "slot",
@@ -101,6 +103,7 @@ const enUs = {
   [localeKeys.cancelRelayerWarning]: `You're going to cancel Relayer of the current account in the Darwinia > Ethereum Fee market. 
 Note that the collateral balance will return back to your account. But the locked collateral will not release until the message Orders you're Assigned get Delivered.`,
   [localeKeys.feeEstimation]: `Estimated fees of {{amount}}`,
+  [localeKeys.available]: `available`,
   [localeKeys.youModifyQuoteTo]: `You‘ll modify Quote to`,
   [localeKeys.modifyYourQuote]: "modify your quote",
   [localeKeys.yourCurrentQuote]: "your current quote",

@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { OrdersCountChart } from "../Chart/OrdersCountChart";
 import { FeeHistoryChart } from "../Chart/FeeHistoryChart";
-import { POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
-import type { FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 
 interface Props {
   currentMarket: Market | null;
@@ -15,8 +15,10 @@ interface Props {
 const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryData }: Props) => {
   const { t } = useTranslation();
 
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   return (

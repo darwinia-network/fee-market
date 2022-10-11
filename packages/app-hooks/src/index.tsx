@@ -4,3 +4,4 @@ export * from "./relayersOverviewData";
 export * from "./relayerDetailData";
 export * from "./ordersData";
 export * from "./accountName";
+export * from "./balance";

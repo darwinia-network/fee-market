@@ -1,13 +1,20 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState, useRef } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
-import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
+import BlockRangeInput from "../BlockRangeInput";
+import { Identicon } from "@polkadot/react-identicon";
+import { isPolkadotChain } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { useFeeMarket } from "@feemarket/app-provider";
+import { useAccountName } from "@feemarket/app-hooks";
+import { DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { format } from "date-fns";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -24,7 +31,10 @@ interface Order {
   confirmationRelayer: string;
   createdAt: string;
   confirmAt: string;
+  createBlock: number;
+  confirmBlock: number;
   status: Status;
+  sender: string | null;
 }
 
 interface Props {
@@ -32,11 +42,22 @@ interface Props {
   ordersTableData: Order[];
 }
 
+const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
+
 const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   const { t } = useTranslation();
+  const { currentMarket } = useFeeMarket();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [keywords, setKeywords] = useState("");
+  const dataSourceRef = useRef<Order[]>([]);
+
+  const chainConfig = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth] ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot] ??
+      null
+    : null;
+
   const dropdownMaxHeight = 200;
   const timeDimensionOptions: OptionProps[] = [
     {
@@ -124,13 +145,9 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     onChange: onPageChange,
   });
 
-  const onCreatedAtClicked = (row: Order) => {
-    console.log("onCreatedAtClicked=====", row);
-  };
-
-  const onConfirmedAtClicked = (row: Order) => {
-    console.log("onConfirmedAtClicked=====", row);
-  };
+  useEffect(() => {
+    setTablePagination((prev) => ({ ...prev, totalPages: ordersTableData.length }));
+  }, [ordersTableData]);
 
   const onOrderNumberClicked = (row: Order) => {
     console.log("onOrderNumberClicked=====", row);
@@ -163,51 +180,49 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
       id: "2",
       key: "deliveryRelayer",
       title: t([localeKeys.deliveryRelayer]),
-      render: (row) => {
-        return getRelayerColumn(row, "deliveryRelayer", relayerAvatar);
-      },
+      render: (row) => <RelayerAccount address={row.deliveryRelayer} />,
     },
     {
       id: "3",
       key: "confirmationRelayer",
       title: t([localeKeys.confirmationRelayer]),
-      render: (row) => {
-        return getRelayerColumn(row, "confirmationRelayer", relayerAvatar);
-      },
+      render: (row) => <RelayerAccount address={row.confirmationRelayer} />,
     },
     {
       id: "4",
       key: "createdAt",
       title: t([localeKeys.createdAt]),
-      render: (row) => {
-        return (
-          <div
-            onClick={() => {
-              onCreatedAtClicked(row);
-            }}
-            className={"text-primary text-14-bold clickable"}
+      render: (row) => (
+        <div className="flex flex-col">
+          <a
+            className="text-primary text-14-bold clickable"
+            rel="noopener noreferrer"
+            target="_blank"
+            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.createBlock}` : "#"}
           >
-            #{row.createdAt}
-          </div>
-        );
-      },
+            #{row.createBlock}
+          </a>
+          <span className="text-12">{formatDateTime(row.createdAt)}</span>
+        </div>
+      ),
     },
     {
       id: "5",
       key: "confirmAt",
       title: t([localeKeys.confirmAt]),
-      render: (row) => {
-        return (
-          <div
-            onClick={() => {
-              onConfirmedAtClicked(row);
-            }}
-            className={"text-primary text-14-bold clickable"}
+      render: (row) => (
+        <div className="flex flex-col">
+          <a
+            className="text-primary text-14-bold clickable"
+            rel="noopener noreferrer"
+            target="_blank"
+            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmBlock}` : "#"}
           >
-            #{row.confirmAt}
-          </div>
-        );
-      },
+            #{row.createBlock}
+          </a>
+          <span className="text-12">{formatDateTime(row.confirmAt)}</span>
+        </div>
+      ),
     },
     {
       id: "6",
@@ -225,8 +240,22 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
   useEffect(() => {
     const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
     const end = start + tablePagination.pageSize;
-    setOrderDataSource(ordersTableData.slice(start, end));
+
+    dataSourceRef.current = ordersTableData.slice(start, end);
+    setOrderDataSource(dataSourceRef.current);
   }, [ordersTableData, tablePagination]);
+
+  useEffect(() => {
+    if (keywords) {
+      setOrderDataSource(
+        dataSourceRef.current.filter(
+          (item) => item.nonce.includes(keywords) || (item.sender && item.sender.includes(keywords))
+        )
+      );
+    } else {
+      setOrderDataSource(dataSourceRef.current);
+    }
+  }, [keywords]);
 
   const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setKeywords(event.target.value);
@@ -305,8 +334,7 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
               </div>
             </div>
 
-            {/*Date*/}
-            <DatePickerFakeInput />
+            {timeDimension === "block" ? <BlockRangeInput /> : <DatePickerFakeInput />}
 
             {/*Status*/}
             <div className={"flex flex-col gap-[0.625rem]"}>
@@ -354,10 +382,9 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
             />
           </div>
         </div>
-        {/*date*/}
-        <div className={"shrink-0"}>
-          <DatePickerFakeInput />
-        </div>
+
+        {/*date or block*/}
+        <div className={"shrink-0"}>{timeDimension === "block" ? <BlockRangeInput /> : <DatePickerFakeInput />}</div>
 
         {/*status*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
@@ -424,13 +451,14 @@ export const createStatusLabel = (status: Status, t: TFunction<"translation">) =
   );
 };
 
-const getRelayerColumn = (row: Order, key: keyof Order, avatar: string) => {
+const RelayerAccount = ({ address }: { address: string }) => {
+  const { currentMarket } = useFeeMarket();
+  const { displayName } = useAccountName(address);
+
   return (
     <div className={"flex items-center gap-[0.3125rem] clickable"}>
-      <div className={"w-[1.375rem] h-[1.375rem] shrink-0"}>
-        <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
-      </div>
-      <div className={"flex-1 text-14-bold truncate"}>{row[key]}</div>
+      <Identicon value={address} size={22} theme={isPolkadotChain(currentMarket?.source) ? "polkadot" : "ethereum"} />
+      <div className={"flex-1 text-14-bold truncate"}>{displayName}</div>
     </div>
   );
 };

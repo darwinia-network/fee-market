@@ -1,6 +1,7 @@
 import { DetailedHTMLProps, HTMLAttributes } from "react";
 import caretDownIcon from "../../assets/images/caret-down.svg";
 import { NavLink, useLocation } from "react-router-dom";
+import { UrlSearchParamsKey } from "@feemarket/app-types";
 
 interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   hasSubMenu?: boolean;
@@ -12,6 +13,17 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
 }
 const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }: Props) => {
   const location = useLocation();
+
+  const newUrlSearchParams = new URLSearchParams();
+  const originalUrlSearchParams = new URLSearchParams(location.search);
+
+  const source = originalUrlSearchParams.get(UrlSearchParamsKey.FROM);
+  const destination = originalUrlSearchParams.get(UrlSearchParamsKey.TO);
+
+  if (source && destination) {
+    newUrlSearchParams.set(UrlSearchParamsKey.FROM, source);
+    newUrlSearchParams.set(UrlSearchParamsKey.TO, destination);
+  }
 
   if (typeof path === "undefined") {
     // this is a parent menu, not a navigation link
@@ -42,7 +54,7 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, isChildMenu, ...rest }
 
           return `select-none max-w-full flex flex-1 ${activeClass} ${linkSpecialClasses} items-center gap-[0.625rem]`;
         }}
-        to={`${path}${location.search}`}
+        to={newUrlSearchParams.toString().length ? `${path}?${newUrlSearchParams.toString()}` : path}
       >
         {getNavItem(text, icon, hasSubMenu, isOpen, isChildMenu)}
       </NavLink>

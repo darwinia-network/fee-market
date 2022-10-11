@@ -25,6 +25,7 @@ export interface ModalEnhancedProps extends DetailedHTMLProps<HTMLAttributes<HTM
   modalTitle: JSX.Element | string;
   confirmText?: string;
   cancelText?: string;
+  contentClassName?: string;
 }
 
 const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
@@ -38,6 +39,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
       onConfirm,
       className,
       children,
+      contentClassName,
       confirmText = "ok",
       cancelText = "cancel",
     },
@@ -101,7 +103,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
               <img className={"dw-modal-enhanced-close"} src={closeIcon} alt="image" />
             </div>
           </div>
-          <div className={"dw-modal-enhanced-content"}>
+          <div className={`dw-modal-enhanced-content ${contentClassName}`}>
             <div>{children}</div>
             {(onConfirm || onCancel) && (
               <div className={"dw-modal-enhanced-buttons"}>

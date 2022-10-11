@@ -2,8 +2,8 @@ import RelayerDetailsChart from "../components/RelayerDetailsChart";
 import RelayerDetailsTable from "../components/RelayerDetailsTable";
 import Account from "../components/Account";
 
-import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChan, FeeMarketChain } from "@feemarket/app-types";
-import { POLKADOT_CHAIN_CONF, MAPPING_URL_SEARCH_PARAM_2_CHAIN } from "@feemarket/app-config";
+import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot, FeeMarketSourceChan } from "@feemarket/app-types";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, MAPPING_URL_SEARCH_PARAM_2_CHAIN } from "@feemarket/app-config";
 import { useFeeMarket, Market } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
 import { useLocation } from "react-router-dom";
@@ -21,8 +21,10 @@ const RelayerDetails = () => {
     setRefresh,
   });
 
-  const nativeToken = POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]
-    ? POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot].nativeToken
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
     : null;
 
   useEffect(() => {

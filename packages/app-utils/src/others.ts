@@ -1,6 +1,7 @@
 import { MARKET_API_SECTIONS } from "@feemarket/app-config";
-import { providers, BigNumberish, ethers, utils as ethersUtils } from "ethers";
+import { providers, BigNumberish, utils as ethersUtils } from "ethers";
 import { ApiPromise } from "@polkadot/api";
+import type { BN } from "@polkadot/util";
 import { ALL_FEE_MARKET_ETH_CHAINS, ALL_FEE_MARKET_POLKADOT_CHAINS } from "@feemarket/app-types";
 import type {
   FeeMarketApiSection,
@@ -56,14 +57,14 @@ export const isPolkadotChain = (chainName: unknown): chainName is FeeMarketPolka
 };
 
 export const formatBalance = (
-  amount: BigNumberish | null | undefined,
+  amount: BigNumberish | BN | null | undefined,
   decimals: number | null | undefined,
   symbol?: string | null,
   overrides?: { precision?: number }
 ): string => {
   if ((amount || amount === 0) && decimals) {
     const precision = overrides?.precision;
-    const [integer, decimal] = ethersUtils.formatUnits(amount, decimals).split(".");
+    const [integer, decimal] = ethersUtils.formatUnits(amount.toString(), decimals).split(".");
     const balance = `${integer}.${precision ? decimal.slice(0, precision) : decimal}`;
     return symbol ? `${balance} ${symbol}` : balance;
   }

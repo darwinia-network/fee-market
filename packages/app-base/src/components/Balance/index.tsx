@@ -40,10 +40,11 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
   const [currentLockedAmount, setCurrentLockedAmount] = useState<BigNumber | null>(null);
   const [currentQuoteAmount, setCurrentQuoteAmount] = useState<BigNumber | null>(null);
 
-  const nativeToken =
-    ETH_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainEth]?.nativeToken ??
-    POLKADOT_CHAIN_CONF[currentMarket?.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-    null;
+  const nativeToken = currentMarket?.source
+    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
+      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
+      null
+    : null;
 
   const onShowModifyQuoteModal = () => {
     setModifyQuoteModalVisible(true);

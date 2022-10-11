@@ -5,3 +5,4 @@ export * from "./ethers";
 export * from "./transform";
 export * from "./graphql";
 export * from "./contract";
+export * from "./balance";
