@@ -62,6 +62,8 @@ const localeKeys = {
   startDate: "startDate",
   endDate: "endDate",
   block: "block",
+  startBlock: "startBlock",
+  endBlock: "endBlock",
   status: "status",
   slot: "slot",
   slotNumber: "slotNumber",

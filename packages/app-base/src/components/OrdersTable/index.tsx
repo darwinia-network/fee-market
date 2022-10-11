@@ -6,6 +6,7 @@ import { OptionProps, Select } from "@darwinia/ui";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
+import BlockRangeInput from "../BlockRangeInput";
 import { Identicon } from "@polkadot/react-identicon";
 import { isPolkadotChain } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
@@ -333,8 +334,7 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
               </div>
             </div>
 
-            {/*Date*/}
-            <DatePickerFakeInput />
+            {timeDimension === "block" ? <BlockRangeInput /> : <DatePickerFakeInput />}
 
             {/*Status*/}
             <div className={"flex flex-col gap-[0.625rem]"}>
@@ -382,10 +382,9 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
             />
           </div>
         </div>
-        {/*date*/}
-        <div className={"shrink-0"}>
-          <DatePickerFakeInput />
-        </div>
+
+        {/*date or block*/}
+        <div className={"shrink-0"}>{timeDimension === "block" ? <BlockRangeInput /> : <DatePickerFakeInput />}</div>
 
         {/*status*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>

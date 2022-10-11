@@ -61,6 +61,8 @@ const enUs = {
   [localeKeys.date]: "date",
   [localeKeys.startDate]: "start date",
   [localeKeys.endDate]: "end date",
+  [localeKeys.startBlock]: "start block",
+  [localeKeys.endBlock]: "end block",
   [localeKeys.block]: "block",
   [localeKeys.status]: "status",
   [localeKeys.slot]: "slot",
