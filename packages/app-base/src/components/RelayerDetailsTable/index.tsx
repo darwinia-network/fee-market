@@ -152,7 +152,7 @@ const getRelayerRolesColumn = (row: Order) => {
         .map((role, index) => {
           const roleBg = role.toLowerCase() === "assigned" ? "bg-primary" : "";
           return (
-            <div key={index} className={`${roleBg} border border-primary px-[0.8125rem] py-[0.21875rem]`}>
+            <div key={index} className={`${roleBg} rounded-sm border border-primary px-[0.8125rem] py-[0.21875rem]`}>
               {role}
             </div>
           );
