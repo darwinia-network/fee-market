@@ -205,7 +205,7 @@ const OrderDetails = () => {
     },
     {
       id: "6",
-      label: t(localeKeys.state),
+      label: t(localeKeys.status),
       details: <RenderOrderStatus status={orderDetailData?.order?.status} />,
     },
     {
@@ -298,15 +298,19 @@ const OrderDetails = () => {
               </div>
             ),
           })) || []),
-        {
-          id: "6",
-          label: t(localeKeys.treasury),
-          details: `+${formatBalance(
-            orderDetailData.order.treasuryAmount,
-            nativeToken?.symbol,
-            nativeToken?.decimals
-          )}`,
-        },
+        ...(orderDetailData.order.treasuryAmount
+          ? [
+              {
+                id: "6",
+                label: t(localeKeys.treasury),
+                details: `+${formatBalance(
+                  orderDetailData.order.treasuryAmount,
+                  nativeToken?.symbol,
+                  nativeToken?.decimals
+                )}`,
+              },
+            ]
+          : []),
       ]
     : [];
 
