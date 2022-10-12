@@ -2,11 +2,11 @@ import localeKeys from "../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
-import relayerAvatar from "../assets/images/relayer-avatar.svg";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersOverviewData, useAccountName } from "@feemarket/app-hooks";
 import { BN, bnToBn } from "@polkadot/util";
+import { Identicon } from "@polkadot/react-identicon";
 import type { Balance } from "@polkadot/types/interfaces";
 import {
   ETH_CHAIN_CONF,
@@ -16,7 +16,7 @@ import {
 } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
-import { formatBalance } from "@feemarket/app-utils";
+import { formatBalance, isPolkadotChain } from "@feemarket/app-utils";
 
 const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
   if (decimals) {
@@ -40,7 +40,6 @@ const RelayersOverview = () => {
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState("1");
   const [keywords, setKeywords] = useState("");
-  const navigate = useNavigate();
 
   const { currentMarket, setRefresh } = useFeeMarket();
   const { apiPolkadot } = useApi();
@@ -113,24 +112,12 @@ const RelayersOverview = () => {
     console.log("Searched keywords...", keywords);
   };
 
-  const onRelayerClicked = useCallback((relayer: Relayer) => {
-    if (currentMarket) {
-      const urlSearchParams = new URLSearchParams();
-      urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.source]);
-      urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.destination]);
-      urlSearchParams.set(UrlSearchParamsKey.ID, relayer.relayer);
-      navigate(`/relayers-overview/details?${urlSearchParams.toString()}`);
-    }
-  }, []);
-
   const columns: Column<Relayer>[] = [
     {
       id: "1",
       key: "relayer",
       title: <div>{t([localeKeys.relayer])}</div>,
-      render: (row) => {
-        return getRelayerColumn(row, relayerAvatar, onRelayerClicked);
-      },
+      render: (row) => <RelayerAccount address={row.relayer} />,
     },
     {
       id: "2",
@@ -238,23 +225,25 @@ const RelayersOverview = () => {
   );
 };
 
-const AccountName = ({ address }: { address: string }) => {
+const RelayerAccount = ({ address }: { address: string }) => {
+  const { currentMarket } = useFeeMarket();
   const { displayName } = useAccountName(address);
-  return <div className={"flex-1 text-primary text-14-bold truncate"}>{displayName}</div>;
-};
 
-const getRelayerColumn = (row: Relayer, avatar: string, onRelayerClick: (row: Relayer) => void) => {
+  let to = "#";
+  if (currentMarket) {
+    const urlSearchParams = new URLSearchParams();
+    urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.source]);
+    urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.destination]);
+    urlSearchParams.set(UrlSearchParamsKey.ID, address);
+    to = `/relayers-overview/details?${urlSearchParams.toString()}`;
+  }
+
   return (
-    <div
-      onClick={() => {
-        onRelayerClick(row);
-      }}
-      className={"flex items-center gap-[0.3125rem] clickable"}
-    >
-      <div className={"rounded-full w-[1.375rem] h-[1.375rem] shrink-0"}>
-        <img className={"rounded-full w-[1.375rem] h-[1.375rem]"} src={avatar} alt="image" />
-      </div>
-      <AccountName address={row.relayer} />
+    <div className={"flex items-center gap-[0.3125rem] clickable"}>
+      <Identicon value={address} size={22} theme={isPolkadotChain(currentMarket?.source) ? "polkadot" : "ethereum"} />
+      <Link to={to} className={"text-primary text-14-bold truncate"}>
+        {displayName}
+      </Link>
     </div>
   );
 };
