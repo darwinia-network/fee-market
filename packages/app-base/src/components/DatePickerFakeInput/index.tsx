@@ -19,8 +19,18 @@ const DatePickerFakeInput = () => {
   };
 
   const getDateRenderer = (event?: DatePickEvent) => {
-    const startDateString = event && event.startDateString ? event.startDateString : t(localeKeys.startDate);
-    const endDateString = event && event.endDateString ? event.endDateString : t(localeKeys.endDate);
+    const startDateJSX =
+      event && event.startDateString ? (
+        event.startDateString
+      ) : (
+        <div className={"text-halfWhite"}>{t(localeKeys.startDate)}</div>
+      );
+    const endDateJSX =
+      event && event.endDateString ? (
+        event.endDateString
+      ) : (
+        <div className={"text-halfWhite"}>{t(localeKeys.endDate)}</div>
+      );
     return (
       <div>
         <div className={"hidden lg:flex flex-col shrink-0"}>
@@ -31,7 +41,7 @@ const DatePickerFakeInput = () => {
                   "h-[1.5625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
                 }
               >
-                {startDateString}
+                {startDateJSX}
               </div>
             </div>
             <div>{t(localeKeys.to)}</div>
@@ -41,7 +51,7 @@ const DatePickerFakeInput = () => {
                   "h-[1.5625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
                 }
               >
-                {endDateString}
+                {endDateJSX}
               </div>
             </div>
           </div>
@@ -55,7 +65,7 @@ const DatePickerFakeInput = () => {
                   "h-[2.5rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
                 }
               >
-                {startDateString}
+                {startDateJSX}
               </div>
             </div>
             <div className={"flex-1 flex flex-col gap-[0.625rem]"}>
@@ -65,7 +75,7 @@ const DatePickerFakeInput = () => {
                   "h-[2.5rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
                 }
               >
-                {endDateString}
+                {endDateJSX}
               </div>
             </div>
           </div>

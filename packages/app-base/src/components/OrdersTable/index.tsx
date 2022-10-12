@@ -261,9 +261,13 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     setKeywords(event.target.value);
   };
 
-  const onSearch = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSearch = () => {
     console.log("Searched keywords...", keywords);
+  };
+
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSearch();
   };
 
   const onTimeDimensionChanged = (time: string | string[]) => {
@@ -296,10 +300,11 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     <div className={"flex flex-col gap-[0.9375rem] lg:gap-[1.25rem]"}>
       <div className={"flex-1 flex gap-[0.625rem]"}>
         {/*search field*/}
-        <div className={"lg:max-w-[20.625rem] flex-1"}>
+        <div className={"lg:max-w-[27.25rem] flex-1"}>
           <form
+            className={"flex gap-[0.625rem]"}
             onSubmit={(e) => {
-              onSearch(e);
+              onSubmit(e);
             }}
           >
             <Input
@@ -309,6 +314,10 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
               }}
               placeholder={t(localeKeys.searchByOrderOrSender)}
             />
+            {/*search button that only shows on PC button*/}
+            <div className={"hidden lg:block"}>
+              <Button onClick={onSearch}>{t(localeKeys.search)}</Button>
+            </div>
           </form>
         </div>
         {/*filter button*/}

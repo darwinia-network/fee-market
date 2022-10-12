@@ -33,7 +33,7 @@ const Input = ({
     : "rounded-[0.3125rem]";
 
   return (
-    <div className={`flex flex-col gap-[0.625rem] ${error ? "!text-danger" : ""}`}>
+    <div className={`flex flex-col w-full gap-[0.625rem] ${error ? "!text-danger" : ""}`}>
       <div className={"flex w-full"}>
         <div className={"flex-1"}>
           <div
@@ -51,7 +51,7 @@ const Input = ({
             {/*Input field*/}
             <input
               className={
-                "placeholder:capitalize self-stretch placeholder-white block w-full flex-1 border-none bg-[transparent] outline-none focus:outline-none appearance-none"
+                "placeholder:capitalize self-stretch placeholder-halfWhite block w-full flex-1 border-none bg-[transparent] outline-none focus:outline-none appearance-none"
               }
               type={type}
               autoComplete={autoComplete}

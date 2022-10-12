@@ -231,10 +231,11 @@ const Header = ({ title, isNotFoundPage = false }: Props) => {
       {!isNotFoundPage && (
         <div className={"hidden lg:flex items-center h-full px-[1.875rem] justify-between"}>
           <div className={"page-title"}>{title}</div>
-          <div ref={setPopperTriggerElement}>
+          <div>
             {/* Don't bind an onClick event here since the onclick event is already implemented in the
-          Popover component */}
+              Popover component */}
             <NetworkSwitchButton
+              ref={setPopperTriggerElement}
               from={networkSelectionBtnText.from}
               to={networkSelectionBtnText.to}
               isEqualSized={false}
