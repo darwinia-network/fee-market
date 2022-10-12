@@ -46,6 +46,12 @@ $opacityDuration: 300ms;
       height: var(--16px);
       align-self: center;
     }
+
+    .placeholder {
+      @extend .dw-text-12-bold;
+
+      color: var(--halfWhite);
+    }
   }
 
   &.small {

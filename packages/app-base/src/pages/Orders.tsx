@@ -3,14 +3,9 @@ import { useOrdersData } from "@feemarket/app-hooks";
 import { Spinner } from "@darwinia/ui";
 import OrdersSummary from "../components/OrdersSummary";
 import OrdersTable from "../components/OrdersTable";
-import { DateRangePicker } from "@darwinia/ui";
-import { useState } from "react";
 
 const Orders = () => {
   const { currentMarket, setRefresh } = useFeeMarket();
-
-  const [startDate, setStartDate] = useState<Date | string>();
-  const [endDate, setEndDate] = useState<Date | string>();
 
   const { ordersSummaryData, ordersSummaryLoading, ordersTableData, ordersTableLoading } = useOrdersData({
     currentMarket,
