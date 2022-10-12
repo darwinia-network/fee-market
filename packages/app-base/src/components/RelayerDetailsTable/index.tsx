@@ -3,9 +3,12 @@ import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
 
-import { BALANCE_DECIMALS } from "@feemarket/app-config";
+import { format } from "date-fns";
+import { BALANCE_DECIMALS, DATE_TIME_FORMATE } from "@feemarket/app-config";
 import { formatBalance } from "@feemarket/app-utils";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
+
+const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
 
 interface Order {
   id: string;
@@ -67,6 +70,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       id: "5",
       key: "time",
       title: <div className={"capitalize"}>{t([localeKeys.time])}</div>,
+      render: (row) => <span>{formatDateTime(row.time)}</span>,
     },
   ];
 
