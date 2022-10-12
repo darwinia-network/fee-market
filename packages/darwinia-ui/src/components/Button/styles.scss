@@ -11,6 +11,7 @@
   background-color: var(--primary);
   text-transform: capitalize;
   text-align: center;
+  max-width: 100%;
 
   &.secondary,
   &.plain {
@@ -22,8 +23,8 @@
   }
 
   &:disabled {
-    opacity: 0.6;
-    cursor: default;
+    opacity: 0.6 !important;
+    cursor: no-drop;
   }
 
   &:active {

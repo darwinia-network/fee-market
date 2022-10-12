@@ -61,17 +61,14 @@ const Drawer = forwardRef<DrawerRefs, DrawerProps>(({ isVisible = false, drawerS
       mountOnEnter={true}
       timeout={drawerTimeout}
     >
-      <div ref={childNodeRef} className={"fixed right-0 left-0 top-0 bottom-0 w-full h-full z-[99]"}>
+      <div ref={childNodeRef} className={"drawer-wrapper"}>
         <div
           onClick={() => {
             closeDrawer();
           }}
-          className={"mask absolute left-0 right-0 top-0 bottom-0 w-full h-full bg-black opacity-80 z-[50]"}
+          className={"mask"}
         />
-        <div
-          className={"drawer-content absolute right-0 top-0 bottom-0 h-full bg-blackSecondary z-[55] w-[16.5625rem]"}
-          style={drawerStyles}
-        >
+        <div className={"drawer-content"} style={drawerStyles}>
           {children}
         </div>
       </div>

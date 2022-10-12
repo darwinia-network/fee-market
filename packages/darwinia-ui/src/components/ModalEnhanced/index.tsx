@@ -28,6 +28,11 @@ export interface ModalEnhancedProps extends DetailedHTMLProps<HTMLAttributes<HTM
   contentClassName?: string;
 }
 
+/**
+ * ModalEnhanced is a modal just like any other modal but it contains the
+ * confirm and cancel buttons
+ * */
+
 const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
   (
     {

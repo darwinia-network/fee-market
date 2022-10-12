@@ -1,0 +1,97 @@
+@import "../../assets/styles/common";
+
+.dw-input-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--10px);
+
+  &.error {
+    color: var(--danger) !important;
+  }
+
+  .dw-input-slots-wrapper {
+    display: flex;
+    width: 100%;
+
+    .dw-left {
+      flex: 1;
+
+      .dw-left-icon-input-wrapper {
+        padding: 0 var(--10px);
+        height: var(--40px);
+        display: flex;
+        gap: var(--10px);
+        align-items: center;
+        background-color: var(--blackSecondary);
+        border: 1px solid var(--halfWhite);
+
+        &.dw-border-error {
+          border-color: var(--danger);
+        }
+
+        &.dw-with-right-slot {
+          border-radius: var(--5px);
+          border-bottom-right-radius: 0;
+          border-top-right-radius: 0;
+          border-right: none;
+        }
+
+        &.dw-without-right-slot {
+          border-radius: var(--5px);
+        }
+
+        .dw-input {
+          align-self: stretch;
+          display: block;
+          width: 100%;
+          flex: 1;
+          border: none;
+          background-color: transparent;
+          outline: none;
+          appearance: none;
+
+          &:focus {
+            outline: none;
+          }
+
+          &::placeholder {
+            text-transform: capitalize;
+            color: var(--halfWhite);
+          }
+        }
+      }
+    }
+
+    .dw-right {
+      display: flex;
+      flex-shrink: 0;
+
+      .dw-right-slot {
+        display: flex;
+        flex: 1;
+        background-color: var(--blackSecondary);
+        border: 1px solid var(--halfWhite);
+        border-left: none;
+        border-radius: var(--5px);
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        &.dw-border-error {
+          border-color: var(--danger);
+        }
+      }
+    }
+  }
+
+  .dw-icon {
+    flex-shrink: 0;
+    overflow: hidden;
+    width: var(--20px);
+    height: var(--20px);
+  }
+
+  .dw-error-message {
+    @extend .dw-text-12-bold;
+  }
+}

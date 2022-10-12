@@ -74,3 +74,24 @@
     outline: none !important;
   }
 }
+
+html {
+  background-color: var(--black);
+}
+
+body {
+  line-height: var(--24px);
+  font-size: var(--14px);
+}
+
+*[class*="dw-"] {
+  font-family: DW-JetBrainsMono-Light;
+  color: white;
+  text-transform: capitalize;
+  -webkit-tap-highlight-color: rgb(255 255 255 / 0%);
+}
+
+/* removes the blue background when tapping links on iOS devices  */
+a {
+  -webkit-tap-highlight-color: rgb(255 255 255 / 0%);
+}

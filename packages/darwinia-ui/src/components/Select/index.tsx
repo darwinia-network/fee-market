@@ -178,7 +178,11 @@ const Select = ({
         className={`dw-select ${className}`}
       >
         <div className={`dw-selected-value ${multiSelectionsClass}`}>
-          {selectedItemsJSX.current && selectedItemsJSX.current.length > 0 ? selectedItemsJSX.current : placeholder}
+          {selectedItemsJSX.current && selectedItemsJSX.current.length > 0 ? (
+            selectedItemsJSX.current
+          ) : (
+            <div className={"placeholder"}>{placeholder}</div>
+          )}
         </div>
         <img src={caretDown} alt="image" />
       </div>
