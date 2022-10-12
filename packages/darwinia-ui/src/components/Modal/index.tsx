@@ -51,10 +51,7 @@ const Modal = forwardRef<ModalRefs, ModalProps>(
         nodeRef={nodeRef}
         timeout={transitionTimeout}
       >
-        <div
-          ref={nodeRef}
-          className={"fixed flex justify-center items-center left-0 right-0 top-0 bottom-0 w-full h-full z-[1000]"}
-        >
+        <div ref={nodeRef} className={"dw-modal-wrapper"}>
           <div
             onClick={() => {
               toggleModal();
@@ -62,7 +59,7 @@ const Modal = forwardRef<ModalRefs, ModalProps>(
                 onClose();
               }
             }}
-            className={"dw-mask absolute left-0 right-0 top-0 bottom-0 w-full h-full bg-black opacity-80 z-[50]"}
+            className={"dw-mask"}
           />
           <div style={{ ...modalStyles }} {...rest} className={`modal-content ${className}`}>
             {children}

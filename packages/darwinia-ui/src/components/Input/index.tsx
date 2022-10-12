@@ -1,6 +1,7 @@
 import { DetailedHTMLProps, InputHTMLAttributes } from "react";
 import searchIcon from "../../assets/images/search.svg";
 import { Placeholder } from "../../types";
+import "./styles.scss";
 
 export interface InputProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
   leftIcon?: JSX.Element | null;
@@ -28,19 +29,15 @@ const Input = ({
   if (clearButton && !onClear) {
     console.log("onClear callback is needed on Input component");
   }
-  const inputWrapperClass = rightSlot
-    ? "rounded-[0.3125rem] rounded-br-none rounded-tr-none border-r-0"
-    : "rounded-[0.3125rem]";
+  const inputWrapperClass = rightSlot ? "dw-with-right-slot" : "dw-without-right-slot";
 
   return (
-    <div className={`flex flex-col w-full gap-[0.625rem] ${error ? "!text-danger" : ""}`}>
-      <div className={"flex w-full"}>
-        <div className={"flex-1"}>
+    <div className={`dw-input-container ${error ? "error" : ""}`}>
+      <div className={"dw-input-slots-wrapper"}>
+        <div className={"dw-left"}>
           <div
             style={{ ...style }}
-            className={`px-[0.625rem] h-[2.5rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite ${
-              error ? "!border-danger" : ""
-            } ${inputWrapperClass} ${className}`}
+            className={`dw-left-icon-input-wrapper ${error ? "dw-border-error" : ""} ${inputWrapperClass} ${className}`}
           >
             {/*left icon*/}
             {hasCustomLeftIcon ? (
@@ -49,15 +46,7 @@ const Input = ({
               <Icon icon={<img alt="image" src={searchIcon} />} />
             )}
             {/*Input field*/}
-            <input
-              className={
-                "placeholder:capitalize self-stretch placeholder-halfWhite block w-full flex-1 border-none bg-[transparent] outline-none focus:outline-none appearance-none"
-              }
-              type={type}
-              autoComplete={autoComplete}
-              {...rest}
-              placeholder={placeholder}
-            />
+            <input className={"dw-input"} type={type} autoComplete={autoComplete} {...rest} placeholder={placeholder} />
             {/*clear icon*/}
             {clearButton && (
               <div
@@ -74,24 +63,18 @@ const Input = ({
         </div>
         {/*right slot*/}
         {rightSlot && (
-          <div className={"flex shrink-0"}>
-            <div
-              className={`flex flex-1 bg-blackSecondary border border-halfWhite border-l-0 rounded-[0.3125rem] rounded-tl-none rounded-bl-none ${
-                error ? "border-danger" : ""
-              }`}
-            >
-              {rightSlot}
-            </div>
+          <div className={"dw-right"}>
+            <div className={`dw-right-slot ${error ? "dw-border-error" : ""}`}>{rightSlot}</div>
           </div>
         )}
       </div>
-      {error && <div className={"text-12-bold"}>{error}</div>}
+      {error && <div className={"dw-error-message"}>{error}</div>}
     </div>
   );
 };
 
 const Icon = ({ icon }: { icon: JSX.Element }) => {
-  return <div className={"shrink-0 overflow-hidden w-[1.25rem] h-[1.25rem]"}>{icon}</div>;
+  return <div className={"dw-icon"}>{icon}</div>;
 };
 
 export default Input;

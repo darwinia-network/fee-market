@@ -2,6 +2,66 @@ $scaleTransitionDuration: 150ms;
 $scaleTransitionDurationSmall: 250ms;
 $scaleTransitionEase: ease-in-out;
 
+.dw-radio-btn-wrapper {
+  text-transform: capitalize;
+  text-align: left;
+  width: 100%;
+
+  .dw-btn-wrapper {
+    display: flex;
+    flex: 1;
+    align-items: center;
+
+    &.dw-large-gap {
+      gap: var(--15px);
+    }
+
+    &.dw-small-gap {
+      gap: var(--10px);
+    }
+
+    .dw-large-radio {
+      width: var(--18px);
+      height: var(--18px);
+    }
+
+    .dw-small-radio {
+      width: var(--14px);
+      height: var(--14px);
+    }
+
+    .dw-radio-circle {
+      cursor: default;
+      transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      position: relative;
+      flex-shrink: 0;
+      border: 2.5px solid var(--halfWhite);
+      background-color: var(--black);
+
+      &.dw-is-checked {
+        border-color: var(--white);
+      }
+
+      &:hover {
+        border-color: var(--white);
+      }
+
+      .dw-radio-status-circle {
+        border-radius: 50%;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--primary);
+      }
+    }
+  }
+}
+
 .radio-enter {
   transform: scale3d(0, 0, 0);
 }
@@ -11,7 +71,7 @@ $scaleTransitionEase: ease-in-out;
   transform-origin: center;
   transition: transform $scaleTransitionDuration $scaleTransitionEase;
 
-  &.small {
+  &.dw-small-circle {
     transition-duration: $scaleTransitionDurationSmall;
   }
 }
@@ -29,7 +89,7 @@ $scaleTransitionEase: ease-in-out;
   transform-origin: center;
   transition: transform $scaleTransitionDuration $scaleTransitionEase;
 
-  &.small {
+  &.dw-small-circle {
     transition-duration: $scaleTransitionDurationSmall;
   }
 }
