@@ -6,7 +6,7 @@ import relayerAvatar from "../assets/images/relayer-avatar.svg";
 import { useNavigate } from "react-router-dom";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersOverviewData, useAccountName } from "@feemarket/app-hooks";
-import type { BN } from "@polkadot/util";
+import { BN, bnToBn } from "@polkadot/util";
 import type { Balance } from "@polkadot/types/interfaces";
 import { utils as ethersUtils } from "ethers";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
@@ -175,33 +175,13 @@ const RelayersOverview = () => {
     },
   ];
 
-  const onSort = (sortEvent: SortEvent<Relayer>) => {
-    console.log("sortEvent======", sortEvent);
+  const handleSort = useCallback((sortEvent: SortEvent<Relayer>) => {
     if (sortEvent.order === "ascend") {
-      const output = dataSource.sort((a, b) => {
-        if (typeof a[sortEvent.key] === "number" && typeof b[sortEvent.key] === "number") {
-          const first = parseInt(`${a[sortEvent.key]}`);
-          const second = parseInt(`${b[sortEvent.key]}`);
-          return first - second;
-        }
-
-        return 0;
-      });
-      setDataSource(output);
-      return;
+      setDataSource((previous) => previous.sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key]))));
+    } else if (sortEvent.order === "descend") {
+      setDataSource((previous) => previous.sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key]))));
     }
-
-    const output = dataSource.sort((a, b) => {
-      if (typeof a[sortEvent.key] === "number" && typeof b[sortEvent.key] === "number") {
-        const first = parseInt(`${a[sortEvent.key]}`);
-        const second = parseInt(`${b[sortEvent.key]}`);
-        return second - first;
-      }
-
-      return 0;
-    });
-    setDataSource(output);
-  };
+  }, []);
 
   const onTabChange = (tab: Tab) => {
     setActiveTabId(tab.id);
@@ -243,7 +223,7 @@ const RelayersOverview = () => {
       <Table
         isLoading={relayersOverviewData.loading}
         headerSlot={getTableTabs()}
-        onSort={onSort}
+        onSort={handleSort}
         minWidth={"1120px"}
         dataSource={dataSource}
         columns={columns}
