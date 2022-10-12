@@ -2,17 +2,19 @@ import { Column, PaginationProps, Table } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
-
+import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { BALANCE_DECIMALS, DATE_TIME_FORMATE } from "@feemarket/app-config";
 import { formatBalance } from "@feemarket/app-utils";
+import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
 
 const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
 
 interface Order {
   id: string;
-  orderId: string;
+  lane: string;
+  nonce: string;
   relayerRoles: string[];
   reward: string;
   slash: string;
@@ -27,22 +29,22 @@ interface Props {
 
 const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: Props) => {
   const { t } = useTranslation();
-  const [isLoading, setLoading] = useState(false);
+  const [dataSource, setDataSource] = useState<Order[]>([]);
+
   const columns: Column<Order>[] = [
     {
       id: "1",
-      key: "orderId",
+      key: "nonce",
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
+        const urlSearchParams = new URLSearchParams();
+        urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
+        urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
+        const to = `/orders/details?${urlSearchParams.toString()}`;
         return (
-          <div
-            onClick={() => {
-              onOrderIdClicked(row);
-            }}
-            className={"clickable text-primary text-14-bold"}
-          >
-            #{row.orderId}
-          </div>
+          <Link to={to} className="clickable text-primary text-14-bold">
+            #{row.nonce}
+          </Link>
         );
       },
       width: "10%",
@@ -74,13 +76,6 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     },
   ];
 
-  const onOrderIdClicked = (row: Order) => {
-    console.log(row);
-    // navigate()
-  };
-
-  const [dataSource, setDataSource] = useState<Order[]>([]);
-
   const onPageChange = useCallback((pageNumber: number) => {
     setTablePagination((oldValues) => {
       return {
@@ -88,12 +83,6 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
         currentPage: pageNumber,
       };
     });
-    setLoading(true);
-    // TODO this has to  be deleted
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    console.log("page number changed=====", pageNumber);
   }, []);
 
   //TODO make sure the pageSize and totalPages are changed accordingly, refer the onPageChange method
@@ -112,7 +101,8 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       relatedOrdersData?.slice(start, end)?.map((item, index) => {
         return {
           id: `${index}`,
-          orderId: item.nonce,
+          lane: item.lane,
+          nonce: item.nonce,
           relayerRoles: item.relayerRoles,
           slash: formatBalance(item.slash, tokenDecimals, tokenSymbol, { precision: BALANCE_DECIMALS }),
           reward: formatBalance(item.reward, tokenDecimals, tokenSymbol, { precision: BALANCE_DECIMALS }),
@@ -128,7 +118,6 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
 
   return (
     <Table
-      isLoading={isLoading}
       headerSlot={getTableTitle()}
       minWidth={"1120px"}
       dataSource={dataSource}

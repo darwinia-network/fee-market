@@ -5,7 +5,7 @@ import localeKeys from "../../locale/localeKeys";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import { ModalEnhanced } from "@darwinia/ui";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
 import BlockRangeInput from "../BlockRangeInput";
 import { Identicon } from "@polkadot/react-identicon";
@@ -140,7 +140,6 @@ interface Props {
 
 const OrdersTable = ({ loading, data }: Props) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const [filterModalVisible, setFilterModalVisibility] = useState(false);
@@ -187,18 +186,14 @@ const OrdersTable = ({ loading, data }: Props) => {
       key: "nonce",
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
+        const urlSearchParams = new URLSearchParams();
+        urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
+        urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
+        const to = `${location.pathname}/details?${urlSearchParams.toString()}`;
         return (
-          <div
-            onClick={() => {
-              const urlSearchParams = new URLSearchParams();
-              urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
-              urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
-              navigate(`${location.pathname}/details?${urlSearchParams.toString()}`);
-            }}
-            className={"text-primary text-14-bold clickable"}
-          >
+          <Link to={to} className="text-primary text-14-bold clickable">
             #{row.nonce}
-          </div>
+          </Link>
         );
       },
       width: "13.3%",
