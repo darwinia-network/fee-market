@@ -249,7 +249,8 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     if (keywords) {
       setOrderDataSource(
         dataSourceRef.current.filter(
-          (item) => item.nonce.includes(keywords) || (item.sender && item.sender.includes(keywords))
+          (item) =>
+            item.nonce.includes(keywords) || (item.sender && item.sender.toLowerCase().includes(keywords.toLowerCase()))
         )
       );
     } else {
