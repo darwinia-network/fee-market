@@ -129,6 +129,7 @@ const localeKeys = {
   pageNotFound: "pageNotFound",
   goHome: "goHome",
   insufficientBalance: "insufficientBalance",
+  search: "search",
 };
 
 export default localeKeys;

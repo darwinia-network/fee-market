@@ -1,22 +1,29 @@
 import localeKeys from "../../locale/localeKeys";
 import { DatePickEvent, DateRangePicker } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useCallback } from "react";
 
-const DatePickerFakeInput = () => {
+interface Param {
+  start: number | undefined;
+  end: number | undefined;
+}
+
+interface Props {
+  onChange?: (duration: Param) => void;
+}
+
+const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
   const { t } = useTranslation();
-  const [startDate, setStartDate] = useState<string | undefined>();
-  const [endDate, setEndDate] = useState<string | undefined>();
 
-  const onDateChange = (event: DatePickEvent) => {
-    setStartDate(event.startDateString);
-    setEndDate(event.endDateString);
-    console.log("onDateChange", event);
-  };
-
-  const onDatePickingDone = (event: DatePickEvent) => {
-    console.log("done======", event);
-  };
+  const handleDone = useCallback(
+    (event: DatePickEvent) => {
+      onChange({
+        start: event.startDateString ? new Date(`${event.startDateString}Z`).getTime() : undefined,
+        end: event.endDateString ? new Date(`${event.endDateString}Z`).getTime() : undefined,
+      });
+    },
+    [onChange]
+  );
 
   const getDateRenderer = (event?: DatePickEvent) => {
     const startDateString = event && event.startDateString ? event.startDateString : t(localeKeys.startDate);
@@ -78,12 +85,10 @@ const DatePickerFakeInput = () => {
     <div className={"flex items-center gap-[0.625rem]"}>
       <div className={"hidden lg:block"}>{t(localeKeys.date)}</div>
       <DateRangePicker
-        startDate={startDate}
-        endDate={endDate}
         monthClassName={"w-[288px]"}
         dateRender={getDateRenderer}
-        onDateChange={onDateChange}
-        onDone={onDatePickingDone}
+        onDateChange={() => undefined}
+        onDone={handleDone}
       />
     </div>
   );

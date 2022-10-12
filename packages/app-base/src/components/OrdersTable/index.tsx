@@ -150,7 +150,7 @@ const OrdersTable = ({ loading, data }: Props) => {
   }, []);
 
   // table
-  const dataSourceRef = useRef<DataSource[]>([]); // staging data for updating the total number of pages when filtering
+  const dataSourceRef = useRef<DataSource[]>(data); // staging data for updating the total number of pages when filtering
   const [dataSource, setDataSource] = useState<DataSource[]>([]); // visible data
   const [pagination, setPagination] = useState<PaginationProps>({
     pageSize: 10,
@@ -164,13 +164,13 @@ const OrdersTable = ({ loading, data }: Props) => {
 
   // orders filter
   const [dimension, setDimension] = useState<TimeDimension>(TimeDimension.BLOCK);
-  const [duration, setDuration] = useState<{ satrt: string | null | undefined; end: string | null | undefined }>({
-    satrt: null,
-    end: null,
+  const [duration, setDuration] = useState<{ start: number | undefined; end: number | undefined }>({
+    start: undefined,
+    end: undefined,
   });
-  const [blockRange, setBlockRange] = useState<{ start: number | null | undefined; end: number | null | undefined }>({
-    start: null,
-    end: null,
+  const [blockRange, setBlockRange] = useState<{ start: number | undefined; end: number | undefined }>({
+    start: undefined,
+    end: undefined,
   });
   const [status, setStatus] = useState<OrderStatusFilter>("All");
   const [slotIndex, setSlotIndex] = useState<SlotIndexFilter>(SlotIndexFilter.ALL);
@@ -280,33 +280,105 @@ const OrdersTable = ({ loading, data }: Props) => {
     }
   }, []);
 
-  // FIXME
-  useEffect(() => {
-    setPagination((prev) => ({ ...prev, totalPages: data.length }));
-  }, [data]);
+  const handleFilterClick = useCallback(() => {
+    const minValue = 0;
+    const maxValue = Number.MAX_SAFE_INTEGER;
+
+    dataSourceRef.current = data.filter((item) => {
+      if (duration.start || duration.end) {
+        const filterStart = duration.start || minValue;
+        const filterEnd = duration.end || maxValue;
+
+        const orderStart = new Date(`${item.createdAt}Z`).getTime();
+        const orderEnd = item.confirmedAt ? new Date(`${item.confirmedAt}Z`).getTime() : undefined;
+
+        const match =
+          (filterStart <= orderStart && orderStart <= filterEnd) ||
+          (filterStart <= (orderEnd || maxValue) && (orderEnd || minValue) <= filterEnd);
+
+        if (!match) {
+          return false;
+        }
+      }
+
+      if (blockRange.start || blockRange.end) {
+        const filterStart = blockRange.start || minValue;
+        const filterEnd = blockRange.end || maxValue;
+
+        const orderStart = item.createBlock;
+        const orderEnd = item.confirmedBlock;
+
+        const match =
+          (filterStart <= orderStart && orderStart <= filterEnd) ||
+          (filterStart <= (orderEnd || maxValue) && (orderEnd || minValue) <= filterEnd);
+
+        if (!match) {
+          return false;
+        }
+      }
+
+      switch (status) {
+        case "Finished":
+          if (item.status !== "Finished") {
+            return false;
+          }
+          break;
+        case "InProgress":
+          if (item.status !== "InProgress") {
+            return false;
+          }
+          break;
+      }
+
+      switch (slotIndex) {
+        case SlotIndex.SLOT_1:
+          if (item.slotIndex !== SlotIndex.SLOT_1) {
+            return false;
+          }
+          break;
+        case SlotIndex.SLOT_2:
+          if (item.slotIndex !== SlotIndex.SLOT_2) {
+            return false;
+          }
+          break;
+        case SlotIndex.SLOT_3:
+          if (item.slotIndex !== SlotIndex.SLOT_3) {
+            return false;
+          }
+          break;
+        case SlotIndex.OUT_OF_SLOT:
+          if (item.slotIndex !== SlotIndex.OUT_OF_SLOT) {
+            return false;
+          }
+          break;
+      }
+
+      return true;
+    });
+
+    setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
+  }, [data, duration, blockRange, status, slotIndex]);
 
   // handle order search
   useEffect(() => {
     if (keyword) {
-      setDataSource(
-        dataSourceRef.current.filter(
-          (item) =>
-            item.nonce.includes(keyword) || (item.sender && item.sender.toLowerCase().includes(keyword.toLowerCase()))
-        )
+      dataSourceRef.current = data.filter(
+        (item) =>
+          item.nonce.includes(keyword) || (item.sender && item.sender.toLowerCase().includes(keyword.toLowerCase()))
       );
     } else {
-      setDataSource(dataSourceRef.current);
+      dataSourceRef.current = data;
     }
-  }, [keyword]);
+
+    setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
+  }, [data, keyword]);
 
   // handle page change
   useEffect(() => {
     const start = (pagination.currentPage - 1) * pagination.pageSize;
     const end = start + pagination.pageSize;
-
-    dataSourceRef.current = data.slice(start, end);
-    setDataSource(dataSourceRef.current);
-  }, [data, pagination]);
+    setDataSource(dataSourceRef.current.slice(start, end));
+  }, [pagination]);
 
   return (
     <div className={"flex flex-col gap-[0.9375rem] lg:gap-[1.25rem]"}>
@@ -314,7 +386,7 @@ const OrdersTable = ({ loading, data }: Props) => {
         {/*search field*/}
         <div className={"lg:max-w-[20.625rem] flex-1"}>
           <Input
-            value={keyword}
+            value={keyword ?? ""}
             onChange={(e) => {
               setKeyword(e.target.value);
             }}
@@ -348,7 +420,11 @@ const OrdersTable = ({ loading, data }: Props) => {
               </div>
             </div>
 
-            {dimension === TimeDimension.BLOCK ? <BlockRangeInput /> : <DatePickerFakeInput />}
+            {dimension === TimeDimension.BLOCK ? (
+              <BlockRangeInput onChange={setBlockRange} />
+            ) : (
+              <DatePickerFakeInput onChange={setDuration} />
+            )}
 
             {/*Status*/}
             <div className={"flex flex-col gap-[0.625rem]"}>
@@ -378,6 +454,8 @@ const OrdersTable = ({ loading, data }: Props) => {
                 />
               </div>
             </div>
+
+            <Button onClick={handleFilterClick}>{t(localeKeys.filter)}</Button>
           </div>
         </ModalEnhanced>
       </div>
@@ -399,7 +477,11 @@ const OrdersTable = ({ loading, data }: Props) => {
 
         {/*date or block*/}
         <div className={"shrink-0"}>
-          {dimension === TimeDimension.BLOCK ? <BlockRangeInput /> : <DatePickerFakeInput />}
+          {dimension === TimeDimension.BLOCK ? (
+            <BlockRangeInput onChange={setBlockRange} />
+          ) : (
+            <DatePickerFakeInput onChange={setDuration} />
+          )}
         </div>
 
         {/*status*/}
@@ -428,6 +510,9 @@ const OrdersTable = ({ loading, data }: Props) => {
             />
           </div>
         </div>
+        <Button onClick={handleFilterClick} className="lg:!h-[1.625rem]">
+          {t(localeKeys.filter)}
+        </Button>
       </div>
       {/*Table*/}
       <div>

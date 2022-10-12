@@ -32,10 +32,6 @@ const Pagination = (paginationProps: PaginationProps) => {
       ...paginationState,
     }) ?? [];
 
-  if (paginationList.length < 2) {
-    // there is only one page, no need to render pagination
-    return null;
-  }
   // these will monitor enabling and disabling next and previous buttons
   const isOnFirstPage = paginationState.currentPage === 1;
   const lastPageNumber = paginationList[paginationList.length - 1];
@@ -88,6 +84,11 @@ const Pagination = (paginationProps: PaginationProps) => {
       };
     });
   }, [paginationProps]);
+
+  if (paginationList.length < 2) {
+    // there is only one page, no need to render pagination
+    return null;
+  }
 
   return (
     <div className={"dw-pagination"}>
