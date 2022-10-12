@@ -3,14 +3,9 @@ import { useOrdersData } from "@feemarket/app-hooks";
 import { Spinner } from "@darwinia/ui";
 import OrdersSummary from "../components/OrdersSummary";
 import OrdersTable from "../components/OrdersTable";
-import { DateRangePicker } from "@darwinia/ui";
-import { useState } from "react";
 
 const Orders = () => {
   const { currentMarket, setRefresh } = useFeeMarket();
-
-  const [startDate, setStartDate] = useState<Date | string>();
-  const [endDate, setEndDate] = useState<Date | string>();
 
   const { ordersSummaryData, ordersSummaryLoading, ordersTableData, ordersTableLoading } = useOrdersData({
     currentMarket,
@@ -29,26 +24,26 @@ const Orders = () => {
           }}
         />
         <OrdersTable
-          ordersTableData={(ordersTableData?.orders?.nodes || [])
+          data={(ordersTableData?.orders?.nodes || [])
             .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
             .map((node, index) => {
               return {
                 id: index.toString(),
-                orderId: node.nonce,
                 lane: node.lane,
                 nonce: node.nonce,
                 sender: node.sender,
+                status: node.status,
+                slotIndex: node.slotIndex,
                 deliveryRelayer: node.deliveryRelayers?.nodes.length
                   ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
-                  : "-",
+                  : null,
                 confirmationRelayer: node.confirmationRelayers?.nodes.length
                   ? node.confirmationRelayers.nodes[0].confirmationRelayer.address
-                  : "-",
+                  : null,
                 createdAt: node.createBlockTime,
-                confirmAt: node.finishBlockTime,
+                confirmedAt: node.finishBlockTime,
                 createBlock: node.createBlockNumber,
-                confirmBlock: node.finishBlockNumber,
-                status: node.status === "Finished" ? "finished" : node.status === "InProgress" ? "inProgress" : "all",
+                confirmedBlock: node.finishBlockNumber,
               };
             })}
         />

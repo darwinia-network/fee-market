@@ -1,7 +1,7 @@
 import OrderDetailsScaffold, { Info } from "../components/OrderDetailsScaffold";
+import i18n from "i18next";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../locale/localeKeys";
-import { createStatusLabel } from "../components/OrdersTable";
 import { Tooltip } from "@darwinia/ui";
 
 import { useEffect, useState } from "react";
@@ -14,6 +14,7 @@ import type {
   RewardEntity,
   FeeMarketSourceChainEth,
   FeeMarketSourceChainPolkadot,
+  OrderStatus,
 } from "@feemarket/app-types";
 import { ORDER_DETAIL, DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import {} from "@feemarket/app-utils";
@@ -22,6 +23,32 @@ import { formatDistance, format } from "date-fns";
 import { capitalize } from "lodash";
 import { utils as ethersUtils } from "ethers";
 import { useLocation } from "react-router-dom";
+
+const formatStatus = (status: OrderStatus): string => {
+  switch (status) {
+    case "Finished":
+      return i18n.t(localeKeys.finished);
+    case "InProgress":
+      return i18n.t(localeKeys.inProgress);
+    default:
+      return "-";
+  }
+};
+
+const RenderOrderStatus = ({ status }: { status: OrderStatus | null | undefined }) => {
+  if (!status) {
+    return <span>-</span>;
+  }
+
+  const bg = status === "Finished" ? "bg-success" : "bg-warning";
+
+  return (
+    <div className={"flex gap-[0.525rem] items-center"}>
+      <div className={`w-[0.5rem] h-[0.5rem] rounded-full ${bg}`} />
+      <div>{formatStatus(status)}</div>
+    </div>
+  );
+};
 
 const formatBalance = (
   amount: string | null | undefined,
@@ -179,14 +206,7 @@ const OrderDetails = () => {
     {
       id: "6",
       label: t(localeKeys.state),
-      details: createStatusLabel(
-        orderDetailData?.order?.status === "Finished"
-          ? "finished"
-          : orderDetailData?.order?.status === "InProgress"
-          ? "inProgress"
-          : "all",
-        t
-      ),
+      details: <RenderOrderStatus status={orderDetailData?.order?.status} />,
     },
     {
       id: "7",
