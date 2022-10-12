@@ -464,7 +464,7 @@ const OrdersTable = ({ loading, data }: Props) => {
         {/*time dimension*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
           <div>{t(localeKeys.timeDimension)}</div>
-          <div className={"w-[8rem]"}>
+          <div className={"w-[6rem]"}>
             <Select
               value={dimension}
               options={dimensionOptions}
@@ -487,7 +487,7 @@ const OrdersTable = ({ loading, data }: Props) => {
         {/*status*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
           <div>{t(localeKeys.status)}</div>
-          <div className={"w-[8rem]"}>
+          <div className={"w-[9rem]"}>
             <Select
               options={statusOptions}
               value={status}
