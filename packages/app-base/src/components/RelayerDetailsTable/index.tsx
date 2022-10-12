@@ -2,18 +2,10 @@ import { Column, PaginationProps, Table } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-import { utils as ethersUtils } from "ethers";
-import type { BN } from "@polkadot/util";
+import { BALANCE_DECIMALS } from "@feemarket/app-config";
+import { formatBalance } from "@feemarket/app-utils";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
-
-const formatBalance = (amount: BN, symbol?: string | null, decimals?: number | null): string => {
-  if (decimals) {
-    return `${ethersUtils.commify(ethersUtils.formatUnits(amount.toString(), decimals))} ${symbol}`;
-  }
-  return "-";
-};
 
 interface Order {
   id: string;
@@ -32,7 +24,6 @@ interface Props {
 
 const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: Props) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const columns: Column<Order>[] = [
     {
@@ -119,8 +110,8 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
           id: `${index}`,
           orderId: item.nonce,
           relayerRoles: item.relayerRoles,
-          slash: formatBalance(item.slash, tokenSymbol, tokenDecimals),
-          reward: formatBalance(item.reward, tokenSymbol, tokenDecimals),
+          slash: formatBalance(item.slash, tokenDecimals, tokenSymbol, { precision: BALANCE_DECIMALS }),
+          reward: formatBalance(item.reward, tokenDecimals, tokenSymbol, { precision: BALANCE_DECIMALS }),
           time: item.createBlockTime,
         };
       }) || []
