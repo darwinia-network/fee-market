@@ -1,3 +1,7 @@
+enum EnumAll {
+  ALL = -2,
+}
+
 export enum SlotIndex {
   OUT_OF_SLOT = -1,
   SLOT_1,
@@ -7,6 +11,9 @@ export enum SlotIndex {
   SLOT_5,
   SLOT_6,
 }
+
+export type SlotIndexFilter = EnumAll | SlotIndex;
+export const SlotIndexFilter = { ...EnumAll, ...SlotIndex };
 
 export type OrderStatus = "Finished" | "InProgress";
 export type OrderStatusFilter = OrderStatus | "All";

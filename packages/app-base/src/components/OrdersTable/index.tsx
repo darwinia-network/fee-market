@@ -1,56 +1,178 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
-import { TFunction, useTranslation } from "react-i18next";
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, FormEvent, useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import { ModalEnhanced } from "@darwinia/ui";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
 import BlockRangeInput from "../BlockRangeInput";
 import { Identicon } from "@polkadot/react-identicon";
 import { isPolkadotChain } from "@feemarket/app-utils";
-import { UrlSearchParamsKey } from "@feemarket/app-types";
-import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { UrlSearchParamsKey, SlotIndexFilter, SlotIndex } from "@feemarket/app-types";
+import type {
+  FeeMarketSourceChainEth,
+  FeeMarketSourceChainPolkadot,
+  OrderStatusFilter,
+  OrderStatus,
+} from "@feemarket/app-types";
 import { useFeeMarket } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
 import { DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { format } from "date-fns";
 
-type Status = "all" | "finished" | "inProgress";
+enum TimeDimension {
+  DATE = "date",
+  BLOCK = "block",
+}
 
-type LabelStatusMap = {
-  [key in Status]: string;
-};
-
-interface Order {
+interface DataSource {
   id: string;
-  orderId: string;
   lane: string;
   nonce: string;
-  deliveryRelayer: string;
-  confirmationRelayer: string;
+  deliveryRelayer: string | null;
+  confirmationRelayer: string | null;
   createdAt: string;
-  confirmAt: string;
+  confirmedAt: string | null;
   createBlock: number;
-  confirmBlock: number;
-  status: Status;
+  confirmedBlock: number | null;
+  status: OrderStatus;
   sender: string | null;
+  slotIndex: SlotIndex | null;
 }
 
-interface Props {
-  ordersTableLoading?: boolean;
-  ordersTableData: Order[];
-}
+const dropdownMaxHeight = 200;
+
+const dimensionOptions: OptionProps[] = [
+  {
+    id: TimeDimension.BLOCK,
+    label: i18n.t(localeKeys.block),
+    value: TimeDimension.BLOCK,
+  },
+  {
+    id: TimeDimension.DATE,
+    label: i18n.t(localeKeys.date),
+    value: TimeDimension.DATE,
+  },
+];
+
+const formatStatus = (status: OrderStatusFilter): string => {
+  switch (status) {
+    case "Finished":
+      return i18n.t(localeKeys.finished);
+    case "InProgress":
+      return i18n.t(localeKeys.inProgress);
+    case "All":
+      return i18n.t(localeKeys.all);
+    default:
+      return "-";
+  }
+};
+
+const RenderOrderStatus = ({ status }: { status: OrderStatusFilter }) => {
+  if (status === "All") {
+    return <span>{formatStatus(status)}</span>;
+  }
+
+  const bg = status === "Finished" ? "bg-success" : "bg-warning";
+
+  return (
+    <div className={"flex gap-[0.525rem] items-center"}>
+      <div className={`w-[0.5rem] h-[0.5rem] rounded-full ${bg}`} />
+      <div>{formatStatus(status)}</div>
+    </div>
+  );
+};
+
+const statusOptions: OptionProps[] = [
+  {
+    id: "All",
+    label: <RenderOrderStatus status="All" />,
+    value: "All" as OrderStatusFilter,
+  },
+  {
+    id: "Finished",
+    label: <RenderOrderStatus status="Finished" />,
+    value: "Finished" as OrderStatusFilter,
+  },
+  {
+    id: "InProgress",
+    label: <RenderOrderStatus status="InProgress" />,
+    value: "InProgress" as OrderStatusFilter,
+  },
+];
+
+const slotIndexOptions: OptionProps[] = [
+  {
+    id: "all",
+    label: i18n.t(localeKeys.all),
+    value: `${SlotIndexFilter.ALL}`,
+  },
+  {
+    id: "1",
+    label: i18n.t(localeKeys.slotNumber, { slotNumber: 1 }),
+    value: `${SlotIndexFilter.SLOT_1}`,
+  },
+  {
+    id: "2",
+    label: i18n.t(localeKeys.slotNumber, { slotNumber: 2 }),
+    value: `${SlotIndexFilter.SLOT_2}`,
+  },
+  {
+    id: "3",
+    label: i18n.t(localeKeys.slotNumber, { slotNumber: 3 }),
+    value: `${SlotIndexFilter.SLOT_3}`,
+  },
+  {
+    id: "out of slot",
+    label: i18n.t(localeKeys.outOfSlot),
+    value: `${SlotIndexFilter.OUT_OF_SLOT}`,
+  },
+];
 
 const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
 
-const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
+interface Props {
+  loading?: boolean;
+  data: DataSource[];
+}
+
+const OrdersTable = ({ loading, data }: Props) => {
+  const location = useLocation();
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const [keywords, setKeywords] = useState("");
-  const dataSourceRef = useRef<Order[]>([]);
+  const [filterModalVisible, setFilterModalVisibility] = useState(false);
+
+  const onPageChange = useCallback((currentPage: number) => {
+    setPagination((previous) => ({ ...previous, currentPage }));
+  }, []);
+
+  // table
+  const dataSourceRef = useRef<DataSource[]>(data); // staging data for updating the total number of pages when filtering
+  const [dataSource, setDataSource] = useState<DataSource[]>([]); // visible data
+  const [pagination, setPagination] = useState<PaginationProps>({
+    pageSize: 10,
+    currentPage: 1,
+    totalPages: dataSourceRef.current.length,
+    onChange: onPageChange,
+  });
+
+  // order search
+  const [keyword, setKeyword] = useState<string | undefined>();
+
+  // orders filter
+  const [dimension, setDimension] = useState<TimeDimension>(TimeDimension.BLOCK);
+  const [duration, setDuration] = useState<{ start: number | undefined; end: number | undefined }>({
+    start: undefined,
+    end: undefined,
+  });
+  const [blockRange, setBlockRange] = useState<{ start: number | undefined; end: number | undefined }>({
+    start: undefined,
+    end: undefined,
+  });
+  const [status, setStatus] = useState<OrderStatusFilter>("All");
+  const [slotIndex, setSlotIndex] = useState<SlotIndexFilter>(SlotIndexFilter.ALL);
 
   const chainConfig = currentMarket?.source
     ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth] ??
@@ -58,120 +180,20 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
       null
     : null;
 
-  const dropdownMaxHeight = 200;
-  const timeDimensionOptions: OptionProps[] = [
+  const columns: Column<DataSource>[] = [
     {
       id: "1",
-      label: t(localeKeys.block),
-      value: "block",
-    },
-    {
-      id: "2",
-      label: t(localeKeys.date),
-      value: "date",
-    },
-  ];
-  const [timeDimension, setTimeDimension] = useState<string>("block");
-
-  const statusOptions: OptionProps[] = [
-    {
-      id: "1",
-      label: createStatusLabel("all", t),
-      value: "all",
-    },
-    {
-      id: "2",
-      label: createStatusLabel("finished", t),
-      value: "finished",
-    },
-    {
-      id: "3",
-      label: createStatusLabel("inProgress", t),
-      value: "inProgress",
-    },
-  ];
-  const [status, setStatus] = useState<string>("all");
-
-  const slotOptions: OptionProps[] = [
-    {
-      id: "1",
-      label: t(localeKeys.all),
-      value: "all",
-    },
-    {
-      id: "2",
-      label: t(localeKeys.slotNumber, { slotNumber: 1 }),
-      value: "slot1",
-    },
-    {
-      id: "3",
-      label: t(localeKeys.slotNumber, { slotNumber: 2 }),
-      value: "slot2",
-    },
-    {
-      id: "4",
-      label: t(localeKeys.slotNumber, { slotNumber: 3 }),
-      value: "slot3",
-    },
-    {
-      id: "5",
-      label: t(localeKeys.outOfSlot),
-      value: "outOfSlot",
-    },
-  ];
-  const [slot, setSlot] = useState<string>("all");
-
-  const [isFilterModalVisible, setFilterModalVisibility] = useState(false);
-
-  const [isLoading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(ordersTableLoading ?? false);
-  }, [ordersTableLoading]);
-
-  const onPageChange = useCallback((pageNumber: number) => {
-    setTablePagination((oldValues) => {
-      return {
-        ...oldValues,
-        currentPage: pageNumber,
-      };
-    });
-  }, []);
-
-  const [tablePagination, setTablePagination] = useState<PaginationProps>({
-    currentPage: 1,
-    pageSize: 10,
-    totalPages: ordersTableData.length,
-    onChange: onPageChange,
-  });
-
-  useEffect(() => {
-    setTablePagination((prev) => ({ ...prev, totalPages: ordersTableData.length }));
-  }, [ordersTableData]);
-
-  const onOrderNumberClicked = (row: Order) => {
-    console.log("onOrderNumberClicked=====", row);
-    const urlSearchParams = new URLSearchParams();
-    urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
-    urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
-    navigate(`${pathname}/details?${urlSearchParams.toString()}`);
-  };
-
-  const orderColumns: Column<Order>[] = [
-    {
-      id: "1",
-      key: "orderId",
+      key: "nonce",
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
+        const urlSearchParams = new URLSearchParams();
+        urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
+        urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
+        const to = `${location.pathname}/details?${urlSearchParams.toString()}`;
         return (
-          <div
-            onClick={() => {
-              onOrderNumberClicked(row);
-            }}
-            className={"text-primary text-14-bold clickable"}
-          >
-            #{row.orderId}
-          </div>
+          <Link to={to} className="text-primary text-14-bold clickable">
+            #{row.nonce}
+          </Link>
         );
       },
       width: "13.3%",
@@ -180,13 +202,15 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
       id: "2",
       key: "deliveryRelayer",
       title: t([localeKeys.deliveryRelayer]),
-      render: (row) => <RelayerAccount address={row.deliveryRelayer} />,
+      render: ({ deliveryRelayer }) =>
+        deliveryRelayer ? <RelayerAccount address={deliveryRelayer} /> : <span>-</span>,
     },
     {
       id: "3",
       key: "confirmationRelayer",
       title: t([localeKeys.confirmationRelayer]),
-      render: (row) => <RelayerAccount address={row.confirmationRelayer} />,
+      render: ({ confirmationRelayer }) =>
+        confirmationRelayer ? <RelayerAccount address={confirmationRelayer} /> : <span>-</span>,
     },
     {
       id: "4",
@@ -208,7 +232,7 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
     },
     {
       id: "5",
-      key: "confirmAt",
+      key: "confirmedAt",
       title: t([localeKeys.confirmAt]),
       render: (row) => (
         <div className="flex flex-col">
@@ -216,11 +240,11 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
             className="text-primary text-14-bold clickable"
             rel="noopener noreferrer"
             target="_blank"
-            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmBlock}` : "#"}
+            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmedBlock}` : "#"}
           >
             #{row.createBlock}
           </a>
-          <span className="text-12">{formatDateTime(row.confirmAt)}</span>
+          <span className="text-12">{row.confirmedAt ? formatDateTime(row.confirmedAt) : "-"}</span>
         </div>
       ),
     },
@@ -228,106 +252,154 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
       id: "6",
       key: "status",
       title: t([localeKeys.status]),
-      render: (row) => {
-        return createStatusLabel(row.status, t);
-      },
+      render: ({ status }) => <RenderOrderStatus status={status} />,
       width: "11.6%",
     },
   ];
 
-  const [orderDataSource, setOrderDataSource] = useState<Order[]>([]);
+  const onDimensionChange = useCallback((value: string | string[]) => {
+    if (typeof value === "string") {
+      setDimension(value as TimeDimension);
+    }
+  }, []);
 
+  const onStatusChange = useCallback((value: string | string[]) => {
+    if (typeof value === "string") {
+      setStatus(value as OrderStatusFilter);
+    }
+  }, []);
+
+  const onSlotIndexChange = useCallback((value: string | string[]) => {
+    if (typeof value === "string") {
+      setSlotIndex(Number(value));
+    }
+  }, []);
+
+  const handleFilterClick = useCallback(() => {
+    const minValue = 0;
+    const maxValue = Number.MAX_SAFE_INTEGER;
+
+    dataSourceRef.current = data.filter((item) => {
+      if (duration.start || duration.end) {
+        const filterStart = duration.start || minValue;
+        const filterEnd = duration.end || maxValue;
+
+        const orderStart = new Date(`${item.createdAt}Z`).getTime();
+        const orderEnd = item.confirmedAt ? new Date(`${item.confirmedAt}Z`).getTime() : undefined;
+
+        const match =
+          (filterStart <= orderStart && orderStart <= filterEnd) ||
+          (filterStart <= (orderEnd || maxValue) && (orderEnd || minValue) <= filterEnd);
+
+        if (!match) {
+          return false;
+        }
+      }
+
+      if (blockRange.start || blockRange.end) {
+        const filterStart = blockRange.start || minValue;
+        const filterEnd = blockRange.end || maxValue;
+
+        const orderStart = item.createBlock;
+        const orderEnd = item.confirmedBlock;
+
+        const match =
+          (filterStart <= orderStart && orderStart <= filterEnd) ||
+          (filterStart <= (orderEnd || maxValue) && (orderEnd || minValue) <= filterEnd);
+
+        if (!match) {
+          return false;
+        }
+      }
+
+      switch (status) {
+        case "Finished":
+          if (item.status !== "Finished") {
+            return false;
+          }
+          break;
+        case "InProgress":
+          if (item.status !== "InProgress") {
+            return false;
+          }
+          break;
+      }
+
+      switch (slotIndex) {
+        case SlotIndex.SLOT_1:
+          if (item.slotIndex !== SlotIndex.SLOT_1) {
+            return false;
+          }
+          break;
+        case SlotIndex.SLOT_2:
+          if (item.slotIndex !== SlotIndex.SLOT_2) {
+            return false;
+          }
+          break;
+        case SlotIndex.SLOT_3:
+          if (item.slotIndex !== SlotIndex.SLOT_3) {
+            return false;
+          }
+          break;
+        case SlotIndex.OUT_OF_SLOT:
+          if (item.slotIndex !== SlotIndex.OUT_OF_SLOT) {
+            return false;
+          }
+          break;
+      }
+
+      return true;
+    });
+
+    setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
+  }, [data, duration, blockRange, status, slotIndex]);
+
+  // handle order search
   useEffect(() => {
-    const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
-    const end = start + tablePagination.pageSize;
-
-    dataSourceRef.current = ordersTableData.slice(start, end);
-    setOrderDataSource(dataSourceRef.current);
-  }, [ordersTableData, tablePagination]);
-
-  useEffect(() => {
-    if (keywords) {
-      setOrderDataSource(
-        dataSourceRef.current.filter(
-          (item) => item.nonce.includes(keywords) || (item.sender && item.sender.includes(keywords))
-        )
+    if (keyword) {
+      dataSourceRef.current = data.filter(
+        (item) =>
+          item.nonce.includes(keyword) || (item.sender && item.sender.toLowerCase().includes(keyword.toLowerCase()))
       );
     } else {
-      setOrderDataSource(dataSourceRef.current);
+      dataSourceRef.current = data;
     }
-  }, [keywords]);
 
-  const onKeywordsChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    setKeywords(event.target.value);
-  };
+    setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
+  }, [data, keyword]);
 
-  const onSearch = () => {
-    console.log("Searched keywords...", keywords);
-  };
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSearch();
-  };
-
-  const onTimeDimensionChanged = (time: string | string[]) => {
-    if (typeof time === "string") {
-      setTimeDimension(time);
-    }
-  };
-
-  const onStatusChanged = (status: string | string[]) => {
-    if (typeof status === "string") {
-      setStatus(status);
-    }
-  };
-
-  const onSlotChanged = (slot: string | string[]) => {
-    if (typeof slot === "string") {
-      setSlot(status);
-    }
-  };
-
-  const onShowFilterModal = () => {
-    setFilterModalVisibility(true);
-  };
-
-  const onCloseFilterModal = () => {
-    setFilterModalVisibility(false);
-  };
+  // handle page change
+  useEffect(() => {
+    const start = (pagination.currentPage - 1) * pagination.pageSize;
+    const end = start + pagination.pageSize;
+    setDataSource(dataSourceRef.current.slice(start, end));
+  }, [pagination]);
 
   return (
     <div className={"flex flex-col gap-[0.9375rem] lg:gap-[1.25rem]"}>
       <div className={"flex-1 flex gap-[0.625rem]"}>
         {/*search field*/}
-        <div className={"lg:max-w-[27.25rem] flex-1"}>
-          <form
-            className={"flex gap-[0.625rem]"}
-            onSubmit={(e) => {
-              onSubmit(e);
+        <div className={"lg:max-w-[20.625rem] flex-1"}>
+          <Input
+            value={keyword ?? ""}
+            onChange={(e) => {
+              setKeyword(e.target.value);
             }}
-          >
-            <Input
-              value={keywords}
-              onChange={(e) => {
-                onKeywordsChanged(e);
-              }}
-              placeholder={t(localeKeys.searchByOrderOrSender)}
-            />
-            {/*search button that only shows on PC button*/}
-            <div className={"hidden lg:block"}>
-              <Button onClick={onSearch}>{t(localeKeys.search)}</Button>
-            </div>
-          </form>
+            placeholder={t(localeKeys.searchByOrderOrSender)}
+          />
         </div>
         {/*filter button*/}
         <div className={"lg:hidden"}>
-          <Button onClick={onShowFilterModal} btnType={"secondary"}>
+          <Button onClick={() => setFilterModalVisibility(true)} btnType={"secondary"}>
             {t(localeKeys.filter)}
           </Button>
         </div>
         {/*Filter modal that will only show on mobile devices*/}
-        <ModalEnhanced modalTitle={t(localeKeys.filter)} onClose={onCloseFilterModal} isVisible={isFilterModalVisible}>
+        <ModalEnhanced
+          modalTitle={t(localeKeys.filter)}
+          onClose={() => setFilterModalVisibility(false)}
+          isVisible={filterModalVisible}
+        >
           <div className={"flex flex-col gap-[0.9375rem]"}>
             {/*time dimension*/}
             <div className={"flex flex-col gap-[0.625rem]"}>
@@ -336,14 +408,18 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
                 <Select
                   className={"text-12-bold"}
                   dropdownClassName={"text-12-bold"}
-                  value={timeDimension}
-                  onChange={onTimeDimensionChanged}
-                  options={timeDimensionOptions}
+                  value={dimension}
+                  options={dimensionOptions}
+                  onChange={onDimensionChange}
                 />
               </div>
             </div>
 
-            {timeDimension === "block" ? <BlockRangeInput /> : <DatePickerFakeInput />}
+            {dimension === TimeDimension.BLOCK ? (
+              <BlockRangeInput onChange={setBlockRange} />
+            ) : (
+              <DatePickerFakeInput onChange={setDuration} />
+            )}
 
             {/*Status*/}
             <div className={"flex flex-col gap-[0.625rem]"}>
@@ -353,7 +429,7 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
                   className={"text-12-bold"}
                   dropdownClassName={"text-12-bold"}
                   value={status}
-                  onChange={onStatusChanged}
+                  onChange={onStatusChange}
                   options={statusOptions}
                 />
               </div>
@@ -366,13 +442,15 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
                 <Select
                   className={"text-12-bold"}
                   dropdownClassName={"text-12-bold"}
-                  value={slot}
-                  onChange={onSlotChanged}
-                  options={slotOptions}
+                  value={`${slotIndex}`}
+                  onChange={onSlotIndexChange}
+                  options={slotIndexOptions}
                   dropdownHeight={150}
                 />
               </div>
             </div>
+
+            <Button onClick={handleFilterClick}>{t(localeKeys.filter)}</Button>
           </div>
         </ModalEnhanced>
       </div>
@@ -381,11 +459,11 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
         {/*time dimension*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
           <div>{t(localeKeys.timeDimension)}</div>
-          <div className={"w-[8rem]"}>
+          <div className={"w-[6rem]"}>
             <Select
-              options={timeDimensionOptions}
-              value={timeDimension}
-              onChange={onTimeDimensionChanged}
+              value={dimension}
+              options={dimensionOptions}
+              onChange={onDimensionChange}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
@@ -393,16 +471,22 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
         </div>
 
         {/*date or block*/}
-        <div className={"shrink-0"}>{timeDimension === "block" ? <BlockRangeInput /> : <DatePickerFakeInput />}</div>
+        <div className={"shrink-0"}>
+          {dimension === TimeDimension.BLOCK ? (
+            <BlockRangeInput onChange={setBlockRange} />
+          ) : (
+            <DatePickerFakeInput onChange={setDuration} />
+          )}
+        </div>
 
         {/*status*/}
         <div className={"flex shrink-0 items-center gap-[0.625rem]"}>
           <div>{t(localeKeys.status)}</div>
-          <div className={"w-[8rem]"}>
+          <div className={"w-[9rem]"}>
             <Select
               options={statusOptions}
               value={status}
-              onChange={onStatusChanged}
+              onChange={onStatusChange}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
@@ -413,49 +497,28 @@ const OrdersTable = ({ ordersTableData, ordersTableLoading }: Props) => {
           <div>{t(localeKeys.slot)}</div>
           <div className={"w-[8rem]"}>
             <Select
-              options={slotOptions}
-              value={slot}
-              onChange={onSlotChanged}
+              options={slotIndexOptions}
+              value={`${slotIndex}`}
+              onChange={onSlotIndexChange}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
           </div>
         </div>
+        <Button onClick={handleFilterClick} className="lg:!h-[1.625rem]">
+          {t(localeKeys.filter)}
+        </Button>
       </div>
       {/*Table*/}
       <div>
         <Table
-          dataSource={orderDataSource}
-          columns={orderColumns}
-          isLoading={isLoading}
+          columns={columns}
+          dataSource={dataSource}
           minWidth={"1120px"}
-          pagination={tablePagination}
+          isLoading={loading}
+          pagination={pagination}
         />
       </div>
-    </div>
-  );
-};
-
-export const createStatusLabel = (status: Status, t: TFunction<"translation">) => {
-  const labelStatusMap: LabelStatusMap = {
-    all: t(localeKeys.all),
-    inProgress: t(localeKeys.inProgress),
-    finished: t(localeKeys.finished),
-  };
-
-  if (status === "all") {
-    return <div>{labelStatusMap[status]}</div>;
-  }
-  let bg = "";
-  if (status === "finished") {
-    bg = "bg-success";
-  } else if (status === "inProgress") {
-    bg = "bg-warning";
-  }
-  return (
-    <div className={"flex gap-[0.525rem] items-center"}>
-      <div className={`w-[0.5rem] h-[0.5rem] rounded-full ${bg}`} />
-      <div>{labelStatusMap[status]}</div>
     </div>
   );
 };

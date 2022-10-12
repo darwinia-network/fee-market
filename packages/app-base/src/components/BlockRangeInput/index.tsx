@@ -14,13 +14,13 @@ interface Props {
 
 const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
   const { t } = useTranslation();
-  const [start, setStart] = useState<number | string | undefined>("");
-  const [end, setEnd] = useState<number | string | undefined>("");
+  const [start, setStart] = useState<number | string | undefined>(undefined);
+  const [end, setEnd] = useState<number | string | undefined>(undefined);
 
   useEffect(() => {
     onChange({
-      start: Number(start) || Number(start) === 0 ? Number(start) : undefined,
-      end: Number(end) || Number(end) === 0 ? Number(end) : undefined,
+      start: start && (Number(start) || Number(start) === 0) ? Number(start) : undefined,
+      end: end && (Number(end) || Number(end) === 0) ? Number(end) : undefined,
     });
   }, [start, end, onChange]);
 
@@ -30,7 +30,7 @@ const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
         <span className="text-12">{t(localeKeys.block)}</span>
         <Input
           placeholder={t(localeKeys.startBlock)}
-          value={start}
+          value={start ?? ""}
           onChange={(e) => setStart(e.target.value)}
           leftIcon={null}
           className="h-[2.5rem] lg:h-[1.625rem] w-full lg:w-[8rem]"
@@ -40,7 +40,7 @@ const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
         <span className="text-12">{t(localeKeys.to)}</span>
         <Input
           placeholder={t(localeKeys.endBlock)}
-          value={end}
+          value={end ?? ""}
           onChange={(e) => setEnd(e.target.value)}
           leftIcon={null}
           className="h-[2.5rem] lg:h-[1.625rem] w-full lg:w-[8rem]"
