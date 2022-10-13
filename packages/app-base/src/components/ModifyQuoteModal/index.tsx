@@ -31,9 +31,10 @@ interface Props {
   currentQuote: BigNumber | BN;
   relayerAddress: string;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: Props) => {
+const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -96,10 +97,11 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
             console.error("update quote:", error);
           },
           responseCallback: ({ response }) => {
-            onClose();
             console.log("update quote response:", response);
           },
           successCallback: ({ receipt }) => {
+            onClose();
+            onSuccess();
             console.log("update quote receipt:", receipt);
           },
         };
@@ -113,7 +115,10 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
           signAndSendTx({
             extrinsic,
             requireAddress: relayerAddress,
-            txUpdateCb: onClose,
+            txSuccessCb: () => {
+              onClose();
+              onSuccess();
+            },
             txFailedCb: (error) => console.error(error),
           });
         }

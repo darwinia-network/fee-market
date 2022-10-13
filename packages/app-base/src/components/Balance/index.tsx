@@ -3,7 +3,7 @@ import localeKeys from "../../locale/localeKeys";
 import helpIcon from "../../assets/images/help.svg";
 import editIcon from "../../assets/images/edit.svg";
 import ModifyQuoteModal from "../ModifyQuoteModal";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
 import { Tooltip } from "@darwinia/ui";
 
@@ -23,14 +23,13 @@ import type {
   FeeMarketSourceChainEth,
   PalletFeeMarketRelayer,
 } from "@feemarket/app-types";
-import { from, Subscription, forkJoin } from "rxjs";
+import { from, forkJoin, EMPTY } from "rxjs";
 
 interface Props {
   relayerAddress: string;
-  isRegistered?: boolean;
 }
 
-const Balance = ({ relayerAddress, isRegistered }: Props) => {
+const Balance = ({ relayerAddress }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -40,11 +39,18 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
   const [currentLockedAmount, setCurrentLockedAmount] = useState<BigNumber | null>(null);
   const [currentQuoteAmount, setCurrentQuoteAmount] = useState<BigNumber | null>(null);
 
-  const nativeToken = currentMarket?.source
-    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
-      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-      null
-    : null;
+  const sourceChain = currentMarket?.source;
+  const destinationChain = currentMarket?.destination;
+
+  const nativeToken = useMemo(
+    () =>
+      sourceChain
+        ? ETH_CHAIN_CONF[sourceChain as FeeMarketSourceChainEth]?.nativeToken ??
+          POLKADOT_CHAIN_CONF[sourceChain as FeeMarketSourceChainPolkadot]?.nativeToken ??
+          null
+        : null,
+    [sourceChain]
+  );
 
   const onShowModifyQuoteModal = () => {
     setModifyQuoteModalVisible(true);
@@ -62,21 +68,12 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
     setModifyCollateralBalanceModalVisible(false);
   };
 
-  useEffect(() => {
-    let sub$$: Subscription;
-
-    if (!isRegistered || !currentMarket) {
-      setCollateralAmount(null);
-      setCurrentLockedAmount(null);
-      setCurrentQuoteAmount(null);
-      return;
-    }
-
-    if (isEthChain(currentMarket.source) && isEthApi(api)) {
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+  const getQuoteLockedCollateral = useCallback(() => {
+    if (isEthChain(sourceChain) && isEthApi(api)) {
+      const chainConfig = ETH_CHAIN_CONF[sourceChain];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
-      forkJoin([
+      return forkJoin([
         from(contract.balanceOf(relayerAddress) as Promise<BigNumber>),
         from(contract.lockedOf(relayerAddress) as Promise<BigNumber>),
         from(contract.feeOf(relayerAddress) as Promise<BigNumber>),
@@ -87,46 +84,37 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
           setCurrentQuoteAmount(quote);
         },
         error: (error) => {
-          setCollateralAmount(null);
-          setCurrentLockedAmount(null);
-          setCurrentQuoteAmount(null);
           console.error("[collateral, locked, quote]:", error);
         },
       });
-
-      (contract.balanceOf(relayerAddress) as Promise<BigNumber>).then(setCollateralAmount).catch((error) => {
-        setCollateralAmount(null);
-        console.error("get collateral:", error);
-      });
-
-      (contract.lockedOf(relayerAddress) as Promise<BigNumber>).then(setCurrentLockedAmount).catch((error) => {
-        setCurrentLockedAmount(null);
-        console.error("get currently locked:", error);
-      });
-
-      (contract.feeOf(relayerAddress) as Promise<BigNumber>).then(setCurrentQuoteAmount).catch((error) => {
-        setCurrentQuoteAmount(null);
-        console.error("get current quote:", error);
-      });
-    } else if (isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
-      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        sub$$ = from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe(
-          ({ collateral, fee }) => {
+        return from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe({
+          next: ({ collateral, fee }) => {
             setCollateralAmount(BigNumber.from(collateral.toString()));
             setCurrentQuoteAmount(BigNumber.from(fee.toString()));
-          }
-        );
+          },
+          error: (error) => {
+            console.error("[collateral, locked, quote]:", error);
+          },
+        });
       }
       setCurrentLockedAmount(null);
     }
 
+    return EMPTY.subscribe();
+  }, [sourceChain, destinationChain, api, relayerAddress]);
+
+  useEffect(() => {
+    const sub$$ = getQuoteLockedCollateral();
     return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
+      sub$$.unsubscribe();
+      setCollateralAmount(null);
+      setCurrentLockedAmount(null);
+      setCurrentQuoteAmount(null);
     };
-  }, [api, currentMarket, relayerAddress, isRegistered]);
+  }, [getQuoteLockedCollateral]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>
@@ -214,6 +202,7 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
       {/*Modify quote modal*/}
       <ModifyQuoteModal
         onClose={onModifyQuoteModalClose}
+        onSuccess={getQuoteLockedCollateral}
         relayerAddress={relayerAddress}
         isVisible={isModifyQuoteModalVisible}
         currentQuote={currentQuoteAmount || BigNumber.from(0)}
@@ -221,6 +210,7 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
       {/*Modify balance modal*/}
       <ModifyCollateralBalanceModal
         onClose={onModifyCollateralBalanceModalClose}
+        onSuccess={getQuoteLockedCollateral}
         relayerAddress={relayerAddress}
         isVisible={isModifyCollateralBalanceModalVisible}
         currentCollateral={collateralAmount || BigNumber.from(0)}

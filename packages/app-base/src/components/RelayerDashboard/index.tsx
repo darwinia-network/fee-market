@@ -138,7 +138,10 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
 
   useEffect(() => {
     const sub$$ = checkRegistered();
-    return () => sub$$.unsubscribe();
+    return () => {
+      sub$$.unsubscribe();
+      setRegistered(false);
+    };
   }, [checkRegistered]);
 
   return (
@@ -173,7 +176,7 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
       {isRegistered && !isNotificationVisible && (
         <>
           <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-            <Balance relayerAddress={relayerAddress} isRegistered={isRegistered} />
+            <Balance relayerAddress={relayerAddress} />
           </div>
           {/*Charts*/}
           <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>

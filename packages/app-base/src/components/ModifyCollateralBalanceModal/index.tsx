@@ -29,9 +29,16 @@ interface Props {
   relayerAddress: string;
   currentCollateral: BigNumber | BN;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const ModifyCollateralBalanceModal = ({ isVisible, relayerAddress, currentCollateral, onClose }: Props) => {
+const ModifyCollateralBalanceModal = ({
+  isVisible,
+  relayerAddress,
+  currentCollateral,
+  onClose,
+  onSuccess = () => undefined,
+}: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -104,10 +111,11 @@ const ModifyCollateralBalanceModal = ({ isVisible, relayerAddress, currentCollat
             console.error("update collateral:", error);
           },
           responseCallback: ({ response }) => {
-            onClose();
             console.log("update collateral response:", response);
           },
           successCallback: ({ receipt }) => {
+            onClose();
+            onSuccess();
             console.log("update collateral receipt:", receipt);
           },
         };
@@ -125,7 +133,10 @@ const ModifyCollateralBalanceModal = ({ isVisible, relayerAddress, currentCollat
           signAndSendTx({
             extrinsic,
             requireAddress: relayerAddress,
-            txUpdateCb: onClose,
+            txSuccessCb: () => {
+              onClose();
+              onSuccess();
+            },
             txFailedCb: (error) => console.error(error),
           });
         }
