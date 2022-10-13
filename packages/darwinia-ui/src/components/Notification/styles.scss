@@ -1,0 +1,176 @@
+@import "../../assets/styles/common";
+$enterAnimationDuration: 250ms;
+$leaveAnimationDuration: 400ms;
+$animationEase: ease-in-out;
+
+.dw-notification-wrapper {
+  position: fixed;
+  z-index: 2000;
+
+  .dw-notification {
+    width: 300px;
+
+    .dw-notification-spacer {
+      padding-bottom: var(--10px);
+    }
+
+    .dw-notification-content {
+      position: relative;
+      overflow: hidden;
+      background-color: var(--blackSecondary);
+      border: var(--border2px);
+      border-color: var(--primary);
+      border-radius: var(--borderRadius5px);
+      font-size: var(--14px);
+      box-shadow: 0 3px 6px -4px #0000001f, 0 6px 16px #00000014, 0 9px 28px 8px #0000000d;
+      display: flex;
+      flex-direction: row;
+      gap: var(--10px);
+      align-items: flex-start;
+      padding: var(--10px);
+
+      .dw-notification-icon {
+        flex-shrink: 0;
+        width: var(--24px);
+        height: var(--24px);
+      }
+    }
+
+    @include dwLg() {
+      width: 350px;
+    }
+
+    .dw-notification-message {
+      flex: 1;
+    }
+
+    .dw-close-btn {
+      @extend .clickable;
+
+      position: absolute;
+      right: 2.5px;
+      top: 2.5px;
+      background-color: var(--black);
+      width: var(--20px);
+      height: var(--20px);
+    }
+  }
+
+  &.rightTop {
+    top: var(--10px);
+    right: var(--10px);
+
+    .dw-notification {
+      &.dw-enter {
+        animation: dw-notification-enter-right $enterAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+
+      &.dw-leave {
+        animation: dw-notification-leave-right $leaveAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+    }
+  }
+
+  &.rightBottom {
+    bottom: var(--10px);
+    right: var(--10px);
+
+    .dw-notification {
+      &.dw-enter {
+        animation: dw-notification-enter-right $enterAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+
+      &.dw-leave {
+        animation: dw-notification-leave-right $leaveAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+    }
+  }
+
+  &.leftTop {
+    top: var(--10px);
+    left: var(--10px);
+
+    .dw-notification {
+      &.dw-enter {
+        animation: dw-notification-enter-left $enterAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+
+      &.dw-leave {
+        animation: dw-notification-leave-left $leaveAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+    }
+  }
+
+  &.leftBottom {
+    bottom: var(--10px);
+    left: var(--10px);
+
+    .dw-notification {
+      &.dw-enter {
+        animation: dw-notification-enter-left $enterAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+
+      &.dw-leave {
+        animation: dw-notification-leave-left $leaveAnimationDuration $animationEase;
+        animation-fill-mode: forwards;
+      }
+    }
+  }
+
+  @keyframes dw-notification-enter-right {
+    0% {
+      transform: translate3d(110%, 0, 0);
+    }
+
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes dw-notification-leave-right {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+      transform: translate3d(110%, 0, 0);
+    }
+
+    100% {
+      transform: translate3d(110%, 0, 0);
+      max-height: 0;
+    }
+  }
+
+  @keyframes dw-notification-enter-left {
+    0% {
+      transform: translate3d(-110%, 0, 0);
+    }
+
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes dw-notification-leave-left {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+      transform: translate3d(-110%, 0, 0);
+    }
+
+    100% {
+      transform: translate3d(-110%, 0, 0);
+      max-height: 0;
+    }
+  }
+}
