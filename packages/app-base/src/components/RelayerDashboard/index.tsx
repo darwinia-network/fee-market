@@ -160,27 +160,31 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           sourceChain={currentMarket?.source}
         />
       </div>
-      <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Balance relayerAddress={relayerAddress} isRegistered={isRegistered} />
-      </div>
-      {/*Charts*/}
-      <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <RelayerDetailsChart
-          currentMarket={currentMarket}
-          rewardsData={rewardAndSlashData?.rewards || []}
-          slashesData={rewardAndSlashData?.slashs || []}
-          quoteHistoryData={quoteHistoryData || []}
-        />
-      </div>
+      {isRegistered && !isNotificationVisible && (
+        <>
+          <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
+            <Balance relayerAddress={relayerAddress} isRegistered={isRegistered} />
+          </div>
+          {/*Charts*/}
+          <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
+            <RelayerDetailsChart
+              currentMarket={currentMarket}
+              rewardsData={rewardAndSlashData?.rewards || []}
+              slashesData={rewardAndSlashData?.slashs || []}
+              quoteHistoryData={quoteHistoryData || []}
+            />
+          </div>
 
-      {/*Relayer Orders table*/}
-      <div>
-        <RelayerDetailsTable
-          relatedOrdersData={relayerRelatedOrdersData}
-          tokenSymbol={nativeToken?.symbol}
-          tokenDecimals={nativeToken?.decimals}
-        />
-      </div>
+          {/*Relayer Orders table*/}
+          <div>
+            <RelayerDetailsTable
+              relatedOrdersData={relayerRelatedOrdersData}
+              tokenSymbol={nativeToken?.symbol}
+              tokenDecimals={nativeToken?.decimals}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };
