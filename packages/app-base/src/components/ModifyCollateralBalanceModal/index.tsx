@@ -1,251 +1,234 @@
 import { Input, ModalEnhanced } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, useEffect, useState } from "react";
-
+import { ChangeEvent, useEffect, useState, useMemo, useCallback } from "react";
 import {
   formatBalance,
   isEthApi,
   isEthChain,
   isPolkadotApi,
   isPolkadotChain,
+  signAndSendTx,
   triggerContract,
   getFeeMarketApiSection,
+  CallbackType,
 } from "@feemarket/app-utils";
 import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useBalance } from "@feemarket/app-hooks";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
-import { Subscription, from, of, switchMap, zip } from "rxjs";
-import { web3FromAddress } from "@polkadot/extension-dapp";
+import type { BN } from "@polkadot/util";
 
-export interface ModifyCollateralBalanceModalProps {
+interface InputTips {
+  text: string;
+  error?: boolean;
+}
+interface Props {
   isVisible: boolean;
-  currentCollateral: BigNumber;
   relayerAddress: string;
+  currentCollateral: BigNumber | BN;
   onClose: () => void;
 }
 
-const ModifyCollateralBalanceModal = ({
-  isVisible,
-  currentCollateral,
-  relayerAddress,
-  onClose,
-}: ModifyCollateralBalanceModalProps) => {
+const ModifyCollateralBalanceModal = ({ isVisible, relayerAddress, currentCollateral, onClose }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const { api, accountBalance } = useApi();
+  const { api } = useApi();
   const { balance: relayerBalance } = useBalance(api, relayerAddress);
-  const [isModalVisible, setModalVisibility] = useState(false);
-  const [deposit, setDeposit] = useState("");
-  const [feeEstimation, setFeeEstimation] = useState<BigNumber | null>(null);
-  const [depositError, setDepositError] = useState<JSX.Element | null>(null);
 
-  const nativeToken = currentMarket?.source
-    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
-      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-      null
-    : null;
+  const [fee] = useState<BigNumber | BN | null>(null);
 
-  useEffect(() => {
-    setModalVisibility(isVisible);
-  }, [isVisible]);
+  const [minCollateral] = useState<BN | BigNumber | null>(BigNumber.from(0));
+  const [collteralTips, setCollateralTips] = useState<InputTips | null>(null);
+  const [collateralInput, setCollateralInput] = useState<string | undefined>();
 
-  const onCloseModal = () => {
-    setModalVisibility(false);
-    onClose();
-  };
+  const sourceChain = currentMarket?.source;
+  const destinationChain = currentMarket?.destination;
 
-  const onCancelModal = () => {
-    onCloseModal();
-  };
+  const nativeToken = useMemo(
+    () =>
+      sourceChain
+        ? ETH_CHAIN_CONF[sourceChain as FeeMarketSourceChainEth]?.nativeToken ??
+          POLKADOT_CHAIN_CONF[sourceChain as FeeMarketSourceChainPolkadot]?.nativeToken ??
+          null
+        : null,
+    [sourceChain]
+  );
 
-  const onModifyQuote = () => {
-    if (depositError) {
-      return;
-    }
+  const handleCollateralChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
 
-    if (currentMarket?.source && isEthChain(currentMarket.source) && deposit) {
-      if (Number(deposit) < 0.2) {
-        setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `0.2 ${nativeToken?.symbol}` })));
-        return;
-      }
+      setCollateralInput(value);
+      setCollateralTips((previous) => (previous ? { ...previous, error: false } : null));
 
-      if (isEthApi(api) && nativeToken?.decimals && deposit) {
-        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+      if (nativeToken && minCollateral && relayerBalance.available) {
+        const min = BigNumber.from(minCollateral.toString());
+        const available = BigNumber.from(relayerBalance.available.toString());
+        const input = ethersUtils.parseUnits(value || "0", nativeToken.decimals);
 
-        const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
-
-        if (depositAmount.gt(currentCollateral)) {
-          triggerContract(
-            contract,
-            "deposit",
-            [],
-            {
-              errorCallback: ({ error }) => {
-                console.error("call deposit:", error);
-              },
-              responseCallback: ({ response }) => {
-                onCloseModal();
-                console.log("call deposit response:", response);
-              },
-              successCallback: ({ receipt }) => {
-                console.log("call deposit receipt:", receipt);
-              },
-            },
-            { value: depositAmount.sub(currentCollateral).toString() }
-          );
-        } else if (depositAmount.lt(currentCollateral)) {
-          triggerContract(contract, "withdraw", [currentCollateral.sub(depositAmount)], {
-            errorCallback: ({ error }) => {
-              console.error("call withdraw:", error);
-            },
-            responseCallback: ({ response }) => {
-              onCloseModal();
-              console.log("call withdraw response:", response);
-            },
-            successCallback: ({ receipt }) => {
-              console.log("call withdraw receipt:", receipt);
-            },
+        if (input.gt(available)) {
+          setCollateralTips({
+            text: t(localeKeys.insufficientBalance),
+            error: true,
           });
         } else {
-          onCloseModal();
+          setCollateralTips({
+            text: t(localeKeys.depositAmountLimitError, {
+              amount: formatBalance(min, nativeToken.decimals, nativeToken.symbol),
+            }),
+            error: input.lt(min),
+          });
         }
       }
-    } else if (
-      currentMarket?.destination &&
-      isPolkadotChain(currentMarket.destination) &&
-      isPolkadotApi(api) &&
-      deposit
-    ) {
-      if (Number(deposit) < 15) {
-        setDepositError(generateError(t(localeKeys.depositAmountLimitError, { amount: `15 ${nativeToken?.symbol}` })));
-        return;
-      }
+    },
+    [t, nativeToken, minCollateral, relayerBalance.available]
+  );
 
-      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
-      if (apiSection) {
-        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
+  const handleConfirm = useCallback(() => {
+    if (collteralTips?.error === false && collateralInput && nativeToken && relayerAddress && currentCollateral) {
+      const inputAmount = ethersUtils.parseUnits(collateralInput, nativeToken.decimals);
+      const currentAmount = BigNumber.from(currentCollateral.toString());
 
-        const extrinsic = api.tx[apiSection].updateLockedCollateral(depositAmount.toString());
-        from(web3FromAddress(relayerAddress))
-          .pipe(switchMap((injector) => from(extrinsic.signAndSend(relayerAddress, { signer: injector.signer }))))
-          .subscribe({
-            next: (result) => {
-              console.log("sign and send collateral update:", result.toString());
-            },
-            error: (error) => {
-              onCloseModal();
-              console.error("sign and send collateral uodate:", error);
-            },
-            complete: () => {
-              onCloseModal();
-            },
+      if (isEthChain(sourceChain) && isEthApi(api)) {
+        const chainConfig = ETH_CHAIN_CONF[sourceChain];
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
+
+        const callback: CallbackType = {
+          errorCallback: ({ error }) => {
+            console.error("update collateral:", error);
+          },
+          responseCallback: ({ response }) => {
+            onClose();
+            console.log("update collateral response:", response);
+          },
+          successCallback: ({ receipt }) => {
+            console.log("update collateral receipt:", receipt);
+          },
+        };
+
+        if (inputAmount.gt(currentAmount)) {
+          triggerContract(contract, "deposit", [], callback, { value: inputAmount.sub(currentAmount).toString() });
+        } else if (inputAmount.lt(currentAmount)) {
+          triggerContract(contract, "withdraw", [], callback, { value: currentAmount.sub(inputAmount).toString() });
+        }
+      } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+        const apiSection = getFeeMarketApiSection(api, destinationChain);
+        if (apiSection) {
+          const extrinsic = api.tx[apiSection].updateLockedCollateral(inputAmount.toString());
+
+          signAndSendTx({
+            extrinsic,
+            requireAddress: relayerAddress,
+            txUpdateCb: onClose,
+            txFailedCb: (error) => console.error(error),
           });
-      }
-    } else {
-      onCloseModal();
-    }
-  };
-
-  const onDepositChanged = (e: ChangeEvent<HTMLInputElement>) => {
-    setDepositError(null);
-    const value = e.target.value;
-    setDeposit(value);
-
-    if (value) {
-      const depositAmount = ethersUtils.parseUnits(value, nativeToken?.decimals);
-      if (depositAmount.gt(currentCollateral) && depositAmount.sub(currentCollateral).gte(accountBalance)) {
-        setDepositError(generateError(t(localeKeys.insufficientBalance)));
+        }
       }
     }
-  };
+  }, [collteralTips, collateralInput, nativeToken, relayerAddress, currentCollateral]);
 
-  // Estimate fee
+  // Collateral input tips
   useEffect(() => {
-    let sub$$: Subscription;
-
-    if (
-      currentMarket?.source &&
-      isEthChain(currentMarket.source) &&
-      isEthApi(api) &&
-      nativeToken?.decimals &&
-      deposit
-    ) {
-      const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
-
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      if (depositAmount.gt(currentCollateral)) {
-        sub$$ = from(api.getGasPrice())
-          .pipe(
-            switchMap((gasPrice) =>
-              zip(
-                of(gasPrice),
-                from(
-                  contract.estimateGas.deposit({
-                    value: depositAmount.sub(currentCollateral),
-                    gasPrice,
-                  }) as Promise<BigNumber>
-                )
-              )
-            )
-          )
-          .subscribe({
-            next: ([gasPrice, gas]) => {
-              setFeeEstimation(gas.mul(gasPrice));
-            },
-            error: (error) => {
-              setFeeEstimation(null);
-              console.error("estimate deposit:", error);
-            },
-          });
-      } else if (depositAmount.lt(currentCollateral)) {
-        sub$$ = from(api.getGasPrice())
-          .pipe(
-            switchMap((gasPrice) =>
-              zip(
-                of(gasPrice),
-                from(
-                  contract.estimateGas.withdraw(currentCollateral.sub(depositAmount), {
-                    gasPrice,
-                  }) as Promise<BigNumber>
-                )
-              )
-            )
-          )
-          .subscribe({
-            next: ([gasPrice, gas]) => {
-              setFeeEstimation(gas.mul(gasPrice));
-            },
-            error: (error) => {
-              setFeeEstimation(null);
-              console.error("estimate withdraw:", error);
-            },
-          });
-      }
-    } else {
-      setFeeEstimation(null);
+    if (nativeToken && minCollateral) {
+      const min = BigNumber.from(minCollateral.toString());
+      setCollateralTips({
+        error: false,
+        text: t(localeKeys.depositAmountLimitError, {
+          amount: formatBalance(min, nativeToken.decimals, nativeToken.symbol),
+        }),
+      });
     }
 
     return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
+      setCollateralTips(null);
     };
-  }, [deposit, api, currentMarket, currentCollateral]);
+  }, [t, nativeToken, minCollateral]);
+
+  // Estimate fee
+  // useEffect(() => {
+  //   let sub$$: Subscription;
+
+  //   if (
+  //     currentMarket?.source &&
+  //     isEthChain(currentMarket.source) &&
+  //     isEthApi(api) &&
+  //     nativeToken?.decimals &&
+  //     deposit
+  //   ) {
+  //     const depositAmount = ethersUtils.parseUnits(deposit, nativeToken.decimals);
+
+  //     const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+  //     const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+  //     if (depositAmount.gt(currentCollateral)) {
+  //       sub$$ = from(api.getGasPrice())
+  //         .pipe(
+  //           switchMap((gasPrice) =>
+  //             zip(
+  //               of(gasPrice),
+  //               from(
+  //                 contract.estimateGas.deposit({
+  //                   value: depositAmount.sub(currentCollateral),
+  //                   gasPrice,
+  //                 }) as Promise<BigNumber>
+  //               )
+  //             )
+  //           )
+  //         )
+  //         .subscribe({
+  //           next: ([gasPrice, gas]) => {
+  //             setFeeEstimation(gas.mul(gasPrice));
+  //           },
+  //           error: (error) => {
+  //             setFeeEstimation(null);
+  //             console.error("estimate deposit:", error);
+  //           },
+  //         });
+  //     } else if (depositAmount.lt(currentCollateral)) {
+  //       sub$$ = from(api.getGasPrice())
+  //         .pipe(
+  //           switchMap((gasPrice) =>
+  //             zip(
+  //               of(gasPrice),
+  //               from(
+  //                 contract.estimateGas.withdraw(currentCollateral.sub(depositAmount), {
+  //                   gasPrice,
+  //                 }) as Promise<BigNumber>
+  //               )
+  //             )
+  //           )
+  //         )
+  //         .subscribe({
+  //           next: ([gasPrice, gas]) => {
+  //             setFeeEstimation(gas.mul(gasPrice));
+  //           },
+  //           error: (error) => {
+  //             setFeeEstimation(null);
+  //             console.error("estimate withdraw:", error);
+  //           },
+  //         });
+  //     }
+  //   } else {
+  //     setFeeEstimation(null);
+  //   }
+
+  //   return () => {
+  //     if (sub$$) {
+  //       sub$$.unsubscribe();
+  //     }
+  //   };
+  // }, [deposit, api, currentMarket, currentCollateral]);
 
   return (
     <ModalEnhanced
-      onCancel={onCancelModal}
-      onClose={onCloseModal}
+      onCancel={onClose}
+      onClose={onClose}
       cancelText={t(localeKeys.cancel)}
       confirmText={t(localeKeys.confirm)}
-      onConfirm={onModifyQuote}
-      isVisible={isModalVisible}
+      onConfirm={handleConfirm}
+      isVisible={isVisible}
       modalTitle={t(localeKeys.modifyCollateralBalance)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>
@@ -254,7 +237,7 @@ const ModifyCollateralBalanceModal = ({
           <div className={"text-12-bold"}>{t(localeKeys.yourCollateralBalance)}</div>
           <div className={"flex bg-divider rounded-[0.3125rem] h-[2.5rem] items-center justify-end px-[0.625rem]"}>
             <div className={"flex-1 text-14-bold"}>
-              {ethersUtils.commify(ethersUtils.formatUnits(currentCollateral, nativeToken?.decimals))}
+              {formatBalance(currentCollateral, nativeToken?.decimals, undefined, { precision: BALANCE_DECIMALS })}
             </div>
             <div className={"flex-1 text-right text-14-bold"}>{nativeToken?.symbol}</div>
           </div>
@@ -273,30 +256,40 @@ const ModifyCollateralBalanceModal = ({
             </span>
           </div>
           <Input
-            value={deposit}
-            error={depositError}
+            value={collateralInput ?? ""}
+            error={
+              collteralTips?.text ? (
+                <RenderInputTips text={collteralTips.text} error={collteralTips.error} />
+              ) : undefined
+            }
             leftIcon={null}
             className={"!text-14-bold"}
-            onChange={onDepositChanged}
-            rightSlot={<div className={"text-14-bold flex items-center px-[0.625rem]"}>{nativeToken?.symbol}</div>}
+            onChange={handleCollateralChange}
+            rightSlot={
+              nativeToken?.symbol ? (
+                <div className={"text-14-bold flex items-center px-[0.625rem]"}>{nativeToken.symbol}</div>
+              ) : undefined
+            }
           />
         </div>
         <div className={"bg-divider w-full h-[1px]"} />
 
-        <div className={"flex flex-col gap-[0.625rem]"}>
-          {t(localeKeys.feeEstimation, {
-            amount: formatBalance(feeEstimation, nativeToken?.decimals, nativeToken?.symbol, {
-              precision: BALANCE_DECIMALS,
-            }),
-          })}
-        </div>
+        {fee && (
+          <span className={"text-halfWhite text-12"}>
+            {t(localeKeys.feeEstimation, {
+              amount: formatBalance(fee, nativeToken?.decimals, nativeToken?.symbol, {
+                precision: BALANCE_DECIMALS,
+              }),
+            })}
+          </span>
+        )}
       </div>
     </ModalEnhanced>
   );
 };
 
-const generateError = (error: string) => {
-  return <div>{error}</div>;
-};
+const RenderInputTips = ({ text, error }: InputTips) => (
+  <span className={`${error ? "text-danger" : "text-halfWhite"}`}>{text}</span>
+);
 
 export default ModifyCollateralBalanceModal;

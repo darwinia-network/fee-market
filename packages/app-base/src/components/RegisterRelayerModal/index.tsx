@@ -28,13 +28,13 @@ interface InputTips {
   error?: boolean;
 }
 
-export interface RegisterRelayerModalProps {
+export interface Props {
   isVisible: boolean;
   relayerAddress: string;
   onClose: () => void;
 }
 
-const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRelayerModalProps) => {
+const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -67,7 +67,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
       const { value } = event.target;
 
       setQuoteInput(value);
-      setQuoteTips((previous) => ({ text: previous?.text ?? "", error: false }));
+      setQuoteTips((previous) => (previous ? { ...previous, error: false } : null));
 
       if (nativeToken && minQuote) {
         const min = BigNumber.from(minQuote.toString());
@@ -86,7 +86,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
       const { value } = event.target;
 
       setCollateralInput(value);
-      setCollateralTips((previous) => ({ text: previous?.text ?? "", error: false }));
+      setCollateralTips((previous) => (previous ? { ...previous, error: false } : null));
 
       if (nativeToken && minCollateral && relayerBalance.available) {
         const min = BigNumber.from(minCollateral.toString());
@@ -111,7 +111,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
     [t, nativeToken, minCollateral, relayerBalance.available]
   );
 
-  const handleRegister = useCallback(async () => {
+  const handleConfirm = useCallback(async () => {
     if (
       quoteTips?.error === false &&
       collteralTips?.error === false &&
@@ -257,7 +257,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
       onClose={onClose}
       cancelText={t(localeKeys.cancel)}
       confirmText={t(localeKeys.register)}
-      onConfirm={handleRegister}
+      onConfirm={handleConfirm}
       isVisible={isVisible}
       modalTitle={t(localeKeys.registerRelayer)}
     >
@@ -289,7 +289,9 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
             className={"!text-14-bold"}
             onChange={handleCollateralChange}
             rightSlot={
-              <div className={"text-14-bold flex items-center px-[0.625rem]"}>{nativeToken?.symbol ?? "-"}</div>
+              nativeToken?.symbol ? (
+                <div className={"text-14-bold flex items-center px-[0.625rem]"}>{nativeToken.symbol}</div>
+              ) : undefined
             }
           />
         </div>
@@ -304,9 +306,11 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
             className={"!text-14-bold"}
             onChange={handleQuoteChange}
             rightSlot={
-              <div className={"text-14-bold flex items-center px-[0.625rem]"}>
-                {t(localeKeys.perOrder, { currency: nativeToken?.symbol ?? "-" })}
-              </div>
+              nativeToken?.symbol ? (
+                <div className={"text-14-bold flex items-center px-[0.625rem]"}>
+                  {t(localeKeys.perOrder, { currency: nativeToken.symbol })}
+                </div>
+              ) : undefined
             }
           />
         </div>
