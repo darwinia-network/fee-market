@@ -32,9 +32,10 @@ export interface Props {
   isVisible: boolean;
   relayerAddress: string;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => {
+const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -146,10 +147,11 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => 
               console.error("Call enroll:", error);
             },
             responseCallback: ({ response }) => {
-              onClose();
               console.log("Call enroll response:", response);
             },
             successCallback: ({ receipt }) => {
+              onClose();
+              onSuccess();
               console.log("Call enroll receipt:", receipt);
             },
           },
@@ -167,7 +169,10 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => 
           signAndSendTx({
             extrinsic,
             requireAddress: relayerAddress,
-            txUpdateCb: onClose,
+            txSuccessCb: () => {
+              onClose();
+              onSuccess();
+            },
             txFailedCb: (error) => console.error(error),
           });
         }

@@ -12,14 +12,21 @@ import { isEthChain } from "@feemarket/app-utils";
 import { useApi } from "@feemarket/app-provider";
 import type { FeeMarketSourceChan } from "@feemarket/app-types";
 
-interface AccountProps {
+interface Props {
   advanced?: boolean;
   relayerAddress: string;
   isRegistered?: boolean;
   sourceChain?: FeeMarketSourceChan;
+  onSuccess?: () => void;
 }
 
-const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }: AccountProps) => {
+const Account = ({
+  advanced = false,
+  relayerAddress,
+  sourceChain,
+  isRegistered,
+  onSuccess = () => undefined,
+}: Props) => {
   const { t } = useTranslation();
   const { api } = useApi();
   const { displayName } = useAccountName(api, relayerAddress);
@@ -156,12 +163,14 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
       {/*Register relayer modal*/}
       <RegisterRelayerModal
         onClose={onRegisterRelayerModalClose}
+        onSuccess={onSuccess}
         isVisible={isRegisterRelayerModalVisible}
         relayerAddress={relayerAddress}
       />
       {/*Register relayer modal*/}
       <CancelRelayerModal
         onClose={onCancelRelayerModalClose}
+        onSuccess={onSuccess}
         isVisible={isCancelRelayerModalVisible}
         relayerAddress={relayerAddress}
       />

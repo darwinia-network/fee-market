@@ -23,9 +23,10 @@ interface Props {
   isVisible: boolean;
   relayerAddress: string;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const CancelRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => {
+const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -45,10 +46,11 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => {
           console.error("cancel relayer:", error);
         },
         responseCallback: ({ response }) => {
-          onClose();
           console.log("cancel relayer response:", response);
         },
         successCallback: ({ receipt }) => {
+          onClose();
+          onSuccess();
           console.log("cancel relayer receipt:", receipt);
         },
       };
@@ -62,7 +64,10 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => {
         signAndSendTx({
           extrinsic,
           requireAddress: relayerAddress,
-          txUpdateCb: onClose,
+          txSuccessCb: () => {
+            onClose();
+            onSuccess();
+          },
           txFailedCb: (error) => console.error(error),
         });
       }

@@ -5,7 +5,7 @@ import RelayerDetailsTable from "../RelayerDetailsTable";
 import { Button, SlideDownUp } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 
 import { BN_ZERO } from "@polkadot/util";
 import type {
@@ -19,7 +19,7 @@ import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
 import { isEthApi, isEthChain, isPolkadotApi, isPolkadotChain, getFeeMarketApiSection } from "@feemarket/app-utils";
 import { utils as ethersUtils, Contract } from "ethers";
-import { Subscription, from } from "rxjs";
+import { from, EMPTY } from "rxjs";
 
 interface Props {
   relayerAddress: string;
@@ -37,11 +37,18 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
   const [isRegistered, setRegistered] = useState(false);
   const [isNotificationVisible, setNotificationVisibility] = useState(false);
 
-  const nativeToken = currentMarket?.source
-    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
-      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-      null
-    : null;
+  const sourceChain = currentMarket?.source;
+  const destinationChain = currentMarket?.destination;
+
+  const nativeToken = useMemo(
+    () =>
+      sourceChain
+        ? ETH_CHAIN_CONF[sourceChain as FeeMarketSourceChainEth]?.nativeToken ??
+          POLKADOT_CHAIN_CONF[sourceChain as FeeMarketSourceChainPolkadot]?.nativeToken ??
+          null
+        : null,
+    [sourceChain]
+  );
 
   const onSwitchNetwork = async () => {
     if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api)) {
@@ -96,41 +103,43 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
     }
   }, [currentMarket?.source, currentChainId]);
 
-  useEffect(() => {
-    let sub$$: Subscription;
-
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && !isNotificationVisible) {
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
+  const checkRegistered = useCallback(() => {
+    if (isEthChain(sourceChain) && isEthApi(api) && !isNotificationVisible) {
+      const chainConfig = ETH_CHAIN_CONF[sourceChain];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
-      sub$$ = from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
+      return from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
         next: setRegistered,
         error: (error) => {
           setRegistered(false);
-          console.error("check is relayer:", error);
+          console.error("check registered:", error);
         },
       });
-    } else if (currentMarket?.destination && isPolkadotChain(currentMarket.destination) && isPolkadotApi(api)) {
-      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
+    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        sub$$ = from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe(
-          ({ collateral }) => {
+        return from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe({
+          next: ({ collateral }) => {
             if (collateral.gt(BN_ZERO)) {
               setRegistered(true);
             } else {
               setRegistered(false);
             }
-          }
-        );
+          },
+          error: (error) => {
+            console.error("check registered:", error);
+          },
+        });
       }
     }
 
-    return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
-    };
-  }, [relayerAddress, currentMarket?.source, api, isNotificationVisible]);
+    return EMPTY.subscribe();
+  }, [sourceChain, destinationChain, api, relayerAddress, isNotificationVisible]);
+
+  useEffect(() => {
+    const sub$$ = checkRegistered();
+    return () => sub$$.unsubscribe();
+  }, [checkRegistered]);
 
   return (
     /*Don't use flex gap to avoid a "junky gap animation" when the notification slides down */
@@ -158,6 +167,7 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           relayerAddress={relayerAddress}
           isRegistered={isRegistered}
           sourceChain={currentMarket?.source}
+          onSuccess={checkRegistered}
         />
       </div>
       {isRegistered && !isNotificationVisible && (
