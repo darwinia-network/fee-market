@@ -52,10 +52,6 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
     setCancelRelayerModalVisible(true);
   };
 
-  const onRunBridger = () => {
-    console.log("run bridger====");
-  };
-
   const getMoreActionsDropdown = () => {
     return (
       <div>
@@ -104,11 +100,13 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
           >
             {t(localeKeys.switchAccount)}
           </Button>
-          <Button
-            onClick={onRunBridger}
-            className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
-            btnType={"secondary"}
-            disabled
+          <a
+            rel="noopener noreferrer"
+            target={"_blank"}
+            href="https://github.com/darwinia-network/bridger/"
+            className={
+              "px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem] border border-primary rounded-[0.3125rem] h-10 hover:cursor-pointer"
+            }
           >
             <div>{t(localeKeys.runBridger)}</div>
             <Tooltip
@@ -119,7 +117,7 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
             >
               <img className={"w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
             </Tooltip>
-          </Button>
+          </a>
           {isRegistered ? (
             <Dropdown
               placement={"right"}
