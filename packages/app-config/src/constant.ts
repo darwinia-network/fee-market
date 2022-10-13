@@ -8,3 +8,6 @@ export const DATE_TIME_FORMATE = "yyyy/MM/dd HH:mm:ss";
 export const BALANCE_DECIMALS = 4;
 
 export const DAPP_NAME = "darwinia/feemarket";
+
+export const ETH_SENTINEL_HEAD = "0x0000000000000000000000000000000000000001";
+export const ETH_SENTINEL_TAIL = "0x0000000000000000000000000000000000000002";

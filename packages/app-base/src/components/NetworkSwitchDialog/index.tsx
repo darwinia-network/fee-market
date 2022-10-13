@@ -240,7 +240,8 @@ const DestinationList = ({ network, selectedDestination, onDestinationChanged, s
           {network.destinations.map((destination) => {
             return (
               <Radio.Button className={"mt-[0.9375rem]"} key={destination.id} value={destination.id} size={"small"}>
-                {t([localeKeys.toDestination], { destinationName: destination.name })}
+                <span className="opacity-70">{t(localeKeys.to)} </span>
+                <span>{destination.name}</span>
               </Radio.Button>
             );
           })}

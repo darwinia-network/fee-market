@@ -1,12 +1,12 @@
 import keyring from "@polkadot/ui-keyring";
 import { isFunction } from "@polkadot/util";
-import { useApi } from "@feemarket/app-provider";
 import { isPolkadotApi, formatShortAddress } from "@feemarket/app-utils";
 import { useEffect, useState } from "react";
 import { from, Subscription } from "rxjs";
+import type { ApiPromise } from "@polkadot/api";
+import { providers } from "ethers";
 
-export const useAccountName = (address: string) => {
-  const { api } = useApi();
+export const useAccountName = (api: providers.Provider | ApiPromise | null, address: string) => {
   const [displayName, setDisplayName] = useState(formatShortAddress(address));
 
   useEffect(() => {
