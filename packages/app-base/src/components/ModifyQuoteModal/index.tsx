@@ -115,7 +115,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
         }
       }
     }
-  }, [quoteTips, quoteInput, nativeToken, relayerAddress, currentQuote]);
+  }, [quoteTips, quoteInput, nativeToken, relayerAddress, currentQuote, sourceChain, destinationChain]);
 
   // Get minQuote
   useEffect(() => {

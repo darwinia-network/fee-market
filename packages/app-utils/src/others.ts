@@ -10,7 +10,7 @@ import type {
   RuntimeVersion,
 } from "@feemarket/app-types";
 
-export const getQuotePrev = async (contract: Contract, relayer: string, quote: BigNumber) => {
+export const getQuotePrev = async (contract: Contract, relayer: string, quote: BigNumber = BigNumber.from(0)) => {
   let prevOld: string | null = null;
   let prevNew: string | null = null;
 

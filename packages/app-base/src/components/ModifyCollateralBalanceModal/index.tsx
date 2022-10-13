@@ -127,7 +127,7 @@ const ModifyCollateralBalanceModal = ({ isVisible, relayerAddress, currentCollat
         }
       }
     }
-  }, [collteralTips, collateralInput, nativeToken, relayerAddress, currentCollateral]);
+  }, [collteralTips, collateralInput, nativeToken, relayerAddress, currentCollateral, sourceChain, destinationChain]);
 
   // Collateral input tips
   useEffect(() => {

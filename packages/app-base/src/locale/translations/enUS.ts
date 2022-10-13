@@ -100,7 +100,7 @@ const enUs = {
   [localeKeys.depositAmountLimitError]: `The Collateral Balance should't be smaller than {{amount}}.`,
   [localeKeys.confirm]: "confirm",
   [localeKeys.confirmCancelRelayer]: "Confirm to cancel relayer?",
-  [localeKeys.cancelRelayerWarning]: `You're going to cancel Relayer of the current account in the Darwinia > Ethereum Fee market. 
+  [localeKeys.cancelRelayerWarning]: `You're going to cancel Relayer of the current account in the {{from}} > {{to}} Fee market. 
 Note that the collateral balance will return back to your account. But the locked collateral will not release until the message Orders you're Assigned get Delivered.`,
   [localeKeys.feeEstimation]: `Estimated fees of {{amount}}`,
   [localeKeys.available]: `available`,
