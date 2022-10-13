@@ -7,8 +7,8 @@ const RelayerDashboard = () => {
   const { currentMarket } = useFeeMarket();
   const { api, requestAccounts } = useApi();
 
-  const { currentAccount } = useApi();
-  // const currentAccount = "2obUAkPJ3GkHHyAQei1PgbQ8vQ3GYoJxRwLArpTyd5BR5ewK";
+  // const { currentAccount } = useApi();
+  const currentAccount = "2obUAkPJ3GkHHyAQei1PgbQ8vQ3GYoJxRwLArpTyd5BR5ewK";
 
   return (
     <>

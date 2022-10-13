@@ -156,7 +156,12 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => 
             quoteAmount.toString()
           );
 
-          signAndSendTx({ extrinsic, requireAddress: relayerAddress, txUpdateCb: onClose });
+          signAndSendTx({
+            extrinsic,
+            requireAddress: relayerAddress,
+            txUpdateCb: onClose,
+            txFailedCb: (error) => console.error(error),
+          });
         }
       }
     }
