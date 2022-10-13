@@ -16,7 +16,8 @@ export interface AccountSelectionModalProps {
 }
 
 const AccountName = ({ address }: { address: string }) => {
-  const { displayName } = useAccountName(address);
+  const { api } = useApi();
+  const { displayName } = useAccountName(api, address);
   return <div className={"text-18-bold"}>{displayName}</div>;
 };
 

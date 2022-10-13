@@ -9,6 +9,7 @@ import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
 import { useAccountName } from "@feemarket/app-hooks";
 import { isEthChain } from "@feemarket/app-utils";
+import { useApi } from "@feemarket/app-provider";
 import type { FeeMarketSourceChan } from "@feemarket/app-types";
 
 interface AccountProps {
@@ -20,7 +21,8 @@ interface AccountProps {
 
 const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }: AccountProps) => {
   const { t } = useTranslation();
-  const { displayName } = useAccountName(relayerAddress);
+  const { api } = useApi();
+  const { displayName } = useAccountName(api, relayerAddress);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);

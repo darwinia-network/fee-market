@@ -263,9 +263,14 @@ const ModifyCollateralBalanceModal = ({
         {/*Your new balancce*/}
         <div className={"flex flex-col gap-[0.625rem]"}>
           <div className={"text-12-bold"}>
-            {t(localeKeys.youModifyBalanceTo)} ({t(localeKeys.available)}{" "}
-            {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, { precision: BALANCE_DECIMALS })}
-            )
+            <span>{t(localeKeys.youModifyBalanceTo)} </span>
+            <span className="text-halfWhite">
+              ({t(localeKeys.available)}{" "}
+              {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, {
+                precision: BALANCE_DECIMALS,
+              })}
+              )
+            </span>
           </div>
           <Input
             value={deposit}

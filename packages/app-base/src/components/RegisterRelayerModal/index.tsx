@@ -1,26 +1,32 @@
 import { Input, ModalEnhanced } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import AccountMini from "../AccountMini";
-
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import {
   isEthApi,
   isPolkadotApi,
   isEthChain,
   isPolkadotChain,
+  signAndSendTx,
   triggerContract,
+  getQuotePrev,
   getFeeMarketApiSection,
+  formatBalance,
 } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
-import { from, switchMap, forkJoin } from "rxjs";
-import { web3FromAddress } from "@polkadot/extension-dapp";
+import { from, of, zip, Subscription } from "rxjs";
+import { BN } from "@polkadot/util";
+import { useBalance } from "@feemarket/app-hooks";
+import type { u128 } from "@polkadot/types";
 
-const SENTINEL_HEAD = "0x0000000000000000000000000000000000000001";
-// const SENTINEL_HEAD = "0000000000000000000000000000000000000000000000000000000000000001";
+interface InputTips {
+  text: string;
+  error?: boolean;
+}
 
 export interface RegisterRelayerModalProps {
   isVisible: boolean;
@@ -32,145 +38,227 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
-  const [isModalVisible, setModalVisibility] = useState(false);
-  const [deposit, setDeposit] = useState("");
-  const [depositError, setDepositError] = useState<JSX.Element | null>(null);
-  const [quote, setQuote] = useState("");
-  const [quoteError, setQuoteError] = useState<JSX.Element | null>(null);
+  const { balance: relayerBalance } = useBalance(api, relayerAddress);
 
-  const nativeToken = currentMarket?.source
-    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
-      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-      null
-    : null;
+  const [quoteInput, setQuoteInput] = useState<string | undefined>();
+  const [collateralInput, setCollateralInput] = useState<string | undefined>();
 
+  const [quoteTips, setQuoteTips] = useState<InputTips | null>(null);
+  const [collteralTips, setCollateralTips] = useState<InputTips | null>(null);
+
+  const [minQuote, setMinQuote] = useState<BN | BigNumber | null>(null);
+  const [minCollateral, setMinCollateral] = useState<BN | BigNumber | null>(null);
+
+  const sourceChain = currentMarket?.source;
+  const destinationChain = currentMarket?.destination;
+
+  const nativeToken = useMemo(
+    () =>
+      sourceChain
+        ? ETH_CHAIN_CONF[sourceChain as FeeMarketSourceChainEth]?.nativeToken ??
+          POLKADOT_CHAIN_CONF[sourceChain as FeeMarketSourceChainPolkadot]?.nativeToken ??
+          null
+        : null,
+    [sourceChain]
+  );
+
+  const handleQuoteChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+
+      setQuoteInput(value);
+      setQuoteTips((previous) => ({ text: previous?.text ?? "", error: false }));
+
+      if (nativeToken && minQuote) {
+        const min = BigNumber.from(minQuote.toString());
+        const input = ethersUtils.parseUnits(value || "0", nativeToken.decimals);
+
+        if (input.lt(min)) {
+          setQuoteTips((previous) => ({ text: previous?.text ?? "", error: true }));
+        }
+      }
+    },
+    [t, nativeToken, minQuote]
+  );
+
+  const handleCollateralChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+
+      setCollateralInput(value);
+      setCollateralTips((previous) => ({ text: previous?.text ?? "", error: false }));
+
+      if (nativeToken && minCollateral && relayerBalance.available) {
+        const min = BigNumber.from(minCollateral.toString());
+        const available = BigNumber.from(relayerBalance.available.toString());
+        const input = ethersUtils.parseUnits(value || "0", nativeToken.decimals);
+
+        if (input.gt(available)) {
+          setCollateralTips({
+            text: t(localeKeys.insufficientBalance),
+            error: true,
+          });
+        } else {
+          setCollateralTips({
+            text: t(localeKeys.depositAmountLimitError, {
+              amount: formatBalance(min, nativeToken.decimals, nativeToken.symbol),
+            }),
+            error: input.lt(min),
+          });
+        }
+      }
+    },
+    [t, nativeToken, minCollateral, relayerBalance.available]
+  );
+
+  const handleRegister = useCallback(async () => {
+    if (
+      quoteTips?.error === false &&
+      collteralTips?.error === false &&
+      quoteInput &&
+      collateralInput &&
+      nativeToken &&
+      relayerAddress
+    ) {
+      const quoteAmount = ethersUtils.parseUnits(quoteInput, nativeToken.decimals);
+      const collateralAmount = ethersUtils.parseUnits(collateralInput, nativeToken.decimals);
+
+      if (isEthChain(sourceChain) && isEthApi(api)) {
+        const chainConfig = ETH_CHAIN_CONF[sourceChain];
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
+
+        const { prevNew } = await getQuotePrev(contract, relayerAddress, quoteAmount);
+
+        triggerContract(
+          contract,
+          "enroll",
+          [prevNew, quoteAmount],
+          {
+            errorCallback: ({ error }) => {
+              console.error("Call enroll:", error);
+            },
+            responseCallback: ({ response }) => {
+              onClose();
+              console.log("Call enroll response:", response);
+            },
+            successCallback: ({ receipt }) => {
+              console.log("Call enroll receipt:", receipt);
+            },
+          },
+          { value: collateralAmount.toString() }
+        );
+      } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+        const apiSection = getFeeMarketApiSection(api, destinationChain);
+
+        if (apiSection) {
+          const extrinsic = api.tx[apiSection].enrollAndLockCollateral(
+            collateralAmount.toString(),
+            quoteAmount.toString()
+          );
+
+          signAndSendTx({ extrinsic, requireAddress: relayerAddress, txUpdateCb: onClose });
+        }
+      }
+    }
+  }, [
+    quoteTips,
+    collteralTips,
+    quoteInput,
+    collateralInput,
+    sourceChain,
+    destinationChain,
+    api,
+    nativeToken,
+    relayerAddress,
+  ]);
+
+  // Get minQuote and minCollateral
   useEffect(() => {
-    setModalVisibility(isVisible);
-  }, [isVisible]);
+    let sub$$: Subscription;
 
-  const onCloseModal = () => {
-    setModalVisibility(false);
-    onClose();
-  };
+    if (isEthChain(sourceChain) && isEthApi(api)) {
+      const chainConfig = ETH_CHAIN_CONF[sourceChain];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
-  const onCancelModal = () => {
-    onCloseModal();
-  };
+      sub$$ = zip(of(BigNumber.from(0)), from(contract.COLLATERAL_PER_ORDER() as Promise<BigNumber>)).subscribe({
+        next: ([quote, collateral]) => {
+          setMinQuote(quote);
+          setMinCollateral(collateral);
+        },
+        error: (error) => {
+          console.log("Get minQuote and minCollateral:", error);
+        },
+      });
+    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      const apiSection = getFeeMarketApiSection(api, destinationChain);
 
-  const onRegister = () => {
-    if (currentMarket?.source && isEthChain(currentMarket.source) && isEthApi(api) && deposit && quote) {
-      const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
-      const quoteAmount = ethersUtils.parseUnits(quote, nativeToken?.decimals);
-
-      const chainConfig = ETH_CHAIN_CONF[currentMarket.source];
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
-
-      from(contract.relayerCount() as Promise<BigNumber>)
-        .pipe(
-          switchMap((relayerCount) =>
-            forkJoin(
-              new Array(relayerCount.toNumber())
-                .fill(0)
-                .map(
-                  (_, index) =>
-                    contract.getOrderBook(index + 1, true) as Promise<
-                      [BigNumber, string[], BigNumber[], BigNumber[], BigNumber[]]
-                    >
-                )
-            )
-          )
-        )
-        .subscribe({
-          next: (book) => {
-            let newIndex = -1;
-            for (let i = 0; i < book.length; i++) {
-              if (quoteAmount.gt(book[i][2][0])) {
-                newIndex = i;
-                break;
-              }
-            }
-            const newPrev = newIndex === -1 ? SENTINEL_HEAD : book[newIndex][1][0];
-
-            console.log("book:", book);
-            console.log("enroll prev:", newPrev);
-            console.log("enroll amount:", depositAmount.toString(), quoteAmount.toString());
-
-            triggerContract(
-              contract,
-              "enroll",
-              [newPrev, quoteAmount],
-              {
-                errorCallback: ({ error }) => {
-                  console.error("call enroll:", error);
-                },
-                responseCallback: ({ response }) => {
-                  onCloseModal();
-                  console.log("call enroll response:", response);
-                },
-                successCallback: ({ receipt }) => {
-                  console.log("call enroll receipt:", receipt);
-                },
-              },
-              { value: depositAmount.toString() }
-            );
+      if (apiSection) {
+        sub$$ = zip(
+          of(api.consts[apiSection].minimumRelayFee as u128),
+          of(api.consts[apiSection].collateralPerOrder as u128)
+        ).subscribe({
+          next: ([quote, collateral]) => {
+            setMinQuote(quote);
+            setMinCollateral(collateral);
           },
           error: (error) => {
-            console.error("get all relayers:", error);
+            console.log("Get minQuote and minCollateral:", error);
           },
         });
-    } else if (
-      currentMarket?.destination &&
-      isPolkadotChain(currentMarket.destination) &&
-      isPolkadotApi(api) &&
-      deposit &&
-      quote
-    ) {
-      const apiSection = getFeeMarketApiSection(api, currentMarket.destination);
-      if (apiSection) {
-        const depositAmount = ethersUtils.parseUnits(deposit, nativeToken?.decimals);
-        const quoteAmount = ethersUtils.parseUnits(quote, nativeToken?.decimals);
-        const extrinsic = api.tx[apiSection].enrollAndLockCollateral(depositAmount.toString(), quoteAmount.toString());
-
-        from(web3FromAddress(relayerAddress))
-          .pipe(switchMap((injector) => from(extrinsic.signAndSend(relayerAddress, { signer: injector.signer }))))
-          .subscribe({
-            next: (result) => {
-              console.log("enroll and lock collateral:", result.toString());
-            },
-            error: (error) => {
-              onCloseModal();
-              console.error("enroll and lock collateral:", error);
-            },
-            complete: () => {
-              onCloseModal();
-            },
-          });
       }
-    } else {
-      onCloseModal();
     }
-  };
 
-  const onDepositChanged = (e: ChangeEvent<HTMLInputElement>) => {
-    setDepositError(null);
-    const value = e.target.value;
-    setDeposit(value);
-  };
+    return () => {
+      if (sub$$) {
+        sub$$.unsubscribe();
+      }
+      setMinQuote(null);
+      setMinCollateral(null);
+    };
+  }, [sourceChain, destinationChain, api]);
 
-  const onQuoteChanged = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuoteError(null);
-    const value = e.target.value;
-    setQuote(value);
-  };
+  // Quote input tips
+  useEffect(() => {
+    if (nativeToken && minQuote) {
+      const min = BigNumber.from(minQuote.toString());
+      setQuoteTips({
+        error: false,
+        text: t(localeKeys.quoteAmountLimitError, {
+          amount: formatBalance(min, nativeToken.decimals, nativeToken.symbol),
+        }),
+      });
+    }
+
+    return () => {
+      setQuoteTips(null);
+    };
+  }, [t, nativeToken, minQuote]);
+
+  // Collateral input tips
+  useEffect(() => {
+    if (nativeToken && minCollateral) {
+      const min = BigNumber.from(minCollateral.toString());
+      setCollateralTips({
+        error: false,
+        text: t(localeKeys.depositAmountLimitError, {
+          amount: formatBalance(min, nativeToken.decimals, nativeToken.symbol),
+        }),
+      });
+    }
+
+    return () => {
+      setCollateralTips(null);
+    };
+  }, [t, nativeToken, minCollateral]);
 
   return (
     <ModalEnhanced
-      onCancel={onCancelModal}
-      onClose={onCloseModal}
+      onCancel={onClose}
+      onClose={onClose}
       cancelText={t(localeKeys.cancel)}
       confirmText={t(localeKeys.register)}
-      onConfirm={onRegister}
-      isVisible={isModalVisible}
+      onConfirm={handleRegister}
+      isVisible={isVisible}
       modalTitle={t(localeKeys.registerRelayer)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>
@@ -180,31 +268,41 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
         </div>
         {/*Deposit guarantee*/}
         <div className={"flex flex-col gap-[0.625rem]"}>
-          <div className={"text-12-bold"}>{t(localeKeys.youDeposit)}</div>
+          <div className={"text-12-bold"}>
+            <span>{t(localeKeys.youDeposit)} </span>
+            <span className="text-halfWhite">
+              ({t(localeKeys.available)}{" "}
+              {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, {
+                precision: BALANCE_DECIMALS,
+              })}
+              )
+            </span>
+          </div>
           <Input
-            value={deposit}
-            error={depositError}
+            value={collateralInput || ""}
+            error={
+              collteralTips?.text ? (
+                <RenderInputTips text={collteralTips.text} error={collteralTips.error} />
+              ) : undefined
+            }
             leftIcon={null}
             className={"!text-14-bold"}
-            onChange={onDepositChanged}
+            onChange={handleCollateralChange}
             rightSlot={
               <div className={"text-14-bold flex items-center px-[0.625rem]"}>{nativeToken?.symbol ?? "-"}</div>
             }
           />
-          {/* {!depositError && (
-            <div className={"text-12 text-halfWhite"}>{t(localeKeys.youDepositInfo, { amount: "6,000 RING" })}</div>
-          )} */}
         </div>
 
         {/*Your quote*/}
         <div className={"flex flex-col gap-[0.625rem]"}>
           <div className={"text-12-bold"}>{t(localeKeys.youQuote)}</div>
           <Input
-            value={quote}
-            error={quoteError}
+            value={quoteInput || ""}
+            error={quoteTips?.text ? <RenderInputTips text={quoteTips.text} error={quoteTips.error} /> : undefined}
             leftIcon={null}
             className={"!text-14-bold"}
-            onChange={onQuoteChanged}
+            onChange={handleQuoteChange}
             rightSlot={
               <div className={"text-14-bold flex items-center px-[0.625rem]"}>
                 {t(localeKeys.perOrder, { currency: nativeToken?.symbol ?? "-" })}
@@ -218,8 +316,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: RegisterRe
   );
 };
 
-const generateError = (error: string) => {
-  return <div>{error}</div>;
-};
+const RenderInputTips = ({ text, error }: InputTips) => (
+  <span className={`${error ? "text-danger" : "text-halfWhite"}`}>{text}</span>
+);
 
 export default RegisterRelayerModal;

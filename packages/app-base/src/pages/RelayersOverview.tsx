@@ -227,7 +227,8 @@ const RelayersOverview = () => {
 
 const RelayerAccount = ({ address }: { address: string }) => {
   const { currentMarket } = useFeeMarket();
-  const { displayName } = useAccountName(address);
+  const { api } = useApi();
+  const { displayName } = useAccountName(api, address);
 
   let to = "#";
   if (currentMarket) {
