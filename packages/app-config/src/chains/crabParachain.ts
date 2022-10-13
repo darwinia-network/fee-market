@@ -3,7 +3,7 @@ import chainLogo from "../images/network/crab.svg";
 
 const config: PolkadotChainConfig = {
   chainName: "Crab Parachain",
-  displayName: "Crab Parachain Chain",
+  displayName: "Crab Parachain",
   chainLogo: chainLogo,
   provider: {
     rpc: "wss://crab-parachain-rpc.darwinia.network/",
