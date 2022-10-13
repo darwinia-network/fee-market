@@ -196,9 +196,9 @@ const Balance = ({ relayerAddress, isRegistered }: Props) => {
             </Tooltip>
           </div>
           <div className={"flex"}>
-            <div className={"text-24-bold uppercase"}>
+            <div className={"text-24-bold text-primary"}>
               {t(localeKeys.quotePhrase, {
-                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol, {
+                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol.toUpperCase(), {
                   precision: BALANCE_DECIMALS,
                 }),
               })}
