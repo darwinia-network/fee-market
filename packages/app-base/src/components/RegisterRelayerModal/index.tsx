@@ -66,6 +66,10 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => 
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
 
+      if (Number.isNaN(Number(value)) || Number(value) < 0) {
+        return;
+      }
+
       setQuoteInput(value);
       setQuoteTips((previous) => (previous ? { ...previous, error: false } : null));
 
@@ -84,6 +88,10 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose }: Props) => 
   const handleCollateralChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
+
+      if (Number.isNaN(Number(value)) || Number(value) < 0) {
+        return;
+      }
 
       setCollateralInput(value);
       setCollateralTips((previous) => (previous ? { ...previous, error: false } : null));

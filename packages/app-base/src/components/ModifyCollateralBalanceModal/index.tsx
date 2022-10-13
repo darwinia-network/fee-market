@@ -60,6 +60,10 @@ const ModifyCollateralBalanceModal = ({ isVisible, relayerAddress, currentCollat
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
 
+      if (Number.isNaN(Number(value)) || Number(value) < 0) {
+        return;
+      }
+
       setCollateralInput(value);
       setCollateralTips((previous) => (previous ? { ...previous, error: false } : null));
 

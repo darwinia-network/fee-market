@@ -61,6 +61,10 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose }: 
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
 
+      if (Number.isNaN(Number(value)) || Number(value) < 0) {
+        return;
+      }
+
       setQuoteInput(value);
       setQuoteTips((previous) => (previous ? { ...previous, error: false } : null));
 
