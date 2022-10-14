@@ -54,6 +54,11 @@
     border-bottom-right-radius: var(--borderRadius10px);
   }
 
+  .dw-enhanced-mask {
+    border-bottom-left-radius: var(--borderRadius10px);
+    border-bottom-right-radius: var(--borderRadius10px);
+  }
+
   .dw-modal-enhanced-buttons {
     display: flex;
     flex-direction: column;

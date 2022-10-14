@@ -4,6 +4,10 @@
   position: relative;
   min-height: 130px;
 
+  &.small {
+    min-height: auto;
+  }
+
   .dw-spinner-mask {
     position: absolute;
     left: 0;
@@ -82,5 +86,31 @@
 
   .dw-spinner-fade-exit-done {
     opacity: 0;
+  }
+
+  .dw-spinner-small {
+    color: var(--primary);
+  }
+
+  .dw-spinner-svg {
+    width: var(--20px);
+    height: var(--20px);
+    animation: dw-small-spinner-animation 1s linear infinite;
+
+    circle {
+      opacity: 0.25;
+      stroke: var(--white);
+    }
+
+    path {
+      opacity: 0.75;
+      fill: var(--white);
+    }
+  }
+
+  @keyframes dw-small-spinner-animation {
+    100% {
+      transform: rotate(1turn);
+    }
   }
 }

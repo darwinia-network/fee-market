@@ -17,7 +17,8 @@
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
     "stylelint": "stylelint '**/*.{css,less,scss}' --fix",
     "format": "prettier '**/*.{js,jsx,ts,tsx,json}' --write",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "rebuild": "yarn boot && yarn build"
   },
   "workspaces": [
     "packages/*"

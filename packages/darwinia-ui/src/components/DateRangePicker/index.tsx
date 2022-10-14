@@ -84,7 +84,6 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     });
 
     useEffect(() => {
-      console.log(passedInStartDate);
       if (passedInStartDate) {
         if (typeof passedInStartDate === "string") {
           const dateStandard = new Date(passedInStartDate);

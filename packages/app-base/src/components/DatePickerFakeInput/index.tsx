@@ -45,7 +45,7 @@ const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
             <div className={"w-[8rem]"}>
               <div
                 className={
-                  "h-[1.5625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
+                  "h-[1.625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
                 }
               >
                 {startDateJSX}
@@ -55,7 +55,7 @@ const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
             <div className={"w-[8rem]"}>
               <div
                 className={
-                  "h-[1.5625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
+                  "h-[1.625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
                 }
               >
                 {endDateJSX}
