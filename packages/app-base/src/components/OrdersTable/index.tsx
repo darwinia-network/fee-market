@@ -17,7 +17,7 @@ import type {
   OrderStatusFilter,
   OrderStatus,
 } from "@feemarket/app-types";
-import { useFeeMarket } from "@feemarket/app-provider";
+import { useApi, useFeeMarket } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
 import { DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { format } from "date-fns";
@@ -528,7 +528,8 @@ const OrdersTable = ({ loading, data }: Props) => {
 
 const RelayerAccount = ({ address }: { address: string }) => {
   const { currentMarket } = useFeeMarket();
-  const { displayName } = useAccountName(address);
+  const { api } = useApi();
+  const { displayName } = useAccountName(api, address);
 
   return (
     <div className={"flex items-center gap-[0.3125rem] clickable"}>

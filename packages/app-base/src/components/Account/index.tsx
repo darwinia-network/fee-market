@@ -9,18 +9,27 @@ import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
 import { useAccountName } from "@feemarket/app-hooks";
 import { isEthChain } from "@feemarket/app-utils";
+import { useApi } from "@feemarket/app-provider";
 import type { FeeMarketSourceChan } from "@feemarket/app-types";
 
-interface AccountProps {
+interface Props {
   advanced?: boolean;
   relayerAddress: string;
   isRegistered?: boolean;
   sourceChain?: FeeMarketSourceChan;
+  onSuccess?: () => void;
 }
 
-const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }: AccountProps) => {
+const Account = ({
+  advanced = false,
+  relayerAddress,
+  sourceChain,
+  isRegistered,
+  onSuccess = () => undefined,
+}: Props) => {
   const { t } = useTranslation();
-  const { displayName } = useAccountName(relayerAddress);
+  const { api } = useApi();
+  const { displayName } = useAccountName(api, relayerAddress);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
@@ -48,10 +57,6 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
 
   const onCancelRelayer = () => {
     setCancelRelayerModalVisible(true);
-  };
-
-  const onRunBridger = () => {
-    console.log("run bridger====");
   };
 
   const getMoreActionsDropdown = () => {
@@ -102,11 +107,13 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
           >
             {t(localeKeys.switchAccount)}
           </Button>
-          <Button
-            onClick={onRunBridger}
-            className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
-            btnType={"secondary"}
-            disabled
+          <a
+            rel="noopener noreferrer"
+            target={"_blank"}
+            href="https://github.com/darwinia-network/bridger/"
+            className={
+              "px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem] border border-primary rounded-[0.3125rem] h-10 hover:cursor-pointer"
+            }
           >
             <div>{t(localeKeys.runBridger)}</div>
             <Tooltip
@@ -117,7 +124,7 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
             >
               <img className={"w-[0.875rem] h-[0.875rem] self-center"} src={helpIcon} alt="image" />
             </Tooltip>
-          </Button>
+          </a>
           {isRegistered ? (
             <Dropdown
               placement={"right"}
@@ -156,12 +163,14 @@ const Account = ({ advanced = false, relayerAddress, sourceChain, isRegistered }
       {/*Register relayer modal*/}
       <RegisterRelayerModal
         onClose={onRegisterRelayerModalClose}
+        onSuccess={onSuccess}
         isVisible={isRegisterRelayerModalVisible}
         relayerAddress={relayerAddress}
       />
       {/*Register relayer modal*/}
       <CancelRelayerModal
         onClose={onCancelRelayerModalClose}
+        onSuccess={onSuccess}
         isVisible={isCancelRelayerModalVisible}
         relayerAddress={relayerAddress}
       />
