@@ -450,7 +450,10 @@ const OrdersTable = ({ loading, data }: Props) => {
               </div>
             </div>
 
-            <Button onClick={handleFilterClick}>{t(localeKeys.filter)}</Button>
+            {/*This button will only show in mobile devices since it's in the modal*/}
+            <Button className={"w-full"} onClick={handleFilterClick}>
+              {t(localeKeys.filter)}
+            </Button>
           </div>
         </ModalEnhanced>
       </div>

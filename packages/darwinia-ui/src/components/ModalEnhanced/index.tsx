@@ -11,6 +11,7 @@ import "./styles.scss";
 import Modal from "../Modal";
 import closeIcon from "../../assets/images/close-white.svg";
 import Button from "../Button";
+import Spinner from "../Spinner";
 
 export interface ModalEnhancedRefs {
   toggle: () => void;
@@ -26,6 +27,9 @@ export interface ModalEnhancedProps extends DetailedHTMLProps<HTMLAttributes<HTM
   confirmText?: string;
   cancelText?: string;
   contentClassName?: string;
+  confirmLoading?: boolean;
+  confirmDisabled?: boolean;
+  isLoading?: boolean;
 }
 
 /**
@@ -47,6 +51,9 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
       contentClassName,
       confirmText = "ok",
       cancelText = "cancel",
+      confirmLoading = false,
+      confirmDisabled = false,
+      isLoading = false,
     },
     ref
   ) => {
@@ -108,32 +115,42 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
               <img className={"dw-modal-enhanced-close"} src={closeIcon} alt="image" />
             </div>
           </div>
-          <div className={`dw-modal-enhanced-content ${contentClassName}`}>
-            <div>{children}</div>
-            {(onConfirm || onCancel) && (
-              <div className={"dw-modal-enhanced-buttons"}>
-                {onConfirm && (
-                  <Button
-                    onClick={() => {
-                      onConfirmClicked();
-                    }}
-                  >
-                    {confirmText}
-                  </Button>
-                )}
-                {onCancel && (
-                  <Button
-                    btnType={"secondary"}
-                    onClick={() => {
-                      onCancelClicked();
-                    }}
-                  >
-                    {cancelText}
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+          <Spinner
+            maskClassName={"dw-enhanced-mask"}
+            isLoading={isLoading}
+            className={`dw-modal-enhanced-content ${contentClassName}`}
+          >
+            <>
+              <div>{children}</div>
+              {(onConfirm || onCancel) && (
+                <div className={"dw-modal-enhanced-buttons"}>
+                  {onConfirm && (
+                    <Button
+                      className={"w-full"}
+                      isLoading={confirmLoading}
+                      disabled={confirmDisabled}
+                      onClick={() => {
+                        onConfirmClicked();
+                      }}
+                    >
+                      {confirmText}
+                    </Button>
+                  )}
+                  {onCancel && (
+                    <Button
+                      className={"w-full"}
+                      btnType={"secondary"}
+                      onClick={() => {
+                        onCancelClicked();
+                      }}
+                    >
+                      {cancelText}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          </Spinner>
         </div>
       </Modal>
     );

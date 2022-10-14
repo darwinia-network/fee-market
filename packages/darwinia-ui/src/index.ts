@@ -14,6 +14,7 @@ import SlideDownUp from "./components/SlideDownUp";
 import Tooltip from "./components/Tooltip";
 import Dropdown from "./components/Dropdown";
 import DateRangePicker from "./components/DateRangePicker";
+import notification from "./components/Notification";
 
 export {
   Button,
@@ -32,6 +33,7 @@ export {
   Tooltip,
   Dropdown,
   DateRangePicker,
+  notification,
 };
 
 /*Types*/
@@ -51,6 +53,8 @@ import { ModalEnhancedProps, ModalEnhancedRefs } from "./components/ModalEnhance
 import { DropdownProps } from "./components/Dropdown";
 import { DatePickEvent } from "./components/Calendar";
 import { DateRangePickerRef, DateRangePickerProps } from "./components/DateRangePicker";
+import { Placement as NotificationPlacement, NotificationConfig } from "./components/Notification";
+import { Placement as DropdownPlacement } from "./components/Dropdown";
 
 export type {
   PopoverReport,
@@ -82,4 +86,7 @@ export type {
   DropdownProps,
   DateRangePickerRef,
   DateRangePickerProps,
+  NotificationPlacement,
+  NotificationConfig,
+  DropdownPlacement,
 };

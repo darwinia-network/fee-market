@@ -33,7 +33,7 @@ const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
           value={start ?? ""}
           onChange={(e) => setStart(e.target.value)}
           leftIcon={null}
-          className="h-[2.5rem] lg:h-[1.625rem] w-full lg:w-[8rem]"
+          className="h-[2.5rem] lg:!h-[1.625rem] w-full lg:w-[8rem]"
         />
       </div>
       <div className="flex-1 flex flex-col lg:flex-row lg:items-center gap-[0.625rem]">
@@ -43,7 +43,7 @@ const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
           value={end ?? ""}
           onChange={(e) => setEnd(e.target.value)}
           leftIcon={null}
-          className="h-[2.5rem] lg:h-[1.625rem] w-full lg:w-[8rem]"
+          className="h-[2.5rem] lg:!h-[1.625rem] w-full lg:w-[8rem]"
         />
       </div>
     </div>

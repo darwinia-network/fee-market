@@ -39,7 +39,7 @@ const Tabs = ({ onChange, tabs, activeTabId }: TabsProps) => {
     setTimeout(() => {
       updateActiveTabUI();
     }, 100);
-  }, []);
+  }, [tabsRef.current, railRef.current, activeTabIndex]);
 
   useEffect(() => {
     if (activeTabIndex === -1) {
