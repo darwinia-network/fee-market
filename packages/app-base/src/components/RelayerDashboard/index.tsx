@@ -157,7 +157,10 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           >
             <div className={"flex-1 flex items-center"}>{t(localeKeys.switchAccountNotice)}</div>
             <div>
-              <Button onClick={onSwitchNetwork} className={"!bg-white w-full text-danger lg:!h-[1.875rem]"}>
+              <Button
+                onClick={onSwitchNetwork}
+                className={"!bg-white w-full !text-danger !text-14-bold lg:!h-[1.875rem]"}
+              >
                 {t(localeKeys.switchNetwork)}
               </Button>
             </div>
@@ -173,31 +176,27 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           onSuccess={checkRegistered}
         />
       </div>
-      {isRegistered && !isNotificationVisible && (
-        <>
-          <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-            <Balance relayerAddress={relayerAddress} />
-          </div>
-          {/*Charts*/}
-          <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-            <RelayerDetailsChart
-              currentMarket={currentMarket}
-              rewardsData={rewardAndSlashData?.rewards || []}
-              slashesData={rewardAndSlashData?.slashs || []}
-              quoteHistoryData={quoteHistoryData || []}
-            />
-          </div>
+      <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
+        <Balance relayerAddress={relayerAddress} registered={isRegistered} matchNetwork={!isNotificationVisible} />
+      </div>
+      {/*Charts*/}
+      <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
+        <RelayerDetailsChart
+          currentMarket={currentMarket}
+          rewardsData={rewardAndSlashData?.rewards || []}
+          slashesData={rewardAndSlashData?.slashs || []}
+          quoteHistoryData={quoteHistoryData || []}
+        />
+      </div>
 
-          {/*Relayer Orders table*/}
-          <div>
-            <RelayerDetailsTable
-              relatedOrdersData={relayerRelatedOrdersData}
-              tokenSymbol={nativeToken?.symbol}
-              tokenDecimals={nativeToken?.decimals}
-            />
-          </div>
-        </>
-      )}
+      {/*Relayer Orders table*/}
+      <div>
+        <RelayerDetailsTable
+          relatedOrdersData={relayerRelatedOrdersData}
+          tokenSymbol={nativeToken?.symbol}
+          tokenDecimals={nativeToken?.decimals}
+        />
+      </div>
     </div>
   );
 };
