@@ -72,7 +72,7 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = ()
         });
       }
     }
-  }, [sourceChain, destinationChain, api]);
+  }, [sourceChain, destinationChain, api, relayerAddress]);
 
   return (
     <ModalEnhanced
