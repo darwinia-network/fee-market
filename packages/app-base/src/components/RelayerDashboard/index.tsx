@@ -157,7 +157,10 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           >
             <div className={"flex-1 flex items-center"}>{t(localeKeys.switchAccountNotice)}</div>
             <div>
-              <Button onClick={onSwitchNetwork} className={"!bg-white w-full text-danger lg:!h-[1.875rem]"}>
+              <Button
+                onClick={onSwitchNetwork}
+                className={"!bg-white w-full !text-danger !text-14-bold lg:!h-[1.875rem]"}
+              >
                 {t(localeKeys.switchNetwork)}
               </Button>
             </div>
