@@ -23,14 +23,15 @@ import type {
   FeeMarketSourceChainEth,
   PalletFeeMarketRelayer,
 } from "@feemarket/app-types";
-import { from, forkJoin, EMPTY } from "rxjs";
+import { from, forkJoin, EMPTY, Subscription } from "rxjs";
 
 interface Props {
-  isActived?: boolean;
+  registered?: boolean;
+  matchNetwork?: boolean;
   relayerAddress: string;
 }
 
-const Balance = ({ relayerAddress, isActived }: Props) => {
+const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -70,7 +71,7 @@ const Balance = ({ relayerAddress, isActived }: Props) => {
   };
 
   const getQuoteLockedCollateral = useCallback(() => {
-    if (isActived && isEthChain(sourceChain) && isEthApi(api)) {
+    if (matchNetwork && isEthChain(sourceChain) && isEthApi(api)) {
       const chainConfig = ETH_CHAIN_CONF[sourceChain];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
@@ -88,7 +89,7 @@ const Balance = ({ relayerAddress, isActived }: Props) => {
           console.error("[collateral, locked, quote]:", error);
         },
       });
-    } else if (isActived && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+    } else if (matchNetwork && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
         return from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe({
@@ -105,17 +106,24 @@ const Balance = ({ relayerAddress, isActived }: Props) => {
     }
 
     return EMPTY.subscribe();
-  }, [sourceChain, destinationChain, api, relayerAddress, isActived]);
+  }, [sourceChain, destinationChain, api, relayerAddress, matchNetwork]);
 
   useEffect(() => {
-    const sub$$ = getQuoteLockedCollateral();
+    let sub$$: Subscription;
+
+    if (registered) {
+      sub$$ = getQuoteLockedCollateral();
+    } else {
+      sub$$ = getQuoteLockedCollateral();
+    }
+
     return () => {
       sub$$.unsubscribe();
       setCollateralAmount(null);
       setCurrentLockedAmount(null);
       setCurrentQuoteAmount(null);
     };
-  }, [getQuoteLockedCollateral]);
+  }, [registered, getQuoteLockedCollateral]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>
