@@ -169,9 +169,9 @@ const RelayersOverview = () => {
 
   const handleSort = useCallback((sortEvent: SortEvent<Relayer>) => {
     if (sortEvent.order === "ascend") {
-      setDataSource((previous) => previous.sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key]))));
+      setDataSource((previous) => [...previous].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key]))));
     } else if (sortEvent.order === "descend") {
-      setDataSource((previous) => previous.sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key]))));
+      setDataSource((previous) => [...previous].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key]))));
     }
   }, []);
 

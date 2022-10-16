@@ -24,28 +24,32 @@ const Orders = () => {
           }}
         />
         <OrdersTable
-          data={(ordersTableData?.orders?.nodes || [])
-            .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
-            .map((node, index) => {
-              return {
-                id: index.toString(),
-                lane: node.lane,
-                nonce: node.nonce,
-                sender: node.sender,
-                status: node.status,
-                slotIndex: node.slotIndex,
-                deliveryRelayer: node.deliveryRelayers?.nodes.length
-                  ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
-                  : null,
-                confirmationRelayer: node.confirmationRelayers?.nodes.length
-                  ? node.confirmationRelayers.nodes[0].confirmationRelayer.address
-                  : null,
-                createdAt: node.createBlockTime,
-                confirmedAt: node.finishBlockTime,
-                createBlock: node.createBlockNumber,
-                confirmedBlock: node.finishBlockNumber,
-              };
-            })}
+          data={
+            ordersTableData?.orders?.nodes.length
+              ? [...ordersTableData.orders.nodes]
+                  .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
+                  .map((node, index) => {
+                    return {
+                      id: index.toString(),
+                      lane: node.lane,
+                      nonce: node.nonce,
+                      sender: node.sender,
+                      status: node.status,
+                      slotIndex: node.slotIndex,
+                      deliveryRelayer: node.deliveryRelayers?.nodes.length
+                        ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
+                        : null,
+                      confirmationRelayer: node.confirmationRelayers?.nodes.length
+                        ? node.confirmationRelayers.nodes[0].confirmationRelayer.address
+                        : null,
+                      createdAt: node.createBlockTime,
+                      confirmedAt: node.finishBlockTime,
+                      createBlock: node.createBlockNumber,
+                      confirmedBlock: node.finishBlockNumber,
+                    };
+                  })
+              : []
+          }
         />
       </div>
     </Spinner>
