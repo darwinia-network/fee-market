@@ -26,10 +26,11 @@ import type {
 import { from, forkJoin, EMPTY } from "rxjs";
 
 interface Props {
+  isActived?: boolean;
   relayerAddress: string;
 }
 
-const Balance = ({ relayerAddress }: Props) => {
+const Balance = ({ relayerAddress, isActived }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
@@ -69,7 +70,7 @@ const Balance = ({ relayerAddress }: Props) => {
   };
 
   const getQuoteLockedCollateral = useCallback(() => {
-    if (isEthChain(sourceChain) && isEthApi(api)) {
+    if (isActived && isEthChain(sourceChain) && isEthApi(api)) {
       const chainConfig = ETH_CHAIN_CONF[sourceChain];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
 
@@ -87,7 +88,7 @@ const Balance = ({ relayerAddress }: Props) => {
           console.error("[collateral, locked, quote]:", error);
         },
       });
-    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+    } else if (isActived && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
         return from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe({
@@ -104,7 +105,7 @@ const Balance = ({ relayerAddress }: Props) => {
     }
 
     return EMPTY.subscribe();
-  }, [sourceChain, destinationChain, api, relayerAddress]);
+  }, [sourceChain, destinationChain, api, relayerAddress, isActived]);
 
   useEffect(() => {
     const sub$$ = getQuoteLockedCollateral();
