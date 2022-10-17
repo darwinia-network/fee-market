@@ -23,7 +23,7 @@ import type {
   FeeMarketSourceChainEth,
   PalletFeeMarketRelayer,
 } from "@feemarket/app-types";
-import { from, forkJoin, EMPTY, Subscription } from "rxjs";
+import { from, forkJoin, EMPTY } from "rxjs";
 
 interface Props {
   registered?: boolean;
@@ -89,7 +89,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
           console.error("[collateral, locked, quote]:", error);
         },
       });
-    } else if (matchNetwork && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+    } else if (registered && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
         return from(api.query[apiSection].relayersMap<Option<PalletFeeMarketRelayer>>(relayerAddress)).subscribe({
@@ -109,24 +109,17 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     }
 
     return EMPTY.subscribe();
-  }, [sourceChain, destinationChain, api, relayerAddress, matchNetwork]);
+  }, [sourceChain, destinationChain, api, relayerAddress, matchNetwork, registered]);
 
   useEffect(() => {
-    let sub$$: Subscription;
-
-    if (registered) {
-      sub$$ = getQuoteLockedCollateral();
-    } else {
-      sub$$ = getQuoteLockedCollateral();
-    }
-
+    const sub$$ = getQuoteLockedCollateral();
     return () => {
       sub$$.unsubscribe();
       setCollateralAmount(null);
       setCurrentLockedAmount(null);
       setCurrentQuoteAmount(null);
     };
-  }, [registered, getQuoteLockedCollateral]);
+  }, [getQuoteLockedCollateral]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>

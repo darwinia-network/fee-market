@@ -14,6 +14,7 @@ import {
   getQuotePrev,
   getFeeMarketApiSection,
   formatBalance,
+  CallbackType,
 } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
@@ -187,43 +188,39 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
 
         const { prevNew } = await getQuotePrev(contract, relayerAddress, quoteAmount);
 
-        triggerContract(
-          contract,
-          "enroll",
-          [prevNew, quoteAmount],
-          {
-            errorCallback: ({ error }) => {
-              if (error instanceof Error) {
-                notifyTx(t, {
-                  type: "error",
-                  msg: error.message,
-                });
-              } else {
-                notifyTx(t, {
-                  type: "error",
-                  msg: t("Transaction sending failed"),
-                });
-              }
-              setBusy(false);
-              console.error("Call enroll:", error);
-            },
-            responseCallback: ({ response }) => {
-              console.log("Call enroll response:", response);
-            },
-            successCallback: ({ receipt }) => {
+        const callback: CallbackType = {
+          errorCallback: ({ error }) => {
+            if (error instanceof Error) {
               notifyTx(t, {
-                type: "success",
-                explorer: chainConfig.explorer.url,
-                hash: receipt.transactionHash,
+                type: "error",
+                msg: error.message,
               });
-              onClose();
-              onSuccess();
-              setBusy(false);
-              console.log("Call enroll receipt:", receipt);
-            },
+            } else {
+              notifyTx(t, {
+                type: "error",
+                msg: t("Transaction sending failed"),
+              });
+            }
+            setBusy(false);
+            console.error("Call enroll:", error);
           },
-          { value: collateralAmount.toString() }
-        );
+          responseCallback: ({ response }) => {
+            console.log("Call enroll response:", response);
+          },
+          successCallback: ({ receipt }) => {
+            notifyTx(t, {
+              type: "success",
+              explorer: chainConfig.explorer.url,
+              hash: receipt.transactionHash,
+            });
+            onClose();
+            onSuccess();
+            setBusy(false);
+            console.log("Call enroll receipt:", receipt);
+          },
+        };
+
+        triggerContract(contract, "enroll", [prevNew, quoteAmount], callback, { value: collateralAmount.toString() });
       } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
         const chainConfig = POLKADOT_CHAIN_CONF[sourceChain];
         const apiSection = getFeeMarketApiSection(api, destinationChain);

@@ -1,12 +1,11 @@
-import { ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
+import { ModalEnhanced, notification } from "@darwinia/ui";
+import { useTranslation, TFunction } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import AccountMini from "../AccountMini";
-
 import { Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import {
   isEthApi,
   isPolkadotApi,
@@ -19,6 +18,43 @@ import {
   CallbackType,
 } from "@feemarket/app-utils";
 
+const notifyTx = (
+  t: TFunction,
+  {
+    type,
+    msg,
+    hash,
+    explorer,
+  }: {
+    type: "error" | "success";
+    msg?: string;
+    hash?: string;
+    explorer?: string;
+  }
+) => {
+  notification[type]({
+    message: (
+      <div className="flex flex-col gap-1.5">
+        <h5 className="capitalize text-14-bold">
+          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
+        </h5>
+        {hash && explorer ? (
+          <a
+            className="text-12 underline text-primary break-all hover:opacity-80"
+            rel="noopener noreferrer"
+            target={"_blank"}
+            href={`${explorer}tx/${hash}`}
+          >
+            {hash}
+          </a>
+        ) : (
+          <p className="text-12 break-all">{msg}</p>
+        )}
+      </div>
+    ),
+  });
+};
+
 interface Props {
   isVisible: boolean;
   relayerAddress: string;
@@ -30,12 +66,19 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = ()
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
+  const [busy, setBusy] = useState(false);
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
 
+  const loadingModal = useMemo(() => {
+    return !relayerAddress || !currentMarket || !api;
+  }, [relayerAddress, currentMarket, api]);
+
   const handleConfirm = useCallback(async () => {
     if (isEthChain(sourceChain) && isEthApi(api)) {
+      setBusy(true);
+
       const chainConfig = ETH_CHAIN_CONF[sourceChain];
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
 
@@ -43,32 +86,71 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = ()
 
       const callback: CallbackType = {
         errorCallback: ({ error }) => {
+          if (error instanceof Error) {
+            notifyTx(t, {
+              type: "error",
+              msg: error.message,
+            });
+          } else {
+            notifyTx(t, {
+              type: "error",
+              msg: t("Transaction sending failed"),
+            });
+          }
+          setBusy(false);
           console.error("cancel relayer:", error);
         },
         responseCallback: ({ response }) => {
           console.log("cancel relayer response:", response);
         },
         successCallback: ({ receipt }) => {
+          notifyTx(t, {
+            type: "success",
+            explorer: chainConfig.explorer.url,
+            hash: receipt.transactionHash,
+          });
           onClose();
           onSuccess();
+          setBusy(false);
           console.log("cancel relayer receipt:", receipt);
         },
       };
 
       triggerContract(contract, "leave", [prevOld], callback);
-    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+    } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      const chainConfig = POLKADOT_CHAIN_CONF[sourceChain];
       const apiSection = getFeeMarketApiSection(api, destinationChain);
+
       if (apiSection) {
+        setBusy(true);
         const extrinsic = api.tx[apiSection].cancelEnrollment();
 
         signAndSendTx({
           extrinsic,
           requireAddress: relayerAddress,
-          txSuccessCb: () => {
+          txSuccessCb: (result) => {
+            notifyTx(t, {
+              type: "success",
+              explorer: chainConfig.explorer.url,
+              hash: result.txHash.toHex(),
+            });
             onClose();
             onSuccess();
+            setBusy(false);
           },
-          txFailedCb: (error) => console.error(error),
+          txFailedCb: (error) => {
+            if (error) {
+              if (error instanceof Error) {
+                notifyTx(t, { type: "error", msg: error.message });
+              } else {
+                notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
+              }
+            } else {
+              notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
+            }
+            setBusy(false);
+            console.error(error);
+          },
         });
       }
     }
@@ -82,6 +164,8 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = ()
       confirmText={t(localeKeys.confirm)}
       onConfirm={handleConfirm}
       isVisible={isVisible}
+      isLoading={loadingModal}
+      confirmLoading={busy}
       modalTitle={t(localeKeys.confirmCancelRelayer)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>
