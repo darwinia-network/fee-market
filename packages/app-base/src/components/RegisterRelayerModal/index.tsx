@@ -1,5 +1,5 @@
 import { Input, ModalEnhanced, notification } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
+import { useTranslation, TFunction } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import AccountMini from "../AccountMini";
@@ -28,6 +28,43 @@ interface InputTips {
   error?: boolean;
 }
 
+const notifyTx = (
+  t: TFunction,
+  {
+    type,
+    msg,
+    hash,
+    explorer,
+  }: {
+    type: "error" | "success";
+    msg?: string;
+    hash?: string;
+    explorer?: string;
+  }
+) => {
+  notification[type]({
+    message: (
+      <div className="flex flex-col gap-1.5">
+        <h5 className="capitalize text-14-bold">
+          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
+        </h5>
+        {hash && explorer ? (
+          <a
+            className="text-12 underline text-primary break-all hover:opacity-80"
+            rel="noopener noreferrer"
+            target={"_blank"}
+            href={`${explorer}tx/${hash}`}
+          >
+            {hash}
+          </a>
+        ) : (
+          <p className="text-12 break-all">{msg}</p>
+        )}
+      </div>
+    ),
+  });
+};
+
 export interface Props {
   isVisible: boolean;
   relayerAddress: string;
@@ -41,6 +78,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
   const { api } = useApi();
   const { balance: relayerBalance } = useBalance(api, relayerAddress);
 
+  const [busy, setBusy] = useState(false);
+
   const [quoteInput, setQuoteInput] = useState<string | undefined>();
   const [collateralInput, setCollateralInput] = useState<string | undefined>();
 
@@ -53,9 +92,13 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
 
-  const loading = useMemo(() => {
+  const loadingModal = useMemo(() => {
     return !relayerAddress || !currentMarket || !api || !relayerBalance || !minQuote || !minCollateral;
   }, [relayerAddress, currentMarket, api, relayerBalance, minQuote, minCollateral]);
+
+  const disableConfirm = useMemo(() => {
+    return !quoteInput || !collateralInput || quoteTips?.error || collteralTips?.error;
+  }, [quoteInput, collateralInput, quoteTips, collteralTips]);
 
   const nativeToken = useMemo(
     () =>
@@ -137,6 +180,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
       const collateralAmount = ethersUtils.parseUnits(collateralInput, nativeToken.decimals);
 
       if (isEthChain(sourceChain) && isEthApi(api)) {
+        setBusy(true);
+
         const chainConfig = ETH_CHAIN_CONF[sourceChain];
         const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
 
@@ -148,23 +193,44 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
           [prevNew, quoteAmount],
           {
             errorCallback: ({ error }) => {
+              if (error instanceof Error) {
+                notifyTx(t, {
+                  type: "error",
+                  msg: error.message,
+                });
+              } else {
+                notifyTx(t, {
+                  type: "error",
+                  msg: t("Transaction sending failed"),
+                });
+              }
+              setBusy(false);
               console.error("Call enroll:", error);
             },
             responseCallback: ({ response }) => {
               console.log("Call enroll response:", response);
             },
             successCallback: ({ receipt }) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
               onClose();
               onSuccess();
+              setBusy(false);
               console.log("Call enroll receipt:", receipt);
             },
           },
           { value: collateralAmount.toString() }
         );
-      } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+        const chainConfig = POLKADOT_CHAIN_CONF[sourceChain];
         const apiSection = getFeeMarketApiSection(api, destinationChain);
 
         if (apiSection) {
+          setBusy(true);
+
           const extrinsic = api.tx[apiSection].enrollAndLockCollateral(
             collateralAmount.toString(),
             quoteAmount.toString()
@@ -173,11 +239,29 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
           signAndSendTx({
             extrinsic,
             requireAddress: relayerAddress,
-            txSuccessCb: () => {
+            txSuccessCb: (result) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: result.txHash.toHex(),
+              });
               onClose();
               onSuccess();
+              setBusy(false);
             },
-            txFailedCb: (error) => console.error(error),
+            txFailedCb: (error) => {
+              if (error) {
+                if (error instanceof Error) {
+                  notifyTx(t, { type: "error", msg: error.message });
+                } else {
+                  notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
+                }
+              } else {
+                notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
+              }
+              setBusy(false);
+              console.error(error);
+            },
           });
         }
       }
@@ -281,7 +365,9 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
       confirmText={t(localeKeys.register)}
       onConfirm={handleConfirm}
       isVisible={isVisible}
-      isLoading={loading}
+      isLoading={loadingModal}
+      confirmDisabled={disableConfirm}
+      confirmLoading={busy}
       modalTitle={t(localeKeys.registerRelayer)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>

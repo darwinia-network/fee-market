@@ -6,7 +6,7 @@ import ModifyQuoteModal from "../ModifyQuoteModal";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
 import { Tooltip } from "@darwinia/ui";
-
+import type { Option } from "@polkadot/types";
 import { BigNumber, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
@@ -92,10 +92,13 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     } else if (matchNetwork && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        return from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe({
-          next: ({ collateral, fee }) => {
-            setCollateralAmount(BigNumber.from(collateral.toString()));
-            setCurrentQuoteAmount(BigNumber.from(fee.toString()));
+        return from(api.query[apiSection].relayersMap<Option<PalletFeeMarketRelayer>>(relayerAddress)).subscribe({
+          next: (res) => {
+            if (res.isSome) {
+              const { collateral, fee } = res.unwrap();
+              setCollateralAmount(BigNumber.from(collateral.toString()));
+              setCurrentQuoteAmount(BigNumber.from(fee.toString()));
+            }
           },
           error: (error) => {
             console.error("[collateral, locked, quote]:", error);

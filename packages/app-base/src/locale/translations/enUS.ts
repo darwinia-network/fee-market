@@ -132,6 +132,8 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.goHome]: "back home",
   [localeKeys.insufficientBalance]: "Insufficient balance.",
   [localeKeys.search]: "search",
+  [localeKeys.failed]: "failed",
+  [localeKeys.successed]: "successed",
 };
 
 export default enUs;
