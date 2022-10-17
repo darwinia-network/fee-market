@@ -37,9 +37,9 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
   const { api } = useApi();
   const [isModifyQuoteModalVisible, setModifyQuoteModalVisible] = useState(false);
   const [isModifyCollateralBalanceModalVisible, setModifyCollateralBalanceModalVisible] = useState(false);
-  const [collateralAmount, setCollateralAmount] = useState<BigNumber | null>(null);
-  const [currentLockedAmount, setCurrentLockedAmount] = useState<BigNumber | null>(null);
-  const [currentQuoteAmount, setCurrentQuoteAmount] = useState<BigNumber | null>(null);
+  const [collateralAmount, setCollateralAmount] = useState<BigNumber>(BigNumber.from(0));
+  const [currentLockedAmount, setCurrentLockedAmount] = useState<BigNumber>(BigNumber.from(0));
+  const [currentQuoteAmount, setCurrentQuoteAmount] = useState<BigNumber>(BigNumber.from(0));
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
@@ -105,7 +105,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
           },
         });
       }
-      setCurrentLockedAmount(null);
+      setCurrentLockedAmount(BigNumber.from(0));
     }
 
     return EMPTY.subscribe();
@@ -115,9 +115,9 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     const sub$$ = getQuoteLockedCollateral();
     return () => {
       sub$$.unsubscribe();
-      setCollateralAmount(null);
-      setCurrentLockedAmount(null);
-      setCurrentQuoteAmount(null);
+      setCollateralAmount(BigNumber.from(0));
+      setCurrentLockedAmount(BigNumber.from(0));
+      setCurrentQuoteAmount(BigNumber.from(0));
     };
   }, [getQuoteLockedCollateral]);
 
@@ -146,7 +146,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 precision: BALANCE_DECIMALS,
               })}
             </div>
-            {!!collateralAmount && (
+            {registered && (
               <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
@@ -196,7 +196,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 }),
               })}
             </div>
-            {!!currentQuoteAmount && (
+            {registered && (
               <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
