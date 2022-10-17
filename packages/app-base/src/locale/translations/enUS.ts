@@ -95,9 +95,9 @@ const enUs = {
   [localeKeys.youDeposit]: `you'll deposit`,
   [localeKeys.youDepositInfo]: `The collateral Balance should be grater than {{amount}}.`,
   [localeKeys.youQuote]: `you'll quote`,
-  [localeKeys.quoteAmountLimitError]: `The quote amount should't be smaller than {{amount}}.`,
+  [localeKeys.quoteAmountLimitError]: `The quote amount shouldn't be smaller than {{amount}}.`,
   [localeKeys.perOrder]: `{{currency}}/Order`,
-  [localeKeys.depositAmountLimitError]: `The Collateral Balance should't be smaller than {{amount}}.`,
+  [localeKeys.depositAmountLimitError]: `The Collateral Balance shouldn't be smaller than {{amount}}.`,
   [localeKeys.confirm]: "confirm",
   [localeKeys.confirmCancelRelayer]: "Confirm to cancel relayer?",
   [localeKeys.cancelRelayerWarning]: `You're going to cancel Relayer of the current account in the {{from}} > {{to}} Fee market. 
