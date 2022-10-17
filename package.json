@@ -13,7 +13,7 @@
     "build:app-hooks": "lerna run build --scope @feemarket/app-hooks",
     "build:app-components": "lerna run build --scope @feemarket/app-components",
     "clean": "lerna clean --yes",
-    "boot": "lerna bootstrap",
+    "boot": "yarn && lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
     "stylelint": "stylelint '**/*.{css,less,scss}' --fix",
     "format": "prettier '**/*.{js,jsx,ts,tsx,json}' --write",
