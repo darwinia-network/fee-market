@@ -77,7 +77,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
-  const { balance: relayerBalance } = useBalance(api, relayerAddress);
+  const { balance: relayerBalance, refresh: refreshBalance } = useBalance(api, relayerAddress);
 
   const [busy, setBusy] = useState(false);
 
@@ -215,6 +215,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
             });
             onClose();
             onSuccess();
+            refreshBalance();
             setBusy(false);
             console.log("Call enroll receipt:", receipt);
           },
@@ -244,6 +245,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
               });
               onClose();
               onSuccess();
+              refreshBalance();
               setBusy(false);
             },
             txFailedCb: (error) => {
@@ -273,6 +275,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
     api,
     nativeToken,
     relayerAddress,
+    onSuccess,
+    refreshBalance,
   ]);
 
   // Get minQuote and minCollateral

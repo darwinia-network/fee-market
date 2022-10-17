@@ -154,7 +154,7 @@ const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = ()
         });
       }
     }
-  }, [sourceChain, destinationChain, api, relayerAddress]);
+  }, [sourceChain, destinationChain, api, relayerAddress, onSuccess]);
 
   return (
     <ModalEnhanced
