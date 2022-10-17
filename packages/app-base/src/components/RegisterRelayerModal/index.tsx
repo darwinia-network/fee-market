@@ -1,4 +1,4 @@
-import { Input, ModalEnhanced } from "@darwinia/ui";
+import { Input, ModalEnhanced, notification } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -52,6 +52,10 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
+
+  const loading = useMemo(() => {
+    return !relayerAddress || !currentMarket || !api || !relayerBalance || !minQuote || !minCollateral;
+  }, [relayerAddress, currentMarket, api, relayerBalance, minQuote, minCollateral]);
 
   const nativeToken = useMemo(
     () =>
@@ -277,6 +281,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
       confirmText={t(localeKeys.register)}
       onConfirm={handleConfirm}
       isVisible={isVisible}
+      isLoading={loading}
       modalTitle={t(localeKeys.registerRelayer)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>
