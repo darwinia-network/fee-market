@@ -130,6 +130,8 @@ const localeKeys = {
   goHome: "goHome",
   insufficientBalance: "insufficientBalance",
   search: "search",
+  failed: "failed",
+  successed: "successed",
 };
 
 export default localeKeys;

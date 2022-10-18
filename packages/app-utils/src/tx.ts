@@ -1,7 +1,6 @@
-import { DAPP_NAME } from "@feemarket/app-config";
 import type { SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/promise/types";
-import { web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
+import { web3FromAddress } from "@polkadot/extension-dapp";
 import { from, tap, switchMap, Observable, Subscriber } from "rxjs";
 
 export type TxCallback = (status: SubmittableResult) => void;
@@ -26,9 +25,8 @@ export const signAndSendTx = ({
   txSuccessCb = NOOP,
   txFailedCb = NOOP,
 }: Params) => {
-  from(web3Enable(DAPP_NAME))
+  from(web3FromAddress(requireAddress))
     .pipe(
-      switchMap(() => from(web3FromAddress(requireAddress))),
       tap(() => {
         txStartCb();
       }),

@@ -6,8 +6,7 @@ import { Button, SlideDownUp } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useCallback, useEffect, useState, useMemo } from "react";
-
-import { BN_ZERO } from "@polkadot/util";
+import type { Option } from "@polkadot/types";
 import type {
   FeeMarketSourceChainEth,
   FeeMarketSourceChainPolkadot,
@@ -118,9 +117,9 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
     } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        return from(api.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayerAddress)).subscribe({
-          next: ({ collateral }) => {
-            if (collateral.gt(BN_ZERO)) {
+        return from(api.query[apiSection].relayersMap<Option<PalletFeeMarketRelayer>>(relayerAddress)).subscribe({
+          next: (res) => {
+            if (res.isSome) {
               setRegistered(true);
             } else {
               setRegistered(false);

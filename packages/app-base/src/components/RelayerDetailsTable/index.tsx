@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { BALANCE_DECIMALS, DATE_TIME_FORMATE } from "@feemarket/app-config";
+import { useFeeMarket } from "@feemarket/app-provider";
+import { BALANCE_DECIMALS, DATE_TIME_FORMATE, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 import { formatBalance } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
@@ -29,6 +30,7 @@ interface Props {
 
 const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: Props) => {
   const { t } = useTranslation();
+  const { currentMarket } = useFeeMarket();
   const [dataSource, setDataSource] = useState<Order[]>([]);
 
   const columns: Column<Order>[] = [
@@ -38,6 +40,10 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
         const urlSearchParams = new URLSearchParams();
+        if (currentMarket) {
+          urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.source]);
+          urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.destination]);
+        }
         urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
         urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
         const to = `/orders/details?${urlSearchParams.toString()}`;

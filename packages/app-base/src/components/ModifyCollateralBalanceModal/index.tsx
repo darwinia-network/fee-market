@@ -1,5 +1,5 @@
-import { Input, ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
+import { Input, ModalEnhanced, notification } from "@darwinia/ui";
+import { useTranslation, TFunction } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState, useMemo, useCallback } from "react";
 import {
@@ -24,6 +24,43 @@ interface InputTips {
   text: string;
   error?: boolean;
 }
+
+const notifyTx = (
+  t: TFunction,
+  {
+    type,
+    msg,
+    hash,
+    explorer,
+  }: {
+    type: "error" | "success";
+    msg?: string;
+    hash?: string;
+    explorer?: string;
+  }
+) => {
+  notification[type]({
+    message: (
+      <div className="flex flex-col gap-1.5">
+        <h5 className="capitalize text-14-bold">
+          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
+        </h5>
+        {hash && explorer ? (
+          <a
+            className="text-12 underline text-primary break-all hover:opacity-80"
+            rel="noopener noreferrer"
+            target={"_blank"}
+            href={`${explorer}tx/${hash}`}
+          >
+            {hash}
+          </a>
+        ) : (
+          <p className="text-12 break-all">{msg}</p>
+        )}
+      </div>
+    ),
+  });
+};
 interface Props {
   isVisible: boolean;
   relayerAddress: string;
@@ -42,8 +79,9 @@ const ModifyCollateralBalanceModal = ({
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
-  const { balance: relayerBalance } = useBalance(api, relayerAddress);
+  const { balance: relayerBalance, refresh: refreshBalance } = useBalance(api, relayerAddress);
 
+  const [busy, setBusy] = useState(false);
   const [fee] = useState<BigNumber | BN | null>(null);
 
   const [minCollateral] = useState<BN | BigNumber | null>(BigNumber.from(0));
@@ -52,6 +90,14 @@ const ModifyCollateralBalanceModal = ({
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
+
+  const loadingModal = useMemo(() => {
+    return !relayerAddress || !currentMarket || !api || !relayerBalance || !minCollateral;
+  }, [relayerAddress, currentMarket, api, relayerBalance, minCollateral]);
+
+  const disableConfirm = useMemo(() => {
+    return !collateralInput || collteralTips?.error;
+  }, [collateralInput, collteralTips]);
 
   const nativeToken = useMemo(
     () =>
@@ -78,8 +124,9 @@ const ModifyCollateralBalanceModal = ({
         const min = BigNumber.from(minCollateral.toString());
         const available = BigNumber.from(relayerBalance.available.toString());
         const input = ethersUtils.parseUnits(value || "0", nativeToken.decimals);
+        const current = BigNumber.from(currentCollateral.toString());
 
-        if (input.gt(available)) {
+        if (input.gt(current) && input.sub(current).gt(available)) {
           setCollateralTips({
             text: t(localeKeys.insufficientBalance),
             error: true,
@@ -94,7 +141,7 @@ const ModifyCollateralBalanceModal = ({
         }
       }
     },
-    [t, nativeToken, minCollateral, relayerBalance.available]
+    [t, nativeToken, minCollateral, relayerBalance.available, currentCollateral]
   );
 
   const handleConfirm = useCallback(() => {
@@ -103,19 +150,40 @@ const ModifyCollateralBalanceModal = ({
       const currentAmount = BigNumber.from(currentCollateral.toString());
 
       if (isEthChain(sourceChain) && isEthApi(api)) {
+        setBusy(true);
+
         const chainConfig = ETH_CHAIN_CONF[sourceChain];
         const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
 
         const callback: CallbackType = {
           errorCallback: ({ error }) => {
+            if (error instanceof Error) {
+              notifyTx(t, {
+                type: "error",
+                msg: error.message,
+              });
+            } else {
+              notifyTx(t, {
+                type: "error",
+                msg: t("Transaction sending failed"),
+              });
+            }
+            setBusy(false);
             console.error("update collateral:", error);
           },
           responseCallback: ({ response }) => {
             console.log("update collateral response:", response);
           },
           successCallback: ({ receipt }) => {
+            notifyTx(t, {
+              type: "success",
+              explorer: chainConfig.explorer.url,
+              hash: receipt.transactionHash,
+            });
             onClose();
             onSuccess();
+            refreshBalance();
+            setBusy(false);
             console.log("update collateral receipt:", receipt);
           },
         };
@@ -123,26 +191,58 @@ const ModifyCollateralBalanceModal = ({
         if (inputAmount.gt(currentAmount)) {
           triggerContract(contract, "deposit", [], callback, { value: inputAmount.sub(currentAmount).toString() });
         } else if (inputAmount.lt(currentAmount)) {
-          triggerContract(contract, "withdraw", [], callback, { value: currentAmount.sub(inputAmount).toString() });
+          triggerContract(contract, "withdraw", [currentAmount.sub(inputAmount)], callback);
         }
-      } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+        const chainConfig = POLKADOT_CHAIN_CONF[sourceChain];
         const apiSection = getFeeMarketApiSection(api, destinationChain);
+
         if (apiSection) {
+          setBusy(true);
           const extrinsic = api.tx[apiSection].updateLockedCollateral(inputAmount.toString());
 
           signAndSendTx({
             extrinsic,
             requireAddress: relayerAddress,
-            txSuccessCb: () => {
+            txSuccessCb: (result) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: result.txHash.toHex(),
+              });
               onClose();
               onSuccess();
+              refreshBalance();
+              setBusy(false);
             },
-            txFailedCb: (error) => console.error(error),
+            txFailedCb: (error) => {
+              if (error) {
+                if (error instanceof Error) {
+                  notifyTx(t, { type: "error", msg: error.message });
+                } else {
+                  notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
+                }
+              } else {
+                notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
+              }
+              setBusy(false);
+              console.error(error);
+            },
           });
         }
       }
     }
-  }, [collteralTips, collateralInput, nativeToken, relayerAddress, currentCollateral, sourceChain, destinationChain]);
+  }, [
+    collteralTips,
+    collateralInput,
+    nativeToken,
+    relayerAddress,
+    currentCollateral,
+    sourceChain,
+    destinationChain,
+    onSuccess,
+    refreshBalance,
+  ]);
 
   // Collateral input tips
   useEffect(() => {
@@ -244,6 +344,9 @@ const ModifyCollateralBalanceModal = ({
       confirmText={t(localeKeys.confirm)}
       onConfirm={handleConfirm}
       isVisible={isVisible}
+      confirmLoading={busy}
+      confirmDisabled={disableConfirm}
+      isLoading={loadingModal}
       modalTitle={t(localeKeys.modifyCollateralBalance)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>
