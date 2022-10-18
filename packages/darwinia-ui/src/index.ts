@@ -15,6 +15,7 @@ import Tooltip from "./components/Tooltip";
 import Dropdown from "./components/Dropdown";
 import DateRangePicker from "./components/DateRangePicker";
 import notification from "./components/Notification";
+import Menu from "./components/Menu";
 
 export {
   Button,
@@ -34,6 +35,7 @@ export {
   Dropdown,
   DateRangePicker,
   notification,
+  Menu,
 };
 
 /*Types*/
@@ -55,6 +57,7 @@ import { DatePickEvent } from "./components/Calendar";
 import { DateRangePickerRef, DateRangePickerProps } from "./components/DateRangePicker";
 import { Placement as NotificationPlacement, NotificationConfig } from "./components/Notification";
 import { Placement as DropdownPlacement } from "./components/Dropdown";
+import { MenuObject, MenuProps } from "./components/Menu";
 
 export type {
   PopoverReport,
@@ -89,4 +92,6 @@ export type {
   NotificationPlacement,
   NotificationConfig,
   DropdownPlacement,
+  MenuObject,
+  MenuProps,
 };

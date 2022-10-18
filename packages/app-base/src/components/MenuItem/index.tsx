@@ -74,6 +74,9 @@ const getNavItem = (text: string, icon?: string, hasSubMenu?: boolean, isOpen?: 
       have submenus their caret will be invisible */}
       {!isChildMenu && (
         <img
+          onTransitionEnd={(e) => {
+            e.stopPropagation();
+          }}
           className={`transition shrink-0 self-center ${caretClass} ${caretRotationClass}`}
           src={caretDownIcon}
           alt="image"

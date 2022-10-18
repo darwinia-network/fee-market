@@ -1,16 +1,24 @@
 import MenuItem from "../MenuItem";
-import { MenuItem as MenuObject } from "../../data/types";
 import { useRef, useState, TransitionEvent } from "react";
+import "./styles.scss";
 
-interface Props {
+export interface MenuObject {
+  id: string;
+  icon?: string;
+  text: string;
+  children?: MenuObject[];
+  path?: string;
+}
+
+export interface MenuProps {
   onToggleSubMenu?: (openedMenuPath: string) => void;
   menuList: MenuObject[];
 }
 
-const Menu = ({ menuList }: Props) => {
+const Menu = ({ menuList }: MenuProps) => {
   return (
-    <div className={"w-full"}>
-      <MenuRoot menuList={menuList} isChildMenu={false} level={1} />
+    <div className={"dw-menu-wrapper"}>
+      <MenuRoot menuList={menuList} isChildMenu={false} level={0} />
     </div>
   );
 };
@@ -18,7 +26,7 @@ const Menu = ({ menuList }: Props) => {
 const MenuRoot = ({
   menuList,
   isChildMenu = false,
-  level = 1,
+  level = 0,
 }: {
   menuList: MenuObject[];
   isChildMenu: boolean;
@@ -71,6 +79,7 @@ const MenuRoot = ({
           icon={menuObject.icon}
           text={menuObject.text}
           isChildMenu={isChildMenu}
+          level={level}
         />
       );
     }
@@ -88,6 +97,7 @@ const MenuRoot = ({
           icon={menuObject.icon}
           text={menuObject.text}
           isOpen={isOpen}
+          level={level}
         />
         <div
           ref={(element) => {
@@ -101,7 +111,7 @@ const MenuRoot = ({
             onTransitionEnd(e, isOpen);
           }}
           style={{ maxHeight: "0px", transitionProperty: "max-height" }}
-          className={`transition overflow-hidden bg-black`}
+          className={`dw-menu-subroot`}
         >
           <div>
             <MenuRoot menuList={menuObject.children} isChildMenu={true} level={level + 1} />
