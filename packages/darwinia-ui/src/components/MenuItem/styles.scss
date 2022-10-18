@@ -1,0 +1,77 @@
+@import "../../assets/styles/common";
+
+.dw-parent-menu-wrapper {
+  cursor: default;
+  display: flex;
+  padding: 0 var(--16px);
+  height: var(--60px);
+  align-items: center;
+  gap: var(--10px);
+}
+
+.dw-menu-icon {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.dw-menu-title {
+  @include ellipsis;
+
+  flex: 1;
+}
+
+.dw-child-menu-title {
+  @extend .dw-text-12;
+}
+
+.dw-parent-menu-title {
+  @extend .dw-text-14;
+}
+
+/* Navigation highlight */
+.dw-active {
+  background-color: var(--primary);
+
+  .dw-parent-menu-title,
+  .dw-child-menu-title {
+    font-family: DW-JetBrainsMono-Bold;
+  }
+}
+
+.dw-menu-caret {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  flex-shrink: 0;
+  align-self: center;
+
+  &.dw-invisible {
+    visibility: hidden;
+  }
+
+  &.dw-open {
+    transform: rotate(-180deg);
+  }
+}
+
+.dw-menu-link-wrapper {
+  display: flex;
+
+  .dw-menu-link {
+    user-select: none;
+    max-width: 100%;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--10px);
+
+    &.dw-child-link {
+      padding-right: var(--16px);
+      height: var(--50px);
+    }
+
+    &.dw-parent-link {
+      padding: 0 var(--16px) !important;
+      height: var(--60px);
+    }
+  }
+}
