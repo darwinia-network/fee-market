@@ -5,7 +5,7 @@ import localeKeys from "../locale/localeKeys";
 import { Tooltip } from "@darwinia/ui";
 
 import { useEffect, useState } from "react";
-import { useFeeMarket } from "@feemarket/app-provider";
+import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { UrlSearchParamsKey, SlotIndex } from "@feemarket/app-types";
 import type {
   OrderEntity,
@@ -17,8 +17,8 @@ import type {
   OrderStatus,
 } from "@feemarket/app-types";
 import { ORDER_DETAIL, DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
-import {} from "@feemarket/app-utils";
-import { useGrapgQuery } from "@feemarket/app-hooks";
+import { isEthChain, isPolkadotChain } from "@feemarket/app-utils";
+import { useGrapgQuery, useAccountName } from "@feemarket/app-hooks";
 import { formatDistance, format } from "date-fns";
 import { capitalize } from "lodash";
 import { utils as ethersUtils } from "ethers";
@@ -185,24 +185,29 @@ const OrderDetails = () => {
           )} (${format(new Date(`${orderDetailData.order.createBlockTime}Z`), DATE_TIME_FORMATE)} +UTC)`
         : "-",
     },
-    {
-      id: "4",
-      label: t(localeKeys.sourceTxID),
-      details: (
-        <div className={"text-primary text-12-bold lg:text-14-bold break-words"}>
-          {orderDetailData?.order?.sourceTxHash || "-"}
-        </div>
-      ),
-    },
-    {
-      id: "5",
-      label: t(localeKeys.sender),
-      details: (
-        <div className={"text-primary text-12-bold lg:text-14-bold break-words"}>
-          {orderDetailData?.order?.sender || "-"}
-        </div>
-      ),
-    },
+    ...(orderDetailData?.order?.sourceTxHash
+      ? [
+          {
+            id: "4",
+            label: t(localeKeys.sourceTxID),
+            details: <RenderTxHash hash={orderDetailData.order.sourceTxHash} />,
+          },
+        ]
+      : []),
+    ...(orderDetailData?.order?.sender
+      ? [
+          {
+            id: "5",
+            label: t(localeKeys.sender),
+            details: (
+              <AccountName
+                address={orderDetailData.order.sender}
+                className={"text-primary text-12-bold lg:text-14-bold break-words"}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       id: "6",
       label: t(localeKeys.status),
@@ -218,24 +223,24 @@ const OrderDetails = () => {
             }`
           : "-",
     },
-    {
-      id: "8",
-      label: t(localeKeys.createdAt),
-      details: (
-        <div className={"text-primary text-12-bold lg:text-14-bold"}>
-          {orderDetailData?.order?.createBlockNumber ? `Block #${orderDetailData.order.createBlockNumber}` : "-"}
-        </div>
-      ),
-    },
-    {
-      id: "9",
-      label: t(localeKeys.confirmAt),
-      details: (
-        <div className={"text-primary text-12-bold lg:text-14-bold"}>
-          {orderDetailData?.order?.finishBlockNumber ? `Block #${orderDetailData.order.finishBlockNumber}` : "-"}
-        </div>
-      ),
-    },
+    ...(orderDetailData?.order?.createBlockNumber
+      ? [
+          {
+            id: "8",
+            label: t(localeKeys.createdAt),
+            details: <RenderBlock block={orderDetailData.order.createBlockNumber} />,
+          },
+        ]
+      : []),
+    ...(orderDetailData?.order?.finishBlockNumber
+      ? [
+          {
+            id: "9",
+            label: t(localeKeys.confirmAt),
+            details: <RenderBlock block={orderDetailData.order.finishBlockNumber} />,
+          },
+        ]
+      : []),
     {
       id: "10",
       label: t(localeKeys.slotAt),
@@ -263,7 +268,7 @@ const OrderDetails = () => {
             label: t(localeKeys.assignedRelayers),
             details: (
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
-                <div className={"text-primary text-12-bold lg:text-14-bold"}>{item.relayer.address}</div>
+                <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 <div className={"text-12 lg:text-14"}>
                   (+{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
                 </div>
@@ -277,7 +282,7 @@ const OrderDetails = () => {
             label: t(localeKeys.deliveryRelayer),
             details: (
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
-                <div className={"text-primary text-12-bold lg:text-14-bold"}>{item.relayer.address}</div>
+                <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 <div className={"text-12 lg:text-14"}>
                   (+{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
                 </div>
@@ -291,7 +296,7 @@ const OrderDetails = () => {
             label: t(localeKeys.deliveryRelayer),
             details: (
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
-                <div className={"text-primary text-12-bold lg:text-14-bold"}>{item.relayer.address}</div>
+                <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 <div className={"text-12 lg:text-14"}>
                   (+{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
                 </div>
@@ -332,7 +337,7 @@ const OrderDetails = () => {
           label: t(localeKeys.assignedRelayers),
           details: (
             <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
-              <div className={"text-primary text-12-bold lg:text-14-bold"}>{item.relayer.address}</div>
+              <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
               <div className={"text-12 lg:text-14"}>
                 (-{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
               </div>
@@ -413,7 +418,7 @@ const getSlotsDiagram = (slots: Slot[], t: TFunction<"translation">) => {
                   <div>
                     {slot.isOutOfSlot ? t(localeKeys.outOfSlot) : t(localeKeys.slotNumber, { slotNumber: index + 1 })}
                   </div>
-                  <div className={"text-primary"}>{slot.relayer}</div>
+                  {slot.relayer && <AccountName address={slot.relayer} className={"text-primary"} />}
                 </div>
               </div>
               {/*PC slot diagram*/}
@@ -428,7 +433,11 @@ const getSlotsDiagram = (slots: Slot[], t: TFunction<"translation">) => {
                     message={
                       <div className={"flex items-center gap-[0.625rem]"}>
                         <div className={"text-10"}>{t(localeKeys.assignedRelayers)}:</div>
-                        <div className={"text-12-bold text-primary"}>{slot.relayer}</div>
+                        {slot.relayer ? (
+                          <AccountName address={slot.relayer} className={"text-12-bold text-primary"} />
+                        ) : (
+                          "-"
+                        )}
                       </div>
                     }
                     className={"cursor-default absolute h-[1.75rem] w-[2px] bg-white -top-[1.9075rem]"}
@@ -447,6 +456,75 @@ const getSlotsDiagram = (slots: Slot[], t: TFunction<"translation">) => {
         })}
       </div>
     </div>
+  );
+};
+
+const RenderTxHash = ({ hash }: { hash: string }) => {
+  const { currentMarket } = useFeeMarket();
+
+  const sourceChain = currentMarket?.source;
+  const sub = "tx/";
+  const chainConfig = isEthChain(sourceChain)
+    ? ETH_CHAIN_CONF[sourceChain]
+    : isPolkadotChain(sourceChain)
+    ? POLKADOT_CHAIN_CONF[sourceChain]
+    : null;
+
+  return (
+    <a
+      className={`hover:opacity-80 text-primary text-12-bold lg:text-14-bold break-words`}
+      rel="noopener noreferrer"
+      target={"_blank"}
+      href={sub && chainConfig ? `${chainConfig.explorer.url}${sub}${hash}` : "#"}
+    >
+      {hash}
+    </a>
+  );
+};
+
+const RenderBlock = ({ block }: { block: number }) => {
+  const { currentMarket } = useFeeMarket();
+
+  const sourceChain = currentMarket?.source;
+  const sub = "block/";
+  const chainConfig = isEthChain(sourceChain)
+    ? ETH_CHAIN_CONF[sourceChain]
+    : isPolkadotChain(sourceChain)
+    ? POLKADOT_CHAIN_CONF[sourceChain]
+    : null;
+
+  return (
+    <a
+      className={`hover:opacity-80 text-primary text-12-bold lg:text-14-bold`}
+      rel="noopener noreferrer"
+      target={"_blank"}
+      href={sub && chainConfig ? `${chainConfig.explorer.url}${sub}${block}` : "#"}
+    >{`Block #${block}`}</a>
+  );
+};
+
+const AccountName = ({ address, className }: { address: string; className?: string }) => {
+  const { currentMarket } = useFeeMarket();
+  const { api } = useApi();
+  const { displayName } = useAccountName(api, address);
+
+  const sourceChain = currentMarket?.source;
+  const sub = isEthChain(sourceChain) ? "address/" : isPolkadotChain(sourceChain) ? "account/" : null;
+  const chainConfig = isEthChain(sourceChain)
+    ? ETH_CHAIN_CONF[sourceChain]
+    : isPolkadotChain(sourceChain)
+    ? POLKADOT_CHAIN_CONF[sourceChain]
+    : null;
+
+  return (
+    <a
+      className={`hover:opacity-80 ${className}`}
+      rel="noopener noreferrer"
+      target={"_blank"}
+      href={sub && chainConfig ? `${chainConfig.explorer.url}${sub}${address}` : "#"}
+    >
+      {displayName}
+    </a>
   );
 };
 

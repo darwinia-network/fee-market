@@ -74,8 +74,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   }, [api]);
 
   useEffect(() => {
-    let sub$$: Subscription;
-
     setApi(null);
     setApiEth(null);
     setApiPolkadot(null);
@@ -93,28 +91,34 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
 
           window.ethereum.on("accountsChanged", (accs: string[]) => {
             setAccounts(accs);
+            setCurrentAccount(null);
           });
         }
       } else if (POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]) {
         const provider = new WsProvider(
           POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot].provider.rpc
         );
-        sub$$ = from(ApiPromise.create({ provider })).subscribe({
-          next: (api) => {
-            setApi(api);
-            setApiPolkadot(api);
-          },
-          error: (error) => {
-            console.error("Create api:", error);
-          },
+        const api = new ApiPromise({ provider });
+        api.on("error", () => {
+          setApi(null);
+          setApiPolkadot(null);
+        });
+        api.on("ready", () => {
+          setApi((prev) => prev ?? api);
+          setApiPolkadot((prev) => prev ?? api);
+        });
+        api.on("disconnected", () => {
+          setApi(null);
+          setApiPolkadot(null);
         });
       }
     }
 
     return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
+      api?.off("error", () => undefined);
+      api?.off("ready", () => undefined);
+      api?.off("connected", () => undefined);
+      api?.off("disconnected", () => undefined);
     };
   }, [currentMarket]);
 

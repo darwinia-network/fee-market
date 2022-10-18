@@ -1,5 +1,5 @@
-import { Input, ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
+import { Input, ModalEnhanced, notification } from "@darwinia/ui";
+import { useTranslation, TFunction } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
@@ -26,6 +26,43 @@ interface InputTips {
   error?: boolean;
 }
 
+const notifyTx = (
+  t: TFunction,
+  {
+    type,
+    msg,
+    hash,
+    explorer,
+  }: {
+    type: "error" | "success";
+    msg?: string;
+    hash?: string;
+    explorer?: string;
+  }
+) => {
+  notification[type]({
+    message: (
+      <div className="flex flex-col gap-1.5">
+        <h5 className="capitalize text-14-bold">
+          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
+        </h5>
+        {hash && explorer ? (
+          <a
+            className="text-12 underline text-primary break-all hover:opacity-80"
+            rel="noopener noreferrer"
+            target={"_blank"}
+            href={`${explorer}tx/${hash}`}
+          >
+            {hash}
+          </a>
+        ) : (
+          <p className="text-12 break-all">{msg}</p>
+        )}
+      </div>
+    ),
+  });
+};
+
 interface Props {
   isVisible: boolean;
   currentQuote: BigNumber | BN;
@@ -39,6 +76,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
   const { currentMarket } = useFeeMarket();
   const { api } = useApi();
 
+  const [busy, setBusy] = useState(false);
   const [fee] = useState<BigNumber | BN | null>(null);
 
   const [minQuote, setMinQuote] = useState<BN | BigNumber | null>(null);
@@ -47,6 +85,14 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
+
+  const loadingModal = useMemo(() => {
+    return !relayerAddress || !currentMarket || !api || !minQuote;
+  }, [relayerAddress, currentMarket, api, minQuote]);
+
+  const disableConfirm = useMemo(() => {
+    return !quoteInput || quoteTips?.error;
+  }, [quoteInput, quoteTips]);
 
   const nativeToken = useMemo(
     () =>
@@ -82,49 +128,89 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
   );
 
   const handleConfirm = useCallback(async () => {
-    if (quoteTips?.error === false && quoteInput && nativeToken && relayerAddress && currentQuote) {
+    if (quoteTips?.error === false && quoteInput && nativeToken && relayerAddress) {
       const inputAmount = ethersUtils.parseUnits(quoteInput, nativeToken.decimals);
-      const currentAmount = BigNumber.from(currentQuote.toString());
 
       if (isEthChain(sourceChain) && isEthApi(api)) {
+        setBusy(true);
+
         const chainConfig = ETH_CHAIN_CONF[sourceChain];
         const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
 
-        const { prevOld, prevNew } = await getQuotePrev(contract, relayerAddress, currentAmount);
+        const { prevOld, prevNew } = await getQuotePrev(contract, relayerAddress, inputAmount);
 
         const callback: CallbackType = {
           errorCallback: ({ error }) => {
+            if (error instanceof Error) {
+              notifyTx(t, {
+                type: "error",
+                msg: error.message,
+              });
+            } else {
+              notifyTx(t, {
+                type: "error",
+                msg: t("Transaction sending failed"),
+              });
+            }
+            setBusy(false);
             console.error("update quote:", error);
           },
           responseCallback: ({ response }) => {
             console.log("update quote response:", response);
           },
           successCallback: ({ receipt }) => {
+            notifyTx(t, {
+              type: "success",
+              explorer: chainConfig.explorer.url,
+              hash: receipt.transactionHash,
+            });
             onClose();
             onSuccess();
+            setBusy(false);
             console.log("update quote receipt:", receipt);
           },
         };
 
         triggerContract(contract, "move", [prevOld, prevNew, inputAmount], callback);
-      } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+      } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
+        const chainConfig = POLKADOT_CHAIN_CONF[sourceChain];
         const apiSection = getFeeMarketApiSection(api, destinationChain);
+
         if (apiSection) {
+          setBusy(true);
           const extrinsic = api.tx[apiSection].updateRelayFee(inputAmount.toString());
 
           signAndSendTx({
             extrinsic,
             requireAddress: relayerAddress,
-            txSuccessCb: () => {
+            txSuccessCb: (result) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: result.txHash.toHex(),
+              });
               onClose();
               onSuccess();
+              setBusy(false);
             },
-            txFailedCb: (error) => console.error(error),
+            txFailedCb: (error) => {
+              if (error) {
+                if (error instanceof Error) {
+                  notifyTx(t, { type: "error", msg: error.message });
+                } else {
+                  notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
+                }
+              } else {
+                notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
+              }
+              setBusy(false);
+              console.error(error);
+            },
           });
         }
       }
     }
-  }, [quoteTips, quoteInput, nativeToken, relayerAddress, currentQuote, sourceChain, destinationChain]);
+  }, [quoteTips, quoteInput, nativeToken, relayerAddress, sourceChain, destinationChain, onSuccess]);
 
   // Get minQuote
   useEffect(() => {
@@ -245,6 +331,9 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
       confirmText={t(localeKeys.confirm)}
       onConfirm={handleConfirm}
       isVisible={isVisible}
+      isLoading={loadingModal}
+      confirmLoading={busy}
+      confirmDisabled={disableConfirm}
       modalTitle={t(localeKeys.modifyYourQuote)}
     >
       <div className={"flex flex-col gap-[1.25rem]"}>

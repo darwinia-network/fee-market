@@ -22,6 +22,7 @@ interface PalletBalancesBalanceLock extends Struct {
 export interface BalanceResult<T> {
   total: T;
   available: T;
+  loading?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -43,9 +43,13 @@ export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh
       const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
 
       if (apiSection) {
-        const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32>>()).pipe(
+        const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Option<Vec<AccountId32>>>()).pipe(
           switchMap((res) =>
-            forkJoin(res.map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item)))
+            forkJoin(
+              res.isSome
+                ? res.unwrap().map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item))
+                : []
+            )
           )
         );
         const assignedRelayersObs = from(
