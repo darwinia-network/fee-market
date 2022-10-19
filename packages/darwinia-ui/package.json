@@ -17,6 +17,7 @@
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^18.2.0",
     "react-popper": "^2.3.0",
+    "react-router-dom": "^6.4.2",
     "react-transition-group": "^4.4.5"
   },
   "devDependencies": {
