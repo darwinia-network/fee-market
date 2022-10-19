@@ -15,7 +15,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
 const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, level, isChildMenu, ...rest }: Props) => {
   // the zeroth menu item has 16px padding left according to the design
   const leftIndent = level === 0 ? 16 : level * 45;
-  if (typeof path === "undefined") {
+  if (hasSubMenu) {
     // this is a parent menu, not a navigation link
     return (
       <div style={{ paddingLeft: leftIndent }} className={"dw-parent-menu-wrapper"} {...rest}>
@@ -38,13 +38,13 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, level, isChildMenu, ..
             isActive = location.pathname === path;
           } else {
             // other path will be resolved just by checking if the path contains the root path
-            isActive = location.pathname.includes(path);
+            isActive = location.pathname.includes(path ?? "");
           }
           const activeClass = isActive ? "dw-active" : "";
 
           return `${activeClass} ${linkSpecialClasses} dw-menu-link`;
         }}
-        to={path}
+        to={path ?? ""}
       >
         {getNavItem(text, icon, hasSubMenu, isOpen, isChildMenu)}
       </NavLink>

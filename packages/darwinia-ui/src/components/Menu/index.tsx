@@ -1,6 +1,7 @@
 import MenuItem from "../MenuItem";
 import { useRef, useState, TransitionEvent } from "react";
 import "./styles.scss";
+import { useLocation } from "react-router-dom";
 
 export interface MenuObject {
   id: string;
@@ -34,6 +35,8 @@ const MenuRoot = ({
 }) => {
   const [openedIndexes, setOpenedIndexes] = useState<number[]>([]);
   const rootMenuRef = useRef<{ [index: number]: HTMLDivElement | null }>({});
+  const location = useLocation();
+  const isJustMounted = useRef(true);
 
   const onTransitionEnd = (e: TransitionEvent, isOpen: boolean) => {
     const element = e.target as HTMLDivElement;
@@ -47,6 +50,10 @@ const MenuRoot = ({
   };
 
   const onToggleSubMenu = (index: number) => {
+    if (!rootMenuRef.current[index]) {
+      return;
+    }
+    isJustMounted.current = false;
     const isAlreadyOpen = openedIndexes.includes(index);
     let newOpenedIndexes;
     if (isAlreadyOpen) {
@@ -85,6 +92,23 @@ const MenuRoot = ({
     }
 
     const isOpen = openedIndexes.includes(index);
+
+    /* this will make sure that the first matching manu item
+     * is open when the page is refreshed to improve user experience */
+    if (isJustMounted.current) {
+      // check if the submenus have been opened already
+      let shouldAutoOpenMenu = false;
+      menuObject.children.forEach((item) => {
+        if (item.path && location.pathname.includes(item.path)) {
+          if (!isOpen) {
+            shouldAutoOpenMenu = true;
+          }
+        }
+      });
+      if (shouldAutoOpenMenu) {
+        onToggleSubMenu(index);
+      }
+    }
 
     return (
       <div key={menuObject.id}>
