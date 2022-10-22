@@ -172,7 +172,9 @@ export const transformTotalOrdersOverview = (data: {
     }
   }
 
-  return Object.keys(datesOrders).map((date) => [new Date(date).getTime(), datesOrders[date]]);
+  return Object.keys(datesOrders)
+    .sort((a, b) => compareAsc(new Date(a), new Date(b)))
+    .map((date) => [new Date(date).getTime(), datesOrders[date]]);
 };
 
 export const transformFeeHistory = (data: { feeHistory: Pick<FeeEntity, "data"> | null }): [number, number][] => {
