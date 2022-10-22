@@ -10,7 +10,7 @@ interface Props {
   message?: ReactNode;
 }
 
-const ErrorCatcher = ({ title = "Dang!", message = "Oooops! Some Errors Have Been Caught On Your Page" }: Props) => {
+const ErrorCatcher = ({ title = "Oops!", message = "Sorry, an unexpected error has occurred." }: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const error = useRouteError();
