@@ -358,8 +358,7 @@ const OrdersTable = ({ loading, data }: Props) => {
   useEffect(() => {
     if (keyword) {
       dataSourceRef.current = data.filter(
-        (item) =>
-          item.nonce.includes(keyword) || (item.sender && item.sender.toLowerCase().includes(keyword.toLowerCase()))
+        (item) => item.nonce.includes(keyword) || (item.sender && item.sender.toLowerCase() === keyword.toLowerCase())
       );
     } else {
       dataSourceRef.current = data;
