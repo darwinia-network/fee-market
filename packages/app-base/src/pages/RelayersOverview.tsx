@@ -212,7 +212,9 @@ const RelayersOverview = () => {
         headerSlot={getTableTabs()}
         onSort={handleSort}
         minWidth={"1120px"}
-        dataSource={dataSource}
+        dataSource={dataSource.filter((item) =>
+          keywords ? keywords.toLowerCase() === item.relayer.toLowerCase() : true
+        )}
         columns={columns}
         pagination={tablePagination}
       />
