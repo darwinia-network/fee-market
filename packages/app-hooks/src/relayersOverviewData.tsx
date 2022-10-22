@@ -43,13 +43,9 @@ export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh
       const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
 
       if (apiSection) {
-        const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Option<Vec<AccountId32>>>()).pipe(
+        const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32>>()).pipe(
           switchMap((res) =>
-            forkJoin(
-              res.isSome
-                ? res.unwrap().map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item))
-                : []
-            )
+            forkJoin(res.map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item)))
           )
         );
         const assignedRelayersObs = from(
@@ -89,34 +85,43 @@ export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh
               )
             )
           )
-          .subscribe(([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
-            setRelayersOverviewData({
-              allRelayersDataSource: allRelayersData.map(({ data }, index) => {
-                const relayer = allRelayers[index];
-                return {
-                  id: `${index}`,
-                  relayer: relayer.id.toString(),
-                  count: data.relayer?.totalOrders || 0,
-                  collateral: relayer.collateral,
-                  quote: relayer.fee,
-                  reward: bnToBn(data.relayer?.totalRewards),
-                  slash: bnToBn(data.relayer?.totalSlashes),
-                };
-              }),
-              assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
-                const relayer = assignedRelayers[index];
-                return {
-                  id: `${index}`,
-                  relayer: relayer.id.toString(),
-                  count: data.relayer?.totalOrders || 0,
-                  collateral: relayer.collateral,
-                  quote: relayer.fee,
-                  reward: bnToBn(data.relayer?.totalRewards),
-                  slash: bnToBn(data.relayer?.totalSlashes),
-                };
-              }),
-              loading: false,
-            });
+          .subscribe({
+            next: ([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
+              setRelayersOverviewData({
+                allRelayersDataSource: allRelayersData.map(({ data }, index) => {
+                  const relayer = allRelayers[index];
+                  return {
+                    id: `${index}`,
+                    relayer: relayer.id.toString(),
+                    count: data.relayer?.totalOrders || 0,
+                    collateral: relayer.collateral,
+                    quote: relayer.fee,
+                    reward: bnToBn(data.relayer?.totalRewards),
+                    slash: bnToBn(data.relayer?.totalSlashes),
+                  };
+                }),
+                assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
+                  const relayer = assignedRelayers[index];
+                  return {
+                    id: `${index}`,
+                    relayer: relayer.id.toString(),
+                    count: data.relayer?.totalOrders || 0,
+                    collateral: relayer.collateral,
+                    quote: relayer.fee,
+                    reward: bnToBn(data.relayer?.totalRewards),
+                    slash: bnToBn(data.relayer?.totalSlashes),
+                  };
+                }),
+                loading: false,
+              });
+            },
+            error: (error) => {
+              console.error("get relayer overview data:", error);
+              setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
+            },
+            complete: () => {
+              setRelayersOverviewData((prev) => ({ ...prev, loading: false }));
+            },
           });
       }
     }
