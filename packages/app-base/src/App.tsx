@@ -1,16 +1,17 @@
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { Scrollbars } from "react-custom-scrollbars";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import localeKeys from "./locale/localeKeys";
-
+import { Spinner } from "@darwinia/ui";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 
 const App = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigation = useNavigation();
   const [pageTitle, setPageTitle] = useState("");
   const pagesPathTitleMap = {
     "/": t(localeKeys.overview),
@@ -51,7 +52,9 @@ const App = () => {
               <div className={mainContentMinWidth}>
                 {/*The mobile phone page title that scrolls with the page content*/}
                 <div className={"lg:hidden page-title py-[0.9375rem] lg:mt-0"}>{pageTitle}</div>
-                <Outlet />
+                <Spinner isLoading={navigation.state === "loading"}>
+                  <Outlet />
+                </Spinner>
               </div>
             </div>
           </div>
