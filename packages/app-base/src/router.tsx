@@ -65,7 +65,7 @@ const browserRouter = createBrowserRouter([
 const getPageLoadingSpinner = () => {
   //TODO change isLoading to true to show the spinner
   return (
-    <Spinner isLoading={false}>
+    <Spinner isLoading={true}>
       <div className={`flex h-[calc(100vh-119px)] lg:h-[calc(100vh-110px)] justify-center items-center`} />
     </Spinner>
   );
