@@ -1,4 +1,4 @@
-import { MARKET_API_SECTIONS, ETH_SENTINEL_HEAD } from "@feemarket/app-config";
+import { MARKET_API_SECTIONS, ETH_SENTINEL_HEAD, BALANCE_DECIMALS } from "@feemarket/app-config";
 import { providers, BigNumberish, utils as ethersUtils, Contract, BigNumber } from "ethers";
 import { ApiPromise } from "@polkadot/api";
 import type { BN } from "@polkadot/util";
@@ -109,9 +109,9 @@ export const formatBalance = (
   overrides?: { precision?: number }
 ): string => {
   if ((amount || amount === 0) && decimals) {
-    const precision = overrides?.precision;
+    const precision = overrides?.precision ?? decimals === 9 ? 1 : decimals === 18 ? 4 : BALANCE_DECIMALS;
     const [integer, decimal] = ethersUtils.formatUnits(amount.toString(), decimals).split(".");
-    const balance = `${integer}.${precision ? decimal.slice(0, precision) : decimal}`;
+    const balance = Number(decimal) ? `${integer}.${precision ? decimal.slice(0, precision) : decimal}` : integer;
     return symbol ? `${balance} ${symbol}` : balance;
   }
   return "-";

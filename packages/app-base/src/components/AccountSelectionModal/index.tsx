@@ -8,7 +8,7 @@ import { Scrollbars } from "react-custom-scrollbars";
 import { formatBalance } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useBalance, useAccountName } from "@feemarket/app-hooks";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 export interface AccountSelectionModalProps {
   isVisible: boolean;
@@ -34,7 +34,7 @@ const AccountBalance = ({ address }: { address: string }) => {
 
   return balance.available ? (
     <div className={"text-12 text-halfWhite"}>
-      {formatBalance(balance.available, nativeToken?.decimals, nativeToken?.symbol, { precision: BALANCE_DECIMALS })}
+      {formatBalance(balance.available, nativeToken?.decimals, nativeToken?.symbol)}
     </div>
   ) : null;
 };

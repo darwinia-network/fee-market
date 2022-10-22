@@ -8,19 +8,14 @@ import { useRelayersOverviewData, useAccountName } from "@feemarket/app-hooks";
 import { BN, bnToBn } from "@polkadot/util";
 import { Identicon } from "@polkadot/react-identicon";
 import type { Balance } from "@polkadot/types/interfaces";
-import {
-  ETH_CHAIN_CONF,
-  POLKADOT_CHAIN_CONF,
-  MAPPING_CHAIN_2_URL_SEARCH_PARAM,
-  BALANCE_DECIMALS,
-} from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import { formatBalance, isPolkadotChain } from "@feemarket/app-utils";
 
 const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
   if (decimals) {
-    return <span>{formatBalance(amount, decimals, undefined, { precision: BALANCE_DECIMALS })}</span>;
+    return <span>{formatBalance(amount, decimals, undefined)}</span>;
   }
 
   return <span>-</span>;

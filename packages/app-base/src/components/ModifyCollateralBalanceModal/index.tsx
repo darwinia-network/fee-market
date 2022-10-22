@@ -13,7 +13,7 @@ import {
   getFeeMarketApiSection,
   CallbackType,
 } from "@feemarket/app-utils";
-import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { BigNumber, utils as ethersUtils, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useBalance } from "@feemarket/app-hooks";
@@ -355,7 +355,7 @@ const ModifyCollateralBalanceModal = ({
           <div className={"text-12-bold"}>{t(localeKeys.yourCollateralBalance)}</div>
           <div className={"flex bg-divider rounded-[0.3125rem] h-[2.5rem] items-center justify-end px-[0.625rem]"}>
             <div className={"flex-1 text-14-bold"}>
-              {formatBalance(currentCollateral, nativeToken?.decimals, undefined, { precision: BALANCE_DECIMALS })}
+              {formatBalance(currentCollateral, nativeToken?.decimals, undefined)}
             </div>
             <div className={"flex-1 text-right text-14-bold"}>{nativeToken?.symbol}</div>
           </div>
@@ -366,11 +366,7 @@ const ModifyCollateralBalanceModal = ({
           <div className={"text-12-bold"}>
             <span>{t(localeKeys.youModifyBalanceTo)} </span>
             <span className="text-halfWhite">
-              ({t(localeKeys.available)}{" "}
-              {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, {
-                precision: BALANCE_DECIMALS,
-              })}
-              )
+              ({t(localeKeys.available)} {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined)})
             </span>
           </div>
           <Input
@@ -395,9 +391,7 @@ const ModifyCollateralBalanceModal = ({
         {fee && (
           <span className={"text-halfWhite text-12"}>
             {t(localeKeys.feeEstimation, {
-              amount: formatBalance(fee, nativeToken?.decimals, nativeToken?.symbol, {
-                precision: BALANCE_DECIMALS,
-              }),
+              amount: formatBalance(fee, nativeToken?.decimals, nativeToken?.symbol),
             })}
           </span>
         )}
