@@ -1,15 +1,15 @@
 import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { Suspense } from "react";
-import App from "../App";
-import ErrorCatcher from "../pages/ErrorCatcher";
+import Root from "./Root";
+import ErrorCatcher from "./pages/ErrorCatcher";
 import { Spinner } from "@darwinia/ui";
-import NotFoundRoot from "../pages/NotFoundRoot";
+import NotFoundRoot from "./pages/NotFoundRoot";
 
 const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
   /* rollup is strict to dynamic imports
    refer https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations */
-  const Component = lazy(() => import(`../pages/${componentFileName}.tsx`));
+  const Component = lazy(() => import(`./pages/${componentFileName}.tsx`));
   return (
     <Suspense fallback={getPageLoadingSpinner()}>
       <Component />
@@ -27,7 +27,7 @@ const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
 const browserRouter = createBrowserRouter([
   {
     path: "/",
-    element: App(),
+    element: <Root />,
     errorElement: <ErrorCatcher />,
     children: [
       {
@@ -58,7 +58,7 @@ const browserRouter = createBrowserRouter([
   },
   {
     path: "*",
-    element: NotFoundRoot(),
+    element: <NotFoundRoot />,
   },
 ]);
 

@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import "./locale";
 import "./assets/styles/index.scss";
 import { RouterProvider } from "react-router-dom";
-import browserRouter from "./routes";
+import router from "./router";
 
 if (process.env.NODE_ENV === "production") {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -15,4 +15,4 @@ if (process.env.NODE_ENV === "production") {
   console.dir = () => {};
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<RouterProvider router={browserRouter} />);
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<RouterProvider router={router} />);
