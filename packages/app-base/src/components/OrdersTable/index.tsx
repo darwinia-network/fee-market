@@ -19,7 +19,12 @@ import type {
 } from "@feemarket/app-types";
 import { useApi, useFeeMarket } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
-import { DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import {
+  DATE_TIME_FORMATE,
+  ETH_CHAIN_CONF,
+  POLKADOT_CHAIN_CONF,
+  MAPPING_CHAIN_2_URL_SEARCH_PARAM,
+} from "@feemarket/app-config";
 import { format } from "date-fns";
 
 enum TimeDimension {
@@ -187,6 +192,10 @@ const OrdersTable = ({ loading, data }: Props) => {
       title: <div className={"capitalize"}>#{t([localeKeys.orderId])}</div>,
       render: (row) => {
         const urlSearchParams = new URLSearchParams();
+        if (currentMarket) {
+          urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.source]);
+          urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.destination]);
+        }
         urlSearchParams.set(UrlSearchParamsKey.LANE, row.lane);
         urlSearchParams.set(UrlSearchParamsKey.NONCE, row.nonce);
         const to = `${location.pathname}/details?${urlSearchParams.toString()}`;
