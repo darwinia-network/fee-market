@@ -16,7 +16,7 @@ import {
   CallbackType,
 } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
 import type { BN } from "@polkadot/util";
 import type { u128 } from "@polkadot/types";
@@ -341,9 +341,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
         <div className={"flex flex-col gap-[0.625rem]"}>
           <div className={"text-12-bold"}>{t(localeKeys.yourCurrentQuote)}</div>
           <div className={"flex bg-divider rounded-[0.3125rem] h-[2.5rem] items-center justify-end px-[0.625rem]"}>
-            <div className={"flex-1 text-14-bold"}>
-              {formatBalance(currentQuote, nativeToken?.decimals, undefined, { precision: BALANCE_DECIMALS })}
-            </div>
+            <div className={"flex-1 text-14-bold"}>{formatBalance(currentQuote, nativeToken?.decimals, undefined)}</div>
             {nativeToken?.symbol ? (
               <span className={"flex-1 text-right text-14-bold"}>
                 {t(localeKeys.perOrder, { currency: nativeToken.symbol })}
@@ -375,9 +373,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
         {fee && (
           <span className={"text-halfWhite text-12"}>
             {t(localeKeys.feeEstimation, {
-              amount: formatBalance(fee, nativeToken?.decimals, nativeToken?.symbol, {
-                precision: BALANCE_DECIMALS,
-              }),
+              amount: formatBalance(fee, nativeToken?.decimals, nativeToken?.symbol),
             })}
           </span>
         )}

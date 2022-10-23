@@ -17,7 +17,7 @@ import {
   CallbackType,
 } from "@feemarket/app-utils";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { BALANCE_DECIMALS, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainPolkadot, FeeMarketSourceChainEth } from "@feemarket/app-types";
 import { from, of, zip, Subscription } from "rxjs";
 import { BN } from "@polkadot/util";
@@ -381,11 +381,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
           <div className={"text-12-bold"}>
             <span>{t(localeKeys.youDeposit)} </span>
             <span className="text-halfWhite">
-              ({t(localeKeys.available)}{" "}
-              {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined, {
-                precision: BALANCE_DECIMALS,
-              })}
-              )
+              ({t(localeKeys.available)} {formatBalance(relayerBalance.available, nativeToken?.decimals, undefined)})
             </span>
           </div>
           <Input

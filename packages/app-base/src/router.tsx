@@ -1,17 +1,17 @@
 import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { Suspense } from "react";
-import App from "../App";
-import ErrorCatcher from "../pages/ErrorCatcher";
-import { Spinner } from "@darwinia/ui";
-import NotFoundRoot from "../pages/NotFoundRoot";
+import Root from "./Root";
+import ErrorCatcher from "./pages/ErrorCatcher";
+import NotFoundRoot from "./pages/NotFoundRoot";
+import PageLoading from "./pages/PageLoading";
 
 const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
   /* rollup is strict to dynamic imports
    refer https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations */
-  const Component = lazy(() => import(`../pages/${componentFileName}.tsx`));
+  const Component = lazy(() => import(`./pages/${componentFileName}.tsx`));
   return (
-    <Suspense fallback={getPageLoadingSpinner()}>
+    <Suspense fallback={<PageLoading />}>
       <Component />
     </Suspense>
   );
@@ -24,11 +24,11 @@ const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
  * is the child page of relayers-overview. If there are more than one root pages that
  * need to jump to the same page, make sure that their parent paths match the links
  * accordingly ie: add several links (in createHashRouter) that will open the same component */
-const browserRouter = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
-    element: App(),
-    errorElement: ErrorCatcher(),
+    element: <Root />,
+    errorElement: <ErrorCatcher />,
     children: [
       {
         index: true,
@@ -58,17 +58,8 @@ const browserRouter = createBrowserRouter([
   },
   {
     path: "*",
-    element: NotFoundRoot(),
+    element: <NotFoundRoot />,
   },
 ]);
 
-const getPageLoadingSpinner = () => {
-  //TODO change isLoading to true to show the spinner
-  return (
-    <Spinner isLoading={false}>
-      <div className={`flex h-[calc(100vh-119px)] lg:h-[calc(100vh-110px)] justify-center items-center`} />
-    </Spinner>
-  );
-};
-
-export default browserRouter;
+export default router;

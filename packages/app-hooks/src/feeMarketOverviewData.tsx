@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { EMPTY, from, switchMap, forkJoin } from "rxjs";
+import { EMPTY, from, switchMap, forkJoin, of, Observable } from "rxjs";
 
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import type { ApiPromise } from "@polkadot/api";
@@ -8,7 +8,13 @@ import type { Balance, AccountId32 } from "@polkadot/types/interfaces";
 
 import type { Market } from "@feemarket/app-provider";
 import { useGrapgQuery } from "./graphQuery";
-import { transformTotalOrdersOverview, transformFeeHistory, getFeeMarketApiSection } from "@feemarket/app-utils";
+import {
+  transformTotalOrdersOverview,
+  transformFeeHistory,
+  getFeeMarketApiSection,
+  isVec,
+  isOption,
+} from "@feemarket/app-utils";
 import { FEE_MARKET_OVERVIEW, TOTAL_ORDERS_OVERVIEW, FEE_HISTORY } from "@feemarket/app-config";
 import type {
   MarketEntity,
@@ -109,15 +115,42 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
       if (apiSection) {
         setTotalRelayers((prev) => ({ ...prev, loading: true }));
 
-        return from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32>>())
+        return from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32> | Option<Vec<AccountId32>>>())
           .pipe(
-            switchMap((total) => {
-              return total.length
-                ? forkJoin(
-                    total.map((relayer) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(relayer))
+            switchMap((res) => {
+              if (isVec<AccountId32>(res)) {
+                return of(res);
+              } else if (isOption<Vec<AccountId32>>(res) && res.isSome) {
+                return of(res.unwrap());
+              }
+              return of([]);
+            }),
+            switchMap((total) =>
+              forkJoin(
+                total.map((relayer) =>
+                  apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(
+                    relayer
                   )
-                : EMPTY;
-            })
+                )
+              )
+            ),
+            switchMap(
+              (res) =>
+                of(
+                  res
+                    .map((item) => {
+                      if (isOption<PalletFeeMarketRelayer>(item)) {
+                        if (item.isSome) {
+                          return item.unwrap();
+                        } else {
+                          return null;
+                        }
+                      }
+                      return item as PalletFeeMarketRelayer;
+                    })
+                    .filter((item) => item !== null)
+                ) as Observable<PalletFeeMarketRelayer[]>
+            )
           )
           .subscribe({
             next: (relayers) => {

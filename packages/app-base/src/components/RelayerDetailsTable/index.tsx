@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useFeeMarket } from "@feemarket/app-provider";
-import { BALANCE_DECIMALS, DATE_TIME_FORMATE, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
+import { DATE_TIME_FORMATE, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 import { formatBalance } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
@@ -110,8 +110,8 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
           lane: item.lane,
           nonce: item.nonce,
           relayerRoles: item.relayerRoles,
-          slash: formatBalance(item.slash, tokenDecimals, tokenSymbol, { precision: BALANCE_DECIMALS }),
-          reward: formatBalance(item.reward, tokenDecimals, tokenSymbol, { precision: BALANCE_DECIMALS }),
+          slash: formatBalance(item.slash, tokenDecimals, tokenSymbol),
+          reward: formatBalance(item.reward, tokenDecimals, tokenSymbol),
           time: item.createBlockTime,
         };
       }) || []

@@ -9,7 +9,7 @@ import { Tooltip } from "@darwinia/ui";
 import type { Option } from "@polkadot/types";
 import { BigNumber, Contract } from "ethers";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, BALANCE_DECIMALS } from "@feemarket/app-config";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import {
   isEthApi,
   isEthChain,
@@ -142,9 +142,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>
-              {formatBalance(collateralAmount, nativeToken?.decimals, nativeToken?.symbol, {
-                precision: BALANCE_DECIMALS,
-              })}
+              {formatBalance(collateralAmount, nativeToken?.decimals, nativeToken?.symbol)}
             </div>
             {registered && (
               <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
@@ -167,9 +165,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
           </div>
           <div className={"flex"}>
             <div className={"text-24-bold uppercase"}>
-              {formatBalance(currentLockedAmount, nativeToken?.decimals, nativeToken?.symbol, {
-                precision: BALANCE_DECIMALS,
-              })}
+              {formatBalance(currentLockedAmount, nativeToken?.decimals, nativeToken?.symbol)}
             </div>
           </div>
         </div>
@@ -191,9 +187,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
           <div className={"flex"}>
             <div className={"text-24-bold text-primary"}>
               {t(localeKeys.quotePhrase, {
-                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol.toUpperCase(), {
-                  precision: BALANCE_DECIMALS,
-                }),
+                amount: formatBalance(currentQuoteAmount, nativeToken?.decimals, nativeToken?.symbol.toUpperCase()),
               })}
             </div>
             {registered && (

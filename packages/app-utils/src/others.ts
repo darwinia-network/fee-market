@@ -1,7 +1,7 @@
-import { MARKET_API_SECTIONS, ETH_SENTINEL_HEAD } from "@feemarket/app-config";
+import { MARKET_API_SECTIONS, ETH_SENTINEL_HEAD, BALANCE_DECIMALS } from "@feemarket/app-config";
 import { providers, BigNumberish, utils as ethersUtils, Contract, BigNumber } from "ethers";
 import { ApiPromise } from "@polkadot/api";
-import type { BN } from "@polkadot/util";
+import { BN, isInstanceOf } from "@polkadot/util";
 import { ALL_FEE_MARKET_ETH_CHAINS, ALL_FEE_MARKET_POLKADOT_CHAINS } from "@feemarket/app-types";
 import type {
   FeeMarketApiSection,
@@ -9,6 +9,8 @@ import type {
   FeeMarketPolkadotChain,
   RuntimeVersion,
 } from "@feemarket/app-types";
+import { Vec, Option } from "@polkadot/types";
+import { Codec } from "@polkadot/types/types";
 
 export const getQuotePrev = async (contract: Contract, relayer: string, quote: BigNumber = BigNumber.from(0)) => {
   let prevOld: string | null = null;
@@ -109,9 +111,9 @@ export const formatBalance = (
   overrides?: { precision?: number }
 ): string => {
   if ((amount || amount === 0) && decimals) {
-    const precision = overrides?.precision;
+    const precision = overrides?.precision ?? decimals === 9 ? 1 : decimals === 18 ? 4 : BALANCE_DECIMALS;
     const [integer, decimal] = ethersUtils.formatUnits(amount.toString(), decimals).split(".");
-    const balance = `${integer}.${precision ? decimal.slice(0, precision) : decimal}`;
+    const balance = Number(decimal) ? `${integer}.${precision ? decimal.slice(0, precision) : decimal}` : integer;
     return symbol ? `${balance} ${symbol}` : balance;
   }
   return "-";
@@ -119,4 +121,12 @@ export const formatBalance = (
 
 export const formatShortAddress = (address: string): string => {
   return `${address.slice(0, 4)}...${address.slice(-6)}`;
+};
+
+export const isVec = <T extends Codec>(value: unknown): value is Vec<T> => {
+  return isInstanceOf(value, Vec);
+};
+
+export const isOption = <T extends Codec>(value: unknown): value is Option<T> => {
+  return isInstanceOf(value, Option);
 };

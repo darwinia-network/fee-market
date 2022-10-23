@@ -1,14 +1,15 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { Vec, Option } from "@polkadot/types";
+import { Vec, Option } from "@polkadot/types";
 import type { AccountId32, Balance } from "@polkadot/types/interfaces";
 import type { Market } from "@feemarket/app-provider";
 import type { PalletFeeMarketRelayer, RelayerEntity, FeeMarketPolkadotChain } from "@feemarket/app-types";
 import { getFeeMarketApiSection } from "@feemarket/app-utils";
 import { useCallback, useEffect, useState } from "react";
-import { EMPTY, from, switchMap, forkJoin, map, zip, of } from "rxjs";
+import { EMPTY, from, switchMap, forkJoin, map, zip, of, Observable } from "rxjs";
 import { useApolloClient } from "@apollo/client";
 import { RELAYER_OVERVIEW } from "@feemarket/app-config";
 import { bnToBn, BN } from "@polkadot/util";
+import { isVec, isOption } from "@feemarket/app-utils";
 
 interface DataSource {
   id: string;
@@ -43,13 +44,40 @@ export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh
       const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
 
       if (apiSection) {
-        const allRelayersObs = from(apiPolkadot.query[apiSection].relayers<Option<Vec<AccountId32>>>()).pipe(
+        const allRelayersObs = from(
+          apiPolkadot.query[apiSection].relayers<Vec<AccountId32> | Option<Vec<AccountId32>>>()
+        ).pipe(
+          switchMap((res) => {
+            if (isVec<AccountId32>(res)) {
+              return of(res);
+            } else if (isOption<Vec<AccountId32>>(res) && res.isSome) {
+              return of(res.unwrap());
+            }
+            return of([]);
+          }),
           switchMap((res) =>
             forkJoin(
-              res.isSome
-                ? res.unwrap().map((item) => apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer>(item))
-                : []
+              res.map((item) =>
+                apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(item)
+              )
             )
+          ),
+          switchMap(
+            (res) =>
+              of(
+                res
+                  .map((item) => {
+                    if (isOption<PalletFeeMarketRelayer>(item)) {
+                      if (item.isSome) {
+                        return item.unwrap();
+                      } else {
+                        return null;
+                      }
+                    }
+                    return item as PalletFeeMarketRelayer;
+                  })
+                  .filter((item) => item !== null)
+              ) as Observable<PalletFeeMarketRelayer[]>
           )
         );
         const assignedRelayersObs = from(
@@ -89,34 +117,43 @@ export const useRelayersOverviewData = ({ currentMarket, apiPolkadot, setRefresh
               )
             )
           )
-          .subscribe(([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
-            setRelayersOverviewData({
-              allRelayersDataSource: allRelayersData.map(({ data }, index) => {
-                const relayer = allRelayers[index];
-                return {
-                  id: `${index}`,
-                  relayer: relayer.id.toString(),
-                  count: data.relayer?.totalOrders || 0,
-                  collateral: relayer.collateral,
-                  quote: relayer.fee,
-                  reward: bnToBn(data.relayer?.totalRewards),
-                  slash: bnToBn(data.relayer?.totalSlashes),
-                };
-              }),
-              assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
-                const relayer = assignedRelayers[index];
-                return {
-                  id: `${index}`,
-                  relayer: relayer.id.toString(),
-                  count: data.relayer?.totalOrders || 0,
-                  collateral: relayer.collateral,
-                  quote: relayer.fee,
-                  reward: bnToBn(data.relayer?.totalRewards),
-                  slash: bnToBn(data.relayer?.totalSlashes),
-                };
-              }),
-              loading: false,
-            });
+          .subscribe({
+            next: ([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
+              setRelayersOverviewData({
+                allRelayersDataSource: allRelayersData.map(({ data }, index) => {
+                  const relayer = allRelayers[index];
+                  return {
+                    id: `${index}`,
+                    relayer: relayer.id.toString(),
+                    count: data.relayer?.totalOrders || 0,
+                    collateral: relayer.collateral,
+                    quote: relayer.fee,
+                    reward: bnToBn(data.relayer?.totalRewards),
+                    slash: bnToBn(data.relayer?.totalSlashes),
+                  };
+                }),
+                assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
+                  const relayer = assignedRelayers[index];
+                  return {
+                    id: `${index}`,
+                    relayer: relayer.id.toString(),
+                    count: data.relayer?.totalOrders || 0,
+                    collateral: relayer.collateral,
+                    quote: relayer.fee,
+                    reward: bnToBn(data.relayer?.totalRewards),
+                    slash: bnToBn(data.relayer?.totalSlashes),
+                  };
+                }),
+                loading: false,
+              });
+            },
+            error: (error) => {
+              console.error("get relayer overview data:", error);
+              setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
+            },
+            complete: () => {
+              setRelayersOverviewData((prev) => ({ ...prev, loading: false }));
+            },
           });
       }
     }
