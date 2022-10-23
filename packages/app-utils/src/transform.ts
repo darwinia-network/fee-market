@@ -22,14 +22,14 @@ export const transformRelayerRewardSlash = (data: {
 }): { rewards: [number, number][]; slashs: [number, number][] } => {
   const slashes =
     data.relayer?.slashes?.nodes.reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}Z`;
+      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
       return acc;
     }, {} as Record<string, BN>) || {};
 
   const rewards =
     data.relayer?.rewards?.nodes.reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}Z`;
+      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
       return acc;
     }, {} as Record<string, BN>) || {};
@@ -43,10 +43,10 @@ export const transformRelayerRewardSlash = (data: {
   ).sort((a, b) => compareAsc(new Date(a), new Date(b)));
 
   if (combineDates.length) {
-    const end = new Date(`${new Date().toISOString().split("T")[0]}Z`);
+    const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
 
     for (let cur = new Date(combineDates[0]); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
-      const date = `${cur.toISOString().split("T")[0]}Z`;
+      const date = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
       if (!combineDates.some((item) => item === date)) {
         combineDates.push(date);
       }
@@ -71,18 +71,18 @@ export const transformRelayerQuotes = (data: {
 }): [number, number][] => {
   const datesValues =
     (data.quoteHistory?.data || []).reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}Z`;
+      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || new BN(cur.amount)).add(new BN(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
       return acc;
     }, {} as Record<string, BN>) || {};
 
   const dates = Object.keys(datesValues).sort((a, b) => compareAsc(new Date(a), new Date(b)));
   if (dates.length > 1) {
-    const end = new Date(`${new Date().toISOString().split("T")[0]}Z`);
+    const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
     for (let cur = new Date(dates[0]); compareAsc(cur, end) < 0; cur = addDays(cur, 1)) {
       const next = addDays(cur, 1);
-      const dateCur = `${cur.toISOString().split("T")[0]}Z`;
-      const dateNext = `${next.toISOString().split("T")[0]}Z`;
+      const dateCur = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
+      const dateNext = `${next.toISOString().split("T")[0]}T00:00:00Z`;
       if (!datesValues[dateNext]) {
         datesValues[dateNext] = datesValues[dateCur];
       }
@@ -155,17 +155,17 @@ export const transformTotalOrdersOverview = (data: {
 }): [number, number][] => {
   const datesOrders =
     data.orders?.nodes.reduce((acc, { createBlockTime }) => {
-      const date = `${createBlockTime.split("T")[0]}Z`;
+      const date = `${createBlockTime.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {} as Record<string, number>) || {};
 
   const dates = Object.keys(datesOrders).sort((a, b) => compareAsc(new Date(a), new Date(b)));
   if (dates.length) {
-    const end = new Date(`${new Date().toISOString().split("T")[0]}Z`);
+    const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
 
     for (let cur = new Date(dates[0]); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
-      const date = `${cur.toISOString().split("T")[0]}Z`;
+      const date = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
       if (!datesOrders[date]) {
         datesOrders[date] = 0;
       }
@@ -180,7 +180,7 @@ export const transformTotalOrdersOverview = (data: {
 export const transformFeeHistory = (data: { feeHistory: Pick<FeeEntity, "data"> | null }): [number, number][] => {
   const datesValues =
     data.feeHistory?.data?.reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}Z`;
+      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || new BN(cur.amount)).add(new BN(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
       return acc;
     }, {} as Record<string, BN>) || {};
