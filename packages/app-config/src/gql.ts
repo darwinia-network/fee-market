@@ -48,7 +48,33 @@ export const ORDERS_STATISTICS = gql`
   }
 `;
 
-export const ORDERS_OVERVIEW = gql`
+export const ORDERS_OVERVIEW_ETH = gql`
+  query {
+    orders(orderBy: createBlockNumber) {
+      lane
+      nonce
+      sender
+      deliveryRelayers {
+        deliveryRelayer {
+          address
+        }
+      }
+      confirmationRelayers {
+        confirmationRelayer {
+          address
+        }
+      }
+      createBlockNumber
+      finishBlockNumber
+      createBlockTime
+      finishBlockTime
+      status
+      slotIndex
+    }
+  }
+`;
+
+export const ORDERS_OVERVIEW_POLKADOT = gql`
   query ordersOverview($destination: String!) {
     orders(filter: { id: { startsWith: $destination } }, orderBy: CREATE_EVENT_INDEX_DESC) {
       nodes {

@@ -12,6 +12,8 @@ import {
   RewardEntity,
   SlashReward,
   QuoteEntity,
+  OrdersData,
+  RelayerEntity,
 } from "@feemarket/app-types";
 import { isSubQueryEntities, isTheGraphEntities } from "./entity";
 
@@ -206,4 +208,58 @@ export const transformFeeHistory = (data: {
     new Date(date).getTime(),
     Number(formatUnits(datesValues[date].toString(), POLKADOT_PRECISION)),
   ]);
+};
+
+export const transformEthOrdersData = (data: {
+  orders: (Pick<
+    OrderEntity,
+    | "lane"
+    | "nonce"
+    | "sender"
+    | "createBlockTime"
+    | "finishBlockTime"
+    | "createBlockNumber"
+    | "finishBlockNumber"
+    | "status"
+    | "slotIndex"
+  > & {
+    deliveryRelayers: { deliveryRelayer: Pick<RelayerEntity, "address"> }[] | null;
+    confirmationRelayers: { confirmationRelayer: Pick<RelayerEntity, "address"> }[] | null;
+  })[];
+}): OrdersData[] => {
+  return data.orders.map((item) => ({
+    ...item,
+    deliveryRelayers: item.deliveryRelayers?.map((item) => ({ address: item.deliveryRelayer.address })) || [],
+    confirmationRelayers:
+      item.confirmationRelayers?.map((item) => ({ address: item.confirmationRelayer.address })) || [],
+  }));
+};
+
+export const transformPolkadotOrdersData = (data: {
+  orders: {
+    nodes: (Pick<
+      OrderEntity,
+      | "lane"
+      | "nonce"
+      | "sender"
+      | "createBlockTime"
+      | "finishBlockTime"
+      | "createBlockNumber"
+      | "finishBlockNumber"
+      | "status"
+      | "slotIndex"
+    > & {
+      deliveryRelayers: { nodes: { deliveryRelayer: Pick<RelayerEntity, "address"> }[] } | null;
+      confirmationRelayers: { nodes: { confirmationRelayer: Pick<RelayerEntity, "address"> }[] } | null;
+    })[];
+  } | null;
+}): OrdersData[] => {
+  return (
+    data.orders?.nodes.map((item) => ({
+      ...item,
+      deliveryRelayers: item.deliveryRelayers?.nodes.map((item) => ({ address: item.deliveryRelayer.address })) || [],
+      confirmationRelayers:
+        item.confirmationRelayers?.nodes.map((item) => ({ address: item.confirmationRelayer.address })) || [],
+    })) || []
+  );
 };

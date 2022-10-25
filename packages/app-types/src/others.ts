@@ -37,3 +37,19 @@ export enum UrlSearchParamsKey {
   LANE = "lane",
   NONCE = "nonce",
 }
+
+export type OrdersData = Pick<
+  OrderEntity,
+  | "lane"
+  | "nonce"
+  | "sender"
+  | "createBlockTime"
+  | "finishBlockTime"
+  | "createBlockNumber"
+  | "finishBlockNumber"
+  | "status"
+  | "slotIndex"
+> & {
+  deliveryRelayers: { address: string }[];
+  confirmationRelayers: { address: string }[];
+};
