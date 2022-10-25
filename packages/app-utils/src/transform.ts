@@ -14,6 +14,7 @@ import {
   QuoteEntity,
   OrdersData,
   RelayerEntity,
+  OrderDetail,
 } from "@feemarket/app-types";
 import { isSubQueryEntities, isTheGraphEntities } from "./entity";
 
@@ -262,4 +263,80 @@ export const transformPolkadotOrdersData = (data: {
         item.confirmationRelayers?.nodes.map((item) => ({ address: item.confirmationRelayer.address })) || [],
     })) || []
   );
+};
+
+export const transformEthOrderDetail = (data: {
+  order:
+    | (Pick<
+        OrderEntity,
+        | "lane"
+        | "nonce"
+        | "fee"
+        | "sender"
+        | "sourceTxHash"
+        | "slotIndex"
+        | "status"
+        | "createBlockTime"
+        | "finishBlockTime"
+        | "createBlockNumber"
+        | "finishBlockNumber"
+        | "treasuryAmount"
+        | "assignedRelayersAddress"
+      > & {
+        slashes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "txHash"> & {
+          relayer: Pick<RelayerEntity, "address">;
+        })[];
+        rewards: (Pick<RewardEntity, "amount" | "relayerRole" | "blockNumber" | "txHash"> & {
+          relayer: Pick<RelayerEntity, "address">;
+        })[];
+      })
+    | null;
+}): OrderDetail | null => {
+  return data.order
+    ? {
+        ...data.order,
+        slashes: data.order.slashes.map((item) => ({ ...item, extrinsicIndex: 0 })),
+        rewards: data.order.rewards.map((item) => ({ ...item, extrinsicIndex: 0 })),
+      }
+    : null;
+};
+
+export const transformPolkadotOrderDetail = (data: {
+  order:
+    | (Pick<
+        OrderEntity,
+        | "lane"
+        | "nonce"
+        | "fee"
+        | "sender"
+        | "sourceTxHash"
+        | "slotIndex"
+        | "status"
+        | "createBlockTime"
+        | "finishBlockTime"
+        | "createBlockNumber"
+        | "finishBlockNumber"
+        | "treasuryAmount"
+        | "assignedRelayersAddress"
+      > & {
+        slashes: {
+          nodes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex"> & {
+            relayer: Pick<RelayerEntity, "address">;
+          })[];
+        } | null;
+        rewards: {
+          nodes: (Pick<RewardEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex"> & {
+            relayer: Pick<RelayerEntity, "address">;
+          })[];
+        } | null;
+      })
+    | null;
+}): OrderDetail | null => {
+  return data.order
+    ? {
+        ...data.order,
+        slashes: data.order.slashes?.nodes.map((item) => ({ ...item, txHash: "" })) || [],
+        rewards: data.order.rewards?.nodes.map((item) => ({ ...item, txHash: "" })) || [],
+      }
+    : null;
 };

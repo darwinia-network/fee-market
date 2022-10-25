@@ -35,6 +35,7 @@ export interface RewardEntity {
   blockNumber: string;
   extrinsicIndex: number | null;
   eventIndex: string;
+  txHash: string;
 
   amount: string;
   relayerRole: RelayerRole;
@@ -51,6 +52,7 @@ export interface SlashEntity {
   blockNumber: string;
   extrinsicIndex: number | null;
   eventIndex: string;
+  txHash: string;
 
   amount: string;
   relayerRole: RelayerRole;

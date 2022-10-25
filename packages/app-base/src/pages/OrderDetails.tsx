@@ -2,11 +2,11 @@ import OrderDetailsScaffold, { Info } from "../components/OrderDetailsScaffold";
 import i18n from "i18next";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../locale/localeKeys";
-import { Tooltip } from "@darwinia/ui";
+import { Tooltip, Spinner } from "@darwinia/ui";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
-import { UrlSearchParamsKey, SlotIndex } from "@feemarket/app-types";
+import { UrlSearchParamsKey, SlotIndex, OrderDetail } from "@feemarket/app-types";
 import type {
   OrderEntity,
   SlashEntity,
@@ -16,13 +16,48 @@ import type {
   FeeMarketSourceChainPolkadot,
   OrderStatus,
 } from "@feemarket/app-types";
-import { ORDER_DETAIL, DATE_TIME_FORMATE, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
-import { isEthChain, isPolkadotChain } from "@feemarket/app-utils";
+import {
+  ORDER_DETAIL_ETH,
+  ORDERS_OVERVIEW_POLKADOT,
+  DATE_TIME_FORMATE,
+  ETH_CHAIN_CONF,
+  POLKADOT_CHAIN_CONF,
+} from "@feemarket/app-config";
+import {
+  formatBalance,
+  isEthApi,
+  isEthChain,
+  isPolkadotChain,
+  transformEthOrderDetail,
+  transformPolkadotOrderDetail,
+} from "@feemarket/app-utils";
 import { useGrapgQuery, useAccountName } from "@feemarket/app-hooks";
 import { formatDistance, format } from "date-fns";
 import { capitalize } from "lodash";
-import { utils as ethersUtils } from "ethers";
 import { useLocation } from "react-router-dom";
+
+const ETH_LANE = "eth";
+
+const adaptSlotIndex = (slot: number, api: unknown) => {
+  if (isEthApi(api) && slot > 0) {
+    return slot - 1;
+  }
+  return slot;
+};
+
+const adaptTime = (time: string): number => {
+  if (Number.isNaN(Number(time))) {
+    return new Date(`${time}Z`).getTime();
+  }
+  return new Date(Number(time) * 1000).getTime();
+};
+
+const formatNonce = (nonce: string) => {
+  if (nonce.startsWith("0x")) {
+    return nonce;
+  }
+  return `#${nonce}`;
+};
 
 const formatStatus = (status: OrderStatus): string => {
   switch (status) {
@@ -50,17 +85,6 @@ const RenderOrderStatus = ({ status }: { status: OrderStatus | null | undefined 
   );
 };
 
-const formatBalance = (
-  amount: string | null | undefined,
-  symbol: string | null | undefined,
-  decimals: number | null | undefined
-): string => {
-  if (amount && symbol && decimals) {
-    return `${ethersUtils.commify(ethersUtils.formatUnits(amount, decimals))} ${symbol}`;
-  }
-  return "-";
-};
-
 interface Slot {
   id: string;
   relayer?: string;
@@ -76,12 +100,20 @@ const OrderDetails = () => {
     nonce: null,
   });
   const { currentMarket, setRefresh } = useFeeMarket();
+  const { api } = useApi();
 
-  const nativeToken = currentMarket?.source
-    ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
-      POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??
-      null
-    : null;
+  const sourceChain = currentMarket?.source;
+  // const destinationChain = currentMarket?.destination;
+
+  const nativeToken = useMemo(
+    () =>
+      sourceChain
+        ? ETH_CHAIN_CONF[sourceChain as FeeMarketSourceChainEth]?.nativeToken ??
+          POLKADOT_CHAIN_CONF[sourceChain as FeeMarketSourceChainPolkadot]?.nativeToken ??
+          null
+        : null,
+    [sourceChain]
+  );
 
   useEffect(() => {
     const urlSearchParams = new URLSearchParams(search);
@@ -91,9 +123,9 @@ const OrderDetails = () => {
   }, [search]);
 
   const {
-    // loading: orderDetailLoading,
-    data: orderDetailData,
-    refetch: updateOrderDetail,
+    transformedData: ethOrderDetailData,
+    loading: ethOrderDetailLoading,
+    refetch: updateEthOrderDetail,
   } = useGrapgQuery<
     {
       order:
@@ -105,8 +137,48 @@ const OrderDetails = () => {
             | "sender"
             | "sourceTxHash"
             | "slotIndex"
-            | "slotTime"
-            | "outOfSlotBlock"
+            | "status"
+            | "createBlockTime"
+            | "finishBlockTime"
+            | "createBlockNumber"
+            | "finishBlockNumber"
+            | "treasuryAmount"
+            | "assignedRelayersAddress"
+          > & {
+            slashes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "txHash"> & {
+              relayer: Pick<RelayerEntity, "address">;
+            })[];
+            rewards: (Pick<RewardEntity, "amount" | "relayerRole" | "blockNumber" | "txHash"> & {
+              relayer: Pick<RelayerEntity, "address">;
+            })[];
+          })
+        | null;
+    },
+    { orderId: string },
+    OrderDetail | null
+  >(
+    ORDER_DETAIL_ETH,
+    {
+      variables: { orderId: `${ETH_LANE}-${laneAndNonce.nonce}` },
+    },
+    transformEthOrderDetail
+  );
+
+  const {
+    loading: polkadotOrderDetailLoading,
+    transformedData: polkadotOrderDetailData,
+    refetch: updatePolkadotOrderDetail,
+  } = useGrapgQuery<
+    {
+      order:
+        | (Pick<
+            OrderEntity,
+            | "lane"
+            | "nonce"
+            | "fee"
+            | "sender"
+            | "sourceTxHash"
+            | "slotIndex"
             | "status"
             | "createBlockTime"
             | "finishBlockTime"
@@ -128,10 +200,28 @@ const OrderDetails = () => {
           })
         | null;
     },
-    { orderId: string }
-  >(ORDER_DETAIL, {
-    variables: { orderId: `${currentMarket?.destination}-${laneAndNonce.lane}-${laneAndNonce.nonce}` },
-  });
+    { orderId: string },
+    OrderDetail | null
+  >(
+    ORDERS_OVERVIEW_POLKADOT,
+    {
+      variables: { orderId: `${currentMarket?.destination}-${laneAndNonce.lane}-${laneAndNonce.nonce}` },
+    },
+    transformPolkadotOrderDetail
+  );
+
+  const orderDetailData = useMemo(() => {
+    return ethOrderDetailData ?? polkadotOrderDetailData ?? null;
+  }, [ethOrderDetailData, polkadotOrderDetailData]);
+
+  const orderDetailLoading = useMemo(() => {
+    return ethOrderDetailLoading ?? polkadotOrderDetailLoading ?? false;
+  }, [ethOrderDetailLoading, polkadotOrderDetailLoading]);
+
+  const updateOrderDetail = useCallback(() => {
+    updateEthOrderDetail();
+    updatePolkadotOrderDetail();
+  }, [updateEthOrderDetail, updatePolkadotOrderDetail]);
 
   useEffect(() => {
     setRefresh(() => () => {
@@ -140,27 +230,27 @@ const OrderDetails = () => {
   }, [setRefresh, updateOrderDetail]);
 
   const slots: Slot[] =
-    orderDetailData?.order?.slotIndex || orderDetailData?.order?.slotIndex === 0
+    orderDetailData?.slotIndex || orderDetailData?.slotIndex === 0
       ? [
           {
             id: "1",
-            relayer: orderDetailData.order.assignedRelayersAddress[0],
-            percentage: orderDetailData.order.slotIndex === SlotIndex.SLOT_1 ? 50 : undefined,
+            relayer: orderDetailData.assignedRelayersAddress[0],
+            percentage: adaptSlotIndex(orderDetailData.slotIndex, api) === SlotIndex.SLOT_1 ? 50 : undefined,
           },
           {
             id: "2",
-            relayer: orderDetailData.order.assignedRelayersAddress[1],
-            percentage: orderDetailData.order.slotIndex === SlotIndex.SLOT_2 ? 50 : undefined,
+            relayer: orderDetailData.assignedRelayersAddress[1],
+            percentage: adaptSlotIndex(orderDetailData.slotIndex, api) === SlotIndex.SLOT_2 ? 50 : undefined,
           },
           {
             id: "3",
-            relayer: orderDetailData.order.assignedRelayersAddress[2],
-            percentage: orderDetailData.order.slotIndex === SlotIndex.SLOT_3 ? 50 : undefined,
+            relayer: orderDetailData.assignedRelayersAddress[2],
+            percentage: adaptSlotIndex(orderDetailData.slotIndex, api) === SlotIndex.SLOT_3 ? 50 : undefined,
           },
           {
             id: "4",
             isOutOfSlot: true,
-            percentage: orderDetailData.order.slotIndex === SlotIndex.OUT_OF_SLOT ? 50 : undefined,
+            percentage: adaptSlotIndex(orderDetailData.slotIndex, api) === SlotIndex.OUT_OF_SLOT ? 50 : undefined,
           },
         ]
       : [];
@@ -169,39 +259,39 @@ const OrderDetails = () => {
     {
       id: "1",
       label: t(localeKeys.nonce),
-      details: orderDetailData?.order?.nonce ? `#${orderDetailData.order.nonce}` : "-",
+      details: orderDetailData?.nonce ? `${formatNonce(orderDetailData.nonce)}` : "-",
     },
     {
       id: "2",
       label: t(localeKeys.laneId),
-      details: orderDetailData?.order?.nonce ? `${orderDetailData.order.lane}` : "-",
+      details: orderDetailData?.lane ? `${orderDetailData.lane}` : "-",
     },
     {
       id: "3",
       label: t(localeKeys.timestamp),
-      details: orderDetailData?.order?.createBlockTime
+      details: orderDetailData?.createBlockTime
         ? `${capitalize(
-            formatDistance(new Date(`${orderDetailData.order.createBlockTime}Z`), Date.now(), { addSuffix: true })
-          )} (${format(new Date(`${orderDetailData.order.createBlockTime}Z`), DATE_TIME_FORMATE)} +UTC)`
+            formatDistance(adaptTime(orderDetailData.createBlockTime), Date.now(), { addSuffix: true })
+          )} (${format(adaptTime(orderDetailData.createBlockTime), DATE_TIME_FORMATE)} +UTC)`
         : "-",
     },
-    ...(orderDetailData?.order?.sourceTxHash
+    ...(orderDetailData?.sourceTxHash
       ? [
           {
             id: "4",
             label: t(localeKeys.sourceTxID),
-            details: <RenderTxHash hash={orderDetailData.order.sourceTxHash} />,
+            details: <RenderTxHash hash={orderDetailData.sourceTxHash} />,
           },
         ]
       : []),
-    ...(orderDetailData?.order?.sender
+    ...(orderDetailData?.sender
       ? [
           {
             id: "5",
             label: t(localeKeys.sender),
             details: (
               <AccountName
-                address={orderDetailData.order.sender}
+                address={orderDetailData.sender}
                 className={"text-primary text-12-bold lg:text-14-bold break-words"}
               />
             ),
@@ -211,33 +301,31 @@ const OrderDetails = () => {
     {
       id: "6",
       label: t(localeKeys.status),
-      details: <RenderOrderStatus status={orderDetailData?.order?.status} />,
+      details: <RenderOrderStatus status={orderDetailData?.status} />,
     },
     {
       id: "7",
       label: t(localeKeys.fee),
       details:
-        orderDetailData?.order?.fee && nativeToken
-          ? `${ethersUtils.commify(ethersUtils.formatUnits(orderDetailData.order.fee, nativeToken.decimals))} ${
-              nativeToken.symbol
-            }`
+        orderDetailData?.fee && nativeToken
+          ? formatBalance(orderDetailData.fee, nativeToken.decimals, nativeToken.symbol)
           : "-",
     },
-    ...(orderDetailData?.order?.createBlockNumber
+    ...(orderDetailData?.createBlockNumber
       ? [
           {
             id: "8",
             label: t(localeKeys.createdAt),
-            details: <RenderBlock block={orderDetailData.order.createBlockNumber} />,
+            details: <RenderBlock block={orderDetailData.createBlockNumber} />,
           },
         ]
       : []),
-    ...(orderDetailData?.order?.finishBlockNumber
+    ...(orderDetailData?.finishBlockNumber
       ? [
           {
             id: "9",
             label: t(localeKeys.confirmAt),
-            details: <RenderBlock block={orderDetailData.order.finishBlockNumber} />,
+            details: <RenderBlock block={orderDetailData.finishBlockNumber} />,
           },
         ]
       : []),
@@ -248,20 +336,21 @@ const OrderDetails = () => {
     },
   ];
 
-  const rewards: Info[] = orderDetailData?.order?.rewards?.nodes.length
+  const rewards: Info[] = orderDetailData?.rewards?.length
     ? [
         {
           id: "1",
-          label: t(localeKeys.extrinsic),
+          label: t(localeKeys.transaction),
           details: (
             <div className={"text-primary text-12-bold lg:text-14-bold"}>
-              {orderDetailData.order.rewards.nodes[0].extrinsicIndex
-                ? `${orderDetailData.order.rewards.nodes[0].blockNumber}-${orderDetailData.order.rewards.nodes[0].extrinsicIndex}`
-                : "-"}
+              {orderDetailData.rewards[0].txHash ??
+                (orderDetailData.rewards[0].extrinsicIndex
+                  ? `${orderDetailData.rewards[0].blockNumber}-${orderDetailData.rewards[0].extrinsicIndex}`
+                  : "-")}
             </div>
           ),
         },
-        ...(orderDetailData.order.rewards.nodes
+        ...(orderDetailData.rewards
           .filter((item) => item.relayerRole === "Assigned")
           .map((item, index) => ({
             id: `2-${index}`,
@@ -270,12 +359,12 @@ const OrderDetails = () => {
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 <div className={"text-12 lg:text-14"}>
-                  (+{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
+                  (+{formatBalance(item.amount, nativeToken?.decimals, nativeToken?.symbol)})
                 </div>
               </div>
             ),
           })) || []),
-        ...(orderDetailData.order.rewards.nodes
+        ...(orderDetailData.rewards
           .filter((item) => item.relayerRole === "Delivery")
           .map((item, index) => ({
             id: `3-${index}`,
@@ -284,12 +373,12 @@ const OrderDetails = () => {
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 <div className={"text-12 lg:text-14"}>
-                  (+{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
+                  (+{formatBalance(item.amount, nativeToken?.decimals, nativeToken?.symbol)})
                 </div>
               </div>
             ),
           })) || []),
-        ...(orderDetailData.order.rewards.nodes
+        ...(orderDetailData.rewards
           .filter((item) => item.relayerRole === "Confirmation")
           .map((item, index) => ({
             id: `4-${index}`,
@@ -298,20 +387,20 @@ const OrderDetails = () => {
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 <div className={"text-12 lg:text-14"}>
-                  (+{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
+                  (+{formatBalance(item.amount, nativeToken?.decimals, nativeToken?.symbol)})
                 </div>
               </div>
             ),
           })) || []),
-        ...(orderDetailData.order.treasuryAmount
+        ...(orderDetailData.treasuryAmount
           ? [
               {
                 id: "6",
                 label: t(localeKeys.treasury),
                 details: `+${formatBalance(
-                  orderDetailData.order.treasuryAmount,
-                  nativeToken?.symbol,
-                  nativeToken?.decimals
+                  orderDetailData.treasuryAmount,
+                  nativeToken?.decimals,
+                  nativeToken?.symbol
                 )}`,
               },
             ]
@@ -319,27 +408,28 @@ const OrderDetails = () => {
       ]
     : [];
 
-  const slash: Info[] = orderDetailData?.order?.slashes?.nodes.length
+  const slash: Info[] = orderDetailData?.slashes?.length
     ? [
         {
           id: "1",
-          label: t(localeKeys.extrinsic),
+          label: t(localeKeys.transaction),
           details: (
             <div className={"text-primary text-12-bold lg:text-14-bold"}>
-              {orderDetailData.order.slashes.nodes[0].extrinsicIndex
-                ? `${orderDetailData.order.slashes.nodes[0].blockNumber}-${orderDetailData.order.slashes.nodes[0].extrinsicIndex}`
-                : "-"}
+              {orderDetailData.slashes[0].txHash ??
+                (orderDetailData.slashes[0].extrinsicIndex
+                  ? `${orderDetailData.slashes[0].blockNumber}-${orderDetailData.slashes[0].extrinsicIndex}`
+                  : "-")}
             </div>
           ),
         },
-        ...(orderDetailData.order.slashes.nodes.map((item, index) => ({
+        ...(orderDetailData.slashes.map((item, index) => ({
           id: `2-${index}`,
           label: t(localeKeys.assignedRelayers),
           details: (
             <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
               <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
               <div className={"text-12 lg:text-14"}>
-                (-{formatBalance(item.amount, nativeToken?.symbol, nativeToken?.decimals)})
+                (-{formatBalance(item.amount, nativeToken?.decimals, nativeToken?.symbol)})
               </div>
             </div>
           ),
@@ -348,11 +438,13 @@ const OrderDetails = () => {
     : [];
 
   return (
-    <div className={"flex flex-col gap-[0.9375rem] lg:gap-[1.875rem]"}>
-      <OrderDetailsScaffold title={t(localeKeys.details)} data={details} />
-      <OrderDetailsScaffold title={t(localeKeys.reward)} data={rewards} />
-      <OrderDetailsScaffold title={t(localeKeys.slash)} data={slash} />
-    </div>
+    <Spinner isLoading={orderDetailLoading}>
+      <div className={"flex flex-col gap-[0.9375rem] lg:gap-[1.875rem]"}>
+        <OrderDetailsScaffold title={t(localeKeys.details)} data={details} />
+        <OrderDetailsScaffold title={t(localeKeys.reward)} data={rewards} />
+        <OrderDetailsScaffold title={t(localeKeys.slash)} data={slash} />
+      </div>
+    </Spinner>
   );
 };
 

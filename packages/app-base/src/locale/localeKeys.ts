@@ -132,6 +132,7 @@ const localeKeys = {
   search: "search",
   failed: "failed",
   successed: "successed",
+  transaction: "transaction",
 };
 
 export default localeKeys;

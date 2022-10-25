@@ -106,7 +106,43 @@ export const ORDERS_OVERVIEW_POLKADOT = gql`
   }
 `;
 
-export const ORDER_DETAIL = gql`
+export const ORDER_DETAIL_ETH = gql`
+  query order($orderId: String!) {
+    order(id: $orderId) {
+      lane
+      nonce
+      fee
+      sender
+      sourceTxHash
+      slotIndex
+      status
+      createBlockTime
+      finishBlockTime
+      createBlockNumber
+      finishBlockNumber
+      treasuryAmount
+      assignedRelayersAddress
+      slashes {
+        amount
+        relayerRole
+        txHash
+        relayer {
+          address
+        }
+      }
+      rewards {
+        amount
+        relayerRole
+        txHash
+        relayer {
+          address
+        }
+      }
+    }
+  }
+`;
+
+export const ORDER_DETAIL_POLKADOT = gql`
   query orderDetail($orderId: String!) {
     order(id: $orderId) {
       lane
