@@ -32,7 +32,7 @@ const localeKeys = {
   ordersCount: "ordersCount",
   days: "days",
   all: "all",
-  freeHistory: "freeHistory",
+  feeHistory: "feeHistory",
   searchByRelayerAddress: "searchByRelayerAddress",
   allRelayers: "allRelayers",
   assignedRelayers: "assignedRelayers",

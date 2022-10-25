@@ -25,7 +25,7 @@ const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryData }: Prop
     <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>
       <OrdersCountChart title={t(localeKeys.ordersCount)} data={ordersCountData} />
       <FeeHistoryChart
-        title={t(localeKeys.freeHistory, { currency: nativeToken?.symbol || "-" })}
+        title={t(localeKeys.feeHistory, { currency: nativeToken?.symbol || "-" })}
         data={feeHistoryData}
       />
     </div>
