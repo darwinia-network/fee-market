@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { EMPTY, from, switchMap, forkJoin, of, Observable } from "rxjs";
-
+import { EMPTY, from, switchMap, forkJoin, of, Observable, zip } from "rxjs";
+import { providers, Contract, BigNumber } from "ethers";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import type { ApiPromise } from "@polkadot/api";
 import type { Vec, u128, Option } from "@polkadot/types";
-import type { Balance, AccountId32 } from "@polkadot/types/interfaces";
+import type { AccountId32 } from "@polkadot/types/interfaces";
 
 import type { Market } from "@feemarket/app-provider";
 import { useGrapgQuery } from "./graphQuery";
@@ -14,11 +14,14 @@ import {
   getFeeMarketApiSection,
   isVec,
   isOption,
+  isEthApi,
+  isPolkadotApi,
+  isEthChain,
+  isPolkadotChain,
 } from "@feemarket/app-utils";
-import { FEE_MARKET_OVERVIEW, TOTAL_ORDERS_OVERVIEW, FEE_HISTORY } from "@feemarket/app-config";
+import { FEE_MARKET_OVERVIEW, TOTAL_ORDERS_OVERVIEW, FEE_HISTORY, ETH_CHAIN_CONF } from "@feemarket/app-config";
 import type {
   MarketEntity,
-  FeeMarketPolkadotChain,
   OrderEntity,
   FeeEntity,
   PalletFeeMarketRelayer,
@@ -27,17 +30,20 @@ import type {
 
 interface Params {
   currentMarket: Market | null;
-  apiPolkadot: ApiPromise | null;
+  api: ApiPromise | providers.Provider | null;
   setRefresh: (fn: () => void) => void;
 }
 
-export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefresh }: Params) => {
+export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Params) => {
+  const sourceChain = currentMarket?.source;
+  const destinationChain = currentMarket?.destination;
+
   const [totalRelayers, setTotalRelayers] = useState<{
     total: number | null | undefined;
     active: number | null | undefined;
     loading: boolean;
   }>({ total: null, active: null, loading: false });
-  const [currentFee, setCurrentFee] = useState<{ value: BN | Balance | null | undefined; loading: boolean }>({
+  const [currentFee, setCurrentFee] = useState<{ value: BN | BigNumber | null | undefined; loading: boolean }>({
     value: null,
     loading: false,
   }); // Amount
@@ -109,13 +115,39 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
   );
 
   const updateTotalRelayers = useCallback(() => {
-    if (apiPolkadot && currentMarket?.destination) {
-      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
+    if (isEthApi(api) && isEthChain(sourceChain)) {
+      const chainConfig = ETH_CHAIN_CONF[sourceChain];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      setTotalRelayers((prev) => ({ ...prev, loading: true }));
+
+      // index, relayers, fees, collaterals, locks
+      type OrderBook = [BigNumber, string[], BigNumber[], BigNumber[], BigNumber[]];
+
+      return from(contract.relayerCount() as Promise<BigNumber>)
+        .pipe(
+          switchMap((relayerCount) =>
+            zip(of(relayerCount), from(contract.getOrderBook(relayerCount, false) as Promise<OrderBook>))
+          )
+        )
+        .subscribe({
+          next: ([relayerCount, orderBook]) => {
+            setTotalRelayers({
+              active: orderBook[1].length,
+              total: relayerCount.toNumber(),
+              loading: false,
+            });
+          },
+          complete: () => setTotalRelayers((prev) => ({ ...prev, loading: false })),
+          error: () => setTotalRelayers({ active: null, total: null, loading: false }),
+        });
+    } else if (isPolkadotApi(api) && isPolkadotChain(destinationChain)) {
+      const apiSection = getFeeMarketApiSection(api, destinationChain);
 
       if (apiSection) {
         setTotalRelayers((prev) => ({ ...prev, loading: true }));
 
-        return from(apiPolkadot.query[apiSection].relayers<Vec<AccountId32> | Option<Vec<AccountId32>>>())
+        return from(api.query[apiSection].relayers<Vec<AccountId32> | Option<Vec<AccountId32>>>())
           .pipe(
             switchMap((res) => {
               if (isVec<AccountId32>(res)) {
@@ -128,9 +160,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
             switchMap((total) =>
               forkJoin(
                 total.map((relayer) =>
-                  apiPolkadot.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(
-                    relayer
-                  )
+                  api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayer)
                 )
               )
             ),
@@ -155,7 +185,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
           .subscribe({
             next: (relayers) => {
               let active = 0;
-              const collateralPerOrder = apiPolkadot.consts[apiSection].collateralPerOrder as u128;
+              const collateralPerOrder = api.consts[apiSection].collateralPerOrder as u128;
 
               relayers.forEach((relayer) => {
                 if (relayer.collateral.gte(collateralPerOrder)) {
@@ -178,16 +208,32 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
     setTotalRelayers({ active: null, total: null, loading: false });
 
     return EMPTY.subscribe();
-  }, [apiPolkadot, currentMarket]);
+  }, [api, sourceChain, destinationChain]);
 
   const updateCurrentFee = useCallback(() => {
-    if (apiPolkadot && currentMarket?.destination) {
-      const apiSection = getFeeMarketApiSection(apiPolkadot, currentMarket.destination as FeeMarketPolkadotChain);
+    if (isEthApi(api) && isEthChain(sourceChain)) {
+      const chainConfig = ETH_CHAIN_CONF[sourceChain];
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
+      setCurrentFee((prev) => ({ ...prev, loading: true }));
+
+      return from(contract.market_fee() as Promise<BigNumber>).subscribe({
+        next: (res) => {
+          setCurrentFee({
+            value: res,
+            loading: false,
+          });
+        },
+        complete: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
+        error: () => setCurrentFee({ value: null, loading: false }),
+      });
+    } else if (isPolkadotApi(api) && isPolkadotChain(destinationChain)) {
+      const apiSection = getFeeMarketApiSection(api, destinationChain);
 
       if (apiSection) {
         setCurrentFee((prev) => ({ ...prev, loading: true }));
 
-        return from(apiPolkadot.query[apiSection].assignedRelayers<Option<Vec<PalletFeeMarketRelayer>>>()).subscribe({
+        return from(api.query[apiSection].assignedRelayers<Option<Vec<PalletFeeMarketRelayer>>>()).subscribe({
           next: (res) => {
             if (res.isSome) {
               const lastOne = res.unwrap().pop();
@@ -205,7 +251,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
     setCurrentFee({ value: null, loading: false });
 
     return EMPTY.subscribe();
-  }, [apiPolkadot, currentMarket?.destination]);
+  }, [api, sourceChain, destinationChain]);
 
   useEffect(() => {
     const sub$$ = updateTotalRelayers();

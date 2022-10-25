@@ -6,10 +6,10 @@ import OverviewCharts from "../components/OverviewCharts";
 
 const Overview = () => {
   const { currentMarket, setRefresh } = useFeeMarket();
-  const { apiPolkadot } = useApi();
+  const { api } = useApi();
   const { averageSpeed, totalOrders, totalRelayers, totalReward, currentFee, marketOrdersHistory, marketFeeHistory } =
     useFeeMarketOverviewData({
-      apiPolkadot,
+      api,
       currentMarket,
       setRefresh,
     });

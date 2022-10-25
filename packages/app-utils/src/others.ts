@@ -112,7 +112,7 @@ export const formatBalance = (
 ): string => {
   if ((amount || amount === 0) && decimals) {
     const precision = overrides?.precision ?? decimals === 9 ? 1 : decimals === 18 ? 4 : BALANCE_DECIMALS;
-    const [integer, decimal] = ethersUtils.formatUnits(amount.toString(), decimals).split(".");
+    const [integer, decimal] = ethersUtils.commify(ethersUtils.formatUnits(amount.toString(), decimals)).split(".");
     const balance = Number(decimal) ? `${integer}.${precision ? decimal.slice(0, precision) : decimal}` : integer;
     return symbol ? `${balance} ${symbol}` : balance;
   }
