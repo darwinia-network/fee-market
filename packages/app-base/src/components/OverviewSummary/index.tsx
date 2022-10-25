@@ -15,10 +15,10 @@ const formatRelayers = (active?: number | null, total?: number | null): string =
   return `${a} / ${t}`;
 };
 
-const formatSpeed = (speed?: number | null): string => {
+const formatSpeed = (speed?: number | string | null): string => {
   if (speed || speed === 0) {
     const now = Date.now();
-    const distance = formatDistanceStrict(now, now + speed).split(" ");
+    const distance = formatDistanceStrict(now, Number(now) + Number(speed)).split(" ");
     return `${distance[0]}${distance[1].slice(0, 1)}`;
   }
   return "-";
@@ -47,7 +47,7 @@ const formatOrders = (orders?: number | null): string => {
 
 interface Props {
   averageSpeed: {
-    value: number | null | undefined;
+    value: number | string | null | undefined;
     loading: boolean;
   };
   totalOrders: {

@@ -67,7 +67,7 @@ export interface MarketEntity {
   totalSlash: string | null;
   totalReward: string | null;
 
-  averageSpeed: number | null;
+  averageSpeed: number | string | null;
 
   finishedOrders: number | null;
   unfinishedInSlotOrders: number | null;

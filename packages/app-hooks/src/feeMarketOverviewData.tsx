@@ -56,7 +56,7 @@ export const useFeeMarketOverviewData = ({ apiPolkadot, currentMarket, setRefres
   });
 
   const { averageSpeed, totalOrders, totalReward } = useMemo(() => {
-    const averageSpeed: { value: number | null | undefined; loading: boolean } = {
+    const averageSpeed: { value: number | string | null | undefined; loading: boolean } = {
       value: null,
       loading: speedTotalOrdersAndRewardLoading,
     }; // In milliseconds
