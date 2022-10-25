@@ -9,7 +9,7 @@ const config: EthChainConfig = {
   displayName: "Ethereum",
   chainLogo,
   graphql: {
-    endpoint: "",
+    endpoint: "https://thegraph.darwinia.network/feemarket/subgraphs/name/feemarket-ethereum",
   },
   nativeToken: {
     symbol: "ETH",
