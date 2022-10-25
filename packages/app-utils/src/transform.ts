@@ -13,6 +13,7 @@ import {
   SlashReward,
   QuoteEntity,
 } from "@feemarket/app-types";
+import { isSubQueryEntities, isTheGraphEntities } from "./entity";
 
 export const transformRelayerRewardSlash = (data: {
   relayer: {
@@ -151,11 +152,20 @@ export const transformRelayerOrders = (data: {
 };
 
 export const transformTotalOrdersOverview = (data: {
-  orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null;
+  orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | Pick<OrderEntity, "createBlockTime">[] | null;
 }): [number, number][] => {
+  const entities = isTheGraphEntities<Pick<OrderEntity, "createBlockTime">>(data.orders)
+    ? data.orders
+    : isSubQueryEntities<Pick<OrderEntity, "createBlockTime">>(data.orders)
+    ? data.orders.nodes
+    : [];
+
   const datesOrders =
-    data.orders?.nodes.reduce((acc, { createBlockTime }) => {
-      const date = `${createBlockTime.split("T")[0]}T00:00:00Z`;
+    entities.reduce((acc, { createBlockTime }) => {
+      const time = Number.isNaN(Number(createBlockTime))
+        ? createBlockTime
+        : new Date(Number(createBlockTime) * 1000).toISOString();
+      const date = `${time.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {} as Record<string, number>) || {};
@@ -177,10 +187,17 @@ export const transformTotalOrdersOverview = (data: {
     .map((date) => [new Date(date).getTime(), datesOrders[date]]);
 };
 
-export const transformFeeHistory = (data: { feeHistory: Pick<FeeEntity, "data"> | null }): [number, number][] => {
+export const transformFeeHistory = (data: {
+  feeHistory?: Pick<FeeEntity, "data"> | null;
+  feeHistories?: { amount: string; blockTime: string }[];
+}): [number, number][] => {
+  const entities = data.feeHistory?.data ?? data.feeHistories ?? [];
   const datesValues =
-    data.feeHistory?.data?.reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
+    entities.reduce((acc, cur) => {
+      const time = Number.isNaN(Number(cur.blockTime))
+        ? cur.blockTime
+        : new Date(Number(cur.blockTime) * 1000).toISOString();
+      const date = `${time.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || new BN(cur.amount)).add(new BN(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
       return acc;
     }, {} as Record<string, BN>) || {};

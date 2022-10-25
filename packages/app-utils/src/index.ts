@@ -7,3 +7,4 @@ export * from "./graphql";
 export * from "./contract";
 export * from "./balance";
 export * from "./tx";
+export * from "./entity";

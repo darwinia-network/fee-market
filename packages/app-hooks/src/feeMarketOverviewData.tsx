@@ -19,7 +19,14 @@ import {
   isEthChain,
   isPolkadotChain,
 } from "@feemarket/app-utils";
-import { FEE_MARKET_OVERVIEW, TOTAL_ORDERS_OVERVIEW, FEE_HISTORY, ETH_CHAIN_CONF } from "@feemarket/app-config";
+import {
+  FEE_MARKET_OVERVIEW,
+  TOTAL_ORDERS_OVERVIEW_ETH,
+  TOTAL_ORDERS_OVERVIEW_POLKADOT,
+  FEE_HISTORY_ETH,
+  FEE_HISTORY_POLKADOT,
+  ETH_CHAIN_CONF,
+} from "@feemarket/app-config";
 import type {
   MarketEntity,
   OrderEntity,
@@ -86,12 +93,19 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
     return { averageSpeed, totalOrders, totalReward };
   }, [speedTotalOrdersAndReward, speedTotalOrdersAndRewardLoading]);
 
-  const { transformedData: marketOrdersHistory, refetch: updateMarketOrdersHistory } = useGrapgQuery<
+  // ============================= Begin: Overview page「Orders Count」Chart ===================================
+  const { transformedData: marketOrdersHistoryEth, refetch: updateMarketOrdersHistoryEth } = useGrapgQuery<
+    { orders: Pick<OrderEntity, "createBlockTime">[] | null },
+    unknown,
+    [number, number][]
+  >(TOTAL_ORDERS_OVERVIEW_ETH, {}, transformTotalOrdersOverview);
+
+  const { transformedData: marketOrdersHistoryPolkadot, refetch: updateMarketOrdersHistoryPolkadot } = useGrapgQuery<
     { orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null },
     { destination: FeeMarketChain | undefined },
     [number, number][]
   >(
-    TOTAL_ORDERS_OVERVIEW,
+    TOTAL_ORDERS_OVERVIEW_POLKADOT,
     {
       variables: {
         destination: currentMarket?.destination,
@@ -100,12 +114,37 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
     transformTotalOrdersOverview
   );
 
-  const { transformedData: marketFeeHistory, refetch: updateMarketFeeHistory } = useGrapgQuery<
+  const marketOrdersHistory = useMemo(() => {
+    if (marketOrdersHistoryEth?.length) {
+      return marketOrdersHistoryEth;
+    }
+    if (marketOrdersHistoryPolkadot?.length) {
+      return marketOrdersHistoryPolkadot;
+    }
+    return [];
+  }, [marketOrdersHistoryEth, marketOrdersHistoryPolkadot]);
+
+  const updateMarketOrdersHistory = useCallback(() => {
+    updateMarketOrdersHistoryEth();
+    updateMarketOrdersHistoryPolkadot();
+  }, [updateMarketOrdersHistoryEth, updateMarketOrdersHistoryPolkadot]);
+
+  // ============================= End: Overview page「Orders Count」Chart ===================================
+
+  // ============================= Begin: Overview page「Fee History」Chart ===================================
+
+  const { transformedData: marketFeeHistoryEth, refetch: updateMarketFeeHistoryEth } = useGrapgQuery<
+    { feeHistories: { amount: string; blockTime: string }[] },
+    unknown,
+    [number, number][]
+  >(FEE_HISTORY_ETH, {}, transformFeeHistory);
+
+  const { transformedData: marketFeeHistoryPolkadot, refetch: updateMarketFeeHistoryPolkadot } = useGrapgQuery<
     { feeHistory: Pick<FeeEntity, "data"> | null },
     { destination: FeeMarketChain | undefined },
     [number, number][]
   >(
-    FEE_HISTORY,
+    FEE_HISTORY_POLKADOT,
     {
       variables: {
         destination: currentMarket?.destination,
@@ -113,6 +152,23 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
     },
     transformFeeHistory
   );
+
+  const marketFeeHistory = useMemo(() => {
+    if (marketFeeHistoryEth?.length) {
+      return marketFeeHistoryEth;
+    }
+    if (marketFeeHistoryPolkadot?.length) {
+      return marketFeeHistoryPolkadot;
+    }
+    return [];
+  }, [marketFeeHistoryEth, marketFeeHistoryPolkadot]);
+
+  const updateMarketFeeHistory = useCallback(() => {
+    updateMarketFeeHistoryEth();
+    updateMarketFeeHistoryPolkadot();
+  }, [updateMarketFeeHistoryEth, updateMarketFeeHistoryPolkadot]);
+
+  // ============================= Begin: Overview page「Fee History」Chart ===================================
 
   const updateTotalRelayers = useCallback(() => {
     if (isEthApi(api) && isEthChain(sourceChain)) {

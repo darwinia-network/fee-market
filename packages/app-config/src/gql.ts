@@ -10,7 +10,15 @@ export const FEE_MARKET_OVERVIEW = gql`
   }
 `;
 
-export const TOTAL_ORDERS_OVERVIEW = gql`
+export const TOTAL_ORDERS_OVERVIEW_ETH = gql`
+  query {
+    orders(orderBy: createBlockNumber) {
+      createBlockTime
+    }
+  }
+`;
+
+export const TOTAL_ORDERS_OVERVIEW_POLKADOT = gql`
   query totalOrdersOverview($destination: String!) {
     orders(filter: { id: { startsWith: $destination } }, orderBy: CREATE_BLOCK_TIME_ASC) {
       nodes {
@@ -172,10 +180,19 @@ export const RELAYER_ORDERS = gql`
   }
 `;
 
-export const FEE_HISTORY = gql`
+export const FEE_HISTORY_ETH = gql`
   query feeHistory($destination: String!) {
     feeHistory(id: $destination) {
       data
+    }
+  }
+`;
+
+export const FEE_HISTORY_POLKADOT = gql`
+  query {
+    feeHistories(orderBy: blockNumber) {
+      amount
+      blockTime
     }
   }
 `;
