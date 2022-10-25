@@ -7,13 +7,13 @@ import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersOverviewData, useAccountName } from "@feemarket/app-hooks";
 import { BN, bnToBn } from "@polkadot/util";
 import { Identicon } from "@polkadot/react-identicon";
-import type { Balance } from "@polkadot/types/interfaces";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import { formatBalance, isPolkadotChain } from "@feemarket/app-utils";
+import { BigNumber } from "ethers";
 
-const renderBalance = (amount: Balance | BN, decimals?: number | null) => {
+const renderBalance = (amount: BN | BigNumber, decimals?: number | null) => {
   if (decimals) {
     return <span>{formatBalance(amount, decimals, undefined)}</span>;
   }
@@ -25,10 +25,10 @@ interface Relayer {
   id: string;
   relayer: string;
   count: number;
-  collateral: Balance;
-  quote: Balance;
-  reward: BN;
-  slash: BN;
+  collateral: BN | BigNumber;
+  quote: BN | BigNumber;
+  reward: BN | BigNumber;
+  slash: BN | BigNumber;
 }
 
 const RelayersOverview = () => {
@@ -37,8 +37,8 @@ const RelayersOverview = () => {
   const [keywords, setKeywords] = useState("");
 
   const { currentMarket, setRefresh } = useFeeMarket();
-  const { apiPolkadot } = useApi();
-  const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, apiPolkadot, setRefresh });
+  const { api } = useApi();
+  const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, api, setRefresh });
 
   const nativeToken = currentMarket?.source
     ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
@@ -172,7 +172,6 @@ const RelayersOverview = () => {
 
   const onTabChange = (tab: Tab) => {
     setActiveTabId(tab.id);
-    console.log("tab changed=====", tab);
   };
 
   const getTableTabs = () => {
