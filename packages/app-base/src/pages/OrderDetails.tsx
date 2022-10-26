@@ -382,7 +382,7 @@ const OrderDetails = () => {
           .filter((item) => item.relayerRole === "Confirmation")
           .map((item, index) => ({
             id: `4-${index}`,
-            label: t(localeKeys.deliveryRelayer),
+            label: t(localeKeys.confirmationRelayer),
             details: (
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
