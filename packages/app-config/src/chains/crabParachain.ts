@@ -13,7 +13,7 @@ const config: PolkadotChainConfig = {
   },
   nativeToken: {
     symbol: "CRAB",
-    decimals: 9,
+    decimals: 18,
   },
   explorer: {
     url: "https://crab-parachain.subscan.io/",

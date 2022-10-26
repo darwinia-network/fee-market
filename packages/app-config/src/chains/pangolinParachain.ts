@@ -13,7 +13,7 @@ const config: PolkadotChainConfig = {
   },
   nativeToken: {
     symbol: "PRING",
-    decimals: 9,
+    decimals: 18,
   },
   explorer: {
     url: "https://pangolin-parachain.subscan.io/",
