@@ -284,7 +284,7 @@ const OrderDetails = () => {
             id: "5",
             label: t(localeKeys.sender),
             details: (
-              <AccountName
+              <AccountAddress
                 address={orderDetailData.sender}
                 className={"text-primary text-12-bold lg:text-14-bold break-words"}
               />
@@ -587,6 +587,29 @@ const RenderBlock = ({ block }: { block: number }) => {
       target={"_blank"}
       href={sub && chainConfig ? `${chainConfig.explorer.url}${sub}${block}` : "#"}
     >{`Block #${block}`}</a>
+  );
+};
+
+const AccountAddress = ({ address, className }: { address: string; className?: string }) => {
+  const { currentMarket } = useFeeMarket();
+
+  const sourceChain = currentMarket?.source;
+  const sub = isEthChain(sourceChain) ? "address/" : isPolkadotChain(sourceChain) ? "account/" : null;
+  const chainConfig = isEthChain(sourceChain)
+    ? ETH_CHAIN_CONF[sourceChain]
+    : isPolkadotChain(sourceChain)
+    ? POLKADOT_CHAIN_CONF[sourceChain]
+    : null;
+
+  return (
+    <a
+      className={`hover:opacity-80 ${className}`}
+      rel="noopener noreferrer"
+      target={"_blank"}
+      href={sub && chainConfig ? `${chainConfig.explorer.url}${sub}${address}` : "#"}
+    >
+      {address}
+    </a>
   );
 };
 
