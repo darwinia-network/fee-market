@@ -336,12 +336,17 @@ const OrderDetails = () => {
           id: "1",
           label: t(localeKeys.transaction),
           details: (
-            <div className={"text-primary text-12-bold lg:text-14-bold"}>
-              {orderDetailData.rewards[0].txHash ??
-                (orderDetailData.rewards[0].extrinsicIndex
-                  ? `${orderDetailData.rewards[0].blockNumber}-${orderDetailData.rewards[0].extrinsicIndex}`
-                  : "-")}
-            </div>
+            <>
+              {orderDetailData.rewards[0].txHash?.length ? (
+                <RenderTxHash hash={orderDetailData.rewards[0].txHash} />
+              ) : orderDetailData.rewards[0].extrinsicIndex || orderDetailData.rewards[0].extrinsicIndex === 0 ? (
+                <RenderTxHash
+                  hash={`${orderDetailData.rewards[0].blockNumber}-${orderDetailData.rewards[0].extrinsicIndex}`}
+                />
+              ) : (
+                "-"
+              )}
+            </>
           ),
         },
         ...(orderDetailData.rewards
@@ -408,12 +413,17 @@ const OrderDetails = () => {
           id: "1",
           label: t(localeKeys.transaction),
           details: (
-            <div className={"text-primary text-12-bold lg:text-14-bold"}>
-              {orderDetailData.slashes[0].txHash ??
-                (orderDetailData.slashes[0].extrinsicIndex
-                  ? `${orderDetailData.slashes[0].blockNumber}-${orderDetailData.slashes[0].extrinsicIndex}`
-                  : "-")}
-            </div>
+            <>
+              {orderDetailData.slashes[0].txHash?.length ? (
+                <RenderTxHash hash={orderDetailData.slashes[0].txHash} />
+              ) : orderDetailData.slashes[0].extrinsicIndex || orderDetailData.slashes[0].extrinsicIndex === 0 ? (
+                <RenderTxHash
+                  hash={`${orderDetailData.slashes[0].blockNumber}-${orderDetailData.slashes[0].extrinsicIndex}`}
+                />
+              ) : (
+                "-"
+              )}
+            </>
           ),
         },
         ...(orderDetailData.slashes.map((item, index) => ({
