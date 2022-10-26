@@ -10,7 +10,7 @@ import { formatBalance, adaptTime } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
 
-const formatDateTime = (time: string) => `${format(adaptTime(time), DATE_TIME_FORMATE)} (+UTC)`;
+const formatDateTime = (time: string) => `${format(adaptTime(time), DATE_TIME_FORMATE)}`;
 
 interface Order {
   id: string;
@@ -77,7 +77,12 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     {
       id: "5",
       key: "time",
-      title: <div className={"capitalize"}>{t([localeKeys.time])}</div>,
+      title: (
+        <div className="flex items-center">
+          <span className={"capitalize"}>{t([localeKeys.time])}</span>
+          <span className="uppercase"> (UTC+0)</span>
+        </div>
+      ),
       render: (row) => <span>{formatDateTime(row.time)}</span>,
     },
   ];
