@@ -92,6 +92,7 @@ export const isEthApi = (api: unknown): api is providers.Web3Provider => {
   return (
     api instanceof providers.Provider ||
     api instanceof providers.Web3Provider ||
+    api instanceof providers.JsonRpcProvider ||
     api instanceof providers.WebSocketProvider
   );
 };
