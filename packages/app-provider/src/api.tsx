@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { providers, BigNumber } from "ethers";
+import { providers } from "ethers";
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { useFeeMarket } from "./feemarket";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, DAPP_NAME } from "@feemarket/app-config";
@@ -16,7 +16,6 @@ export interface ApiCtx {
   providerApi: providers.Provider | ApiPromise | null;
   accounts: string[] | null;
   currentAccount: string | null;
-  accountBalance: BigNumber;
   currentChainId: number | null;
   requestAccounts: () => Promise<void>;
   setCurrentAccount: (account: string) => void;
@@ -29,7 +28,6 @@ const defaultValue: ApiCtx = {
   accounts: null,
   currentAccount: null,
   currentChainId: null,
-  accountBalance: BigNumber.from(0),
   requestAccounts: async () => undefined,
   setCurrentAccount: () => undefined,
 };
@@ -43,7 +41,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [providerApi, setProviderApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<string[] | null>(null);
   const [currentAccount, setCurrentAccount] = useState<string | null>(null);
-  const [accountBalance, setAccountBalance] = useState<BigNumber>(BigNumber.from(0));
   const [currentChainId, setCurrentChainId] = useState<number | null>(null);
 
   const sourceChain = currentMarket?.source;
@@ -150,28 +147,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     };
   }, [providerApi]);
 
-  useEffect(() => {
-    let sub$$: Subscription;
-
-    if (api && accounts?.length) {
-      if (isEthApi(api)) {
-        sub$$ = from(api.getBalance(accounts[0])).subscribe(setAccountBalance);
-      } else if (isPolkadotApi(api)) {
-        // TODO
-      } else {
-        setAccountBalance(BigNumber.from(0));
-      }
-    } else {
-      setAccountBalance(BigNumber.from(0));
-    }
-
-    return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
-    };
-  }, [api, accounts]);
-
   return (
     <ApiContext.Provider
       value={{
@@ -180,7 +155,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         providerApi,
         accounts,
         currentAccount,
-        accountBalance,
         currentChainId,
         requestAccounts,
         setCurrentAccount,
