@@ -80,7 +80,8 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       title: (
         <div className="flex items-center">
           <span className={"capitalize"}>{t([localeKeys.time])}</span>
-          <span className="uppercase"> (UTC+0)</span>
+          <span>&nbsp;</span>
+          <span className="uppercase">(UTC+0)</span>
         </div>
       ),
       render: (row) => <span>{formatDateTime(row.time)}</span>,
