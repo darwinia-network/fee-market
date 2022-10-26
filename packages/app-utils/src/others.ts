@@ -89,7 +89,11 @@ export const getPolkadotMarkets = () => {
 };
 
 export const isEthApi = (api: unknown): api is providers.Web3Provider => {
-  return api instanceof providers.Web3Provider;
+  return (
+    api instanceof providers.Provider ||
+    api instanceof providers.Web3Provider ||
+    api instanceof providers.WebSocketProvider
+  );
 };
 
 export const isPolkadotApi = (api: unknown): api is ApiPromise => {
