@@ -35,6 +35,7 @@ const localeKeys = {
   feeHistory: "feeHistory",
   searchByRelayerAddress: "searchByRelayerAddress",
   allRelayers: "allRelayers",
+  assignedRelayer: "assignedRelayer",
   assignedRelayers: "assignedRelayers",
   relayer: "relayer",
   count: "count",

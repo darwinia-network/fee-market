@@ -508,35 +508,36 @@ const getSlotsDiagram = (slots: Slot[], t: TFunction<"translation">) => {
                 </div>
               </div>
               {/*PC slot diagram*/}
-              <div
-                className={`hidden justify-center w-[8.25rem] py-[0.3125rem] relative lg:flex ${pcBorderClass} ${pcRoundClass}`}
+              <Tooltip
+                extendTriggerToPopover={true}
+                offset={[0, 10]}
+                toolTipClassName={"border-2 !rounded-[0.3125rem]"}
+                message={
+                  <div className={"flex items-center gap-[0.625rem]"}>
+                    <div className={"text-10"}>{t(localeKeys.assignedRelayer)}:</div>
+                    {slot.relayer ? (
+                      <AccountName address={slot.relayer} className={"text-12-bold text-primary"} />
+                    ) : (
+                      "-"
+                    )}
+                  </div>
+                }
               >
-                {showProgressBall && (
-                  <Tooltip
-                    extendTriggerToPopover={true}
-                    offset={[0, -14]}
-                    toolTipClassName={"border-2 !rounded-[0.3125rem]"}
-                    message={
-                      <div className={"flex items-center gap-[0.625rem]"}>
-                        <div className={"text-10"}>{t(localeKeys.assignedRelayers)}:</div>
-                        {slot.relayer ? (
-                          <AccountName address={slot.relayer} className={"text-12-bold text-primary"} />
-                        ) : (
-                          "-"
-                        )}
-                      </div>
-                    }
-                    className={"cursor-default absolute h-[1.75rem] w-[2px] bg-white -top-[1.9075rem]"}
-                  >
-                    <div
-                      className={"absolute w-[0.875rem] h-[0.875rem] bg-primary -left-[0.375rem] top-0 rounded-full"}
-                    />
-                  </Tooltip>
-                )}
-                <div className={`self-center text-12-bold ${slot.isOutOfSlot ? "text-halfWhite" : ""}`}>
-                  {slot.isOutOfSlot ? t(localeKeys.outOfSlot) : t(localeKeys.slotNumber, { slotNumber: index + 1 })}
+                <div
+                  className={`hidden justify-center w-[8.25rem] py-[0.3125rem] relative lg:flex ${pcBorderClass} ${pcRoundClass}`}
+                >
+                  {showProgressBall && (
+                    <div className={"cursor-default absolute h-[1.75rem] w-[2px] bg-white -top-[1.9075rem]"}>
+                      <div
+                        className={"absolute w-[0.875rem] h-[0.875rem] bg-primary -left-[0.375rem] top-0 rounded-full"}
+                      />
+                    </div>
+                  )}
+                  <div className={`self-center text-12-bold ${slot.isOutOfSlot ? "text-halfWhite" : ""}`}>
+                    {slot.isOutOfSlot ? t(localeKeys.outOfSlot) : t(localeKeys.slotNumber, { slotNumber: index + 1 })}
+                  </div>
                 </div>
-              </div>
+              </Tooltip>
             </div>
           );
         })}

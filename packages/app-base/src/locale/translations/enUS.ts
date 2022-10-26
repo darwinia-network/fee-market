@@ -35,6 +35,7 @@ const enUs = {
   [localeKeys.feeHistory]: `fee history (<span style="text-transform: uppercase;">{{currency}}</span>)`,
   [localeKeys.searchByRelayerAddress]: "search by relayer address",
   [localeKeys.allRelayers]: "all relayers",
+  [localeKeys.assignedRelayer]: "assigned relayer",
   [localeKeys.assignedRelayers]: "assigned relayers",
   [localeKeys.relayer]: "relayer",
   [localeKeys.count]: "count",
