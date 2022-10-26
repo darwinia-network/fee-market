@@ -40,8 +40,6 @@ const RelayersOverview = () => {
   const { api } = useApi();
   const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, api, setRefresh });
 
-  console.log("relayersOverviewData", relayersOverviewData);
-
   const nativeToken = currentMarket?.source
     ? ETH_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainEth]?.nativeToken ??
       POLKADOT_CHAIN_CONF[currentMarket.source as FeeMarketSourceChainPolkadot]?.nativeToken ??

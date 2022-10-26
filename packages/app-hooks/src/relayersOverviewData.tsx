@@ -247,7 +247,6 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
               setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
             },
             complete: () => {
-              console.log("complete");
               setRelayersOverviewData((prev) => ({ ...prev, loading: false }));
             },
           });
