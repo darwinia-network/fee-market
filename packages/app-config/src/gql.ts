@@ -294,18 +294,18 @@ export const RELAYER_ORDERS_POLKADOT = gql`
 `;
 
 export const FEE_HISTORY_ETH = gql`
-  query feeHistory($destination: String!) {
-    feeHistory(id: $destination) {
-      data
+  query {
+    feeHistories(orderBy: blockNumber) {
+      amount
+      blockTime
     }
   }
 `;
 
 export const FEE_HISTORY_POLKADOT = gql`
-  query {
-    feeHistories(orderBy: blockNumber) {
-      amount
-      blockTime
+  query feeHistory($destination: String!) {
+    feeHistory(id: $destination) {
+      data
     }
   }
 `;
