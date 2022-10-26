@@ -196,17 +196,19 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                     })
                   )
                 ),
-                forkJoin(
-                  assignedRelayers.map((relayer) =>
-                    apolloClient.query<
-                      { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
-                      { relayerId: string }
-                    >({
-                      query: RELAYER_OVERVIEW,
-                      variables: { relayerId: `${destinationChain}-${relayer.id.toString()}` },
-                    })
-                  )
-                )
+                assignedRelayers.length
+                  ? forkJoin(
+                      assignedRelayers.map((relayer) =>
+                        apolloClient.query<
+                          { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
+                          { relayerId: string }
+                        >({
+                          query: RELAYER_OVERVIEW,
+                          variables: { relayerId: `${destinationChain}-${relayer.id.toString()}` },
+                        })
+                      )
+                    )
+                  : of([])
               )
             )
           )
@@ -245,6 +247,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
               setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
             },
             complete: () => {
+              console.log("complete");
               setRelayersOverviewData((prev) => ({ ...prev, loading: false }));
             },
           });
