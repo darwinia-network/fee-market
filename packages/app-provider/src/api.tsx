@@ -69,8 +69,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
 
   useEffect(() => {
     setApi(null);
-    setApiEth(null);
-    setApiPolkadot(null);
     setAccounts(null);
     setCurrentAccount(null);
 
@@ -95,15 +93,12 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         const api = new ApiPromise({ provider });
         api.on("error", () => {
           setApi(null);
-          setApiPolkadot(null);
         });
         api.on("ready", () => {
           setApi((prev) => prev ?? api);
-          setApiPolkadot((prev) => prev ?? api);
         });
         api.on("disconnected", () => {
           setApi(null);
-          setApiPolkadot(null);
         });
       }
     }
