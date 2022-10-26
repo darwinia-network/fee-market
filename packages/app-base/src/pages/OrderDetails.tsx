@@ -18,7 +18,7 @@ import type {
 } from "@feemarket/app-types";
 import {
   ORDER_DETAIL_ETH,
-  ORDERS_OVERVIEW_POLKADOT,
+  ORDER_DETAIL_POLKADOT,
   DATE_TIME_FORMATE,
   ETH_CHAIN_CONF,
   POLKADOT_CHAIN_CONF,
@@ -197,7 +197,7 @@ const OrderDetails = () => {
     { orderId: string },
     OrderDetail | null
   >(
-    ORDERS_OVERVIEW_POLKADOT,
+    ORDER_DETAIL_POLKADOT,
     {
       variables: { orderId: `${currentMarket?.destination}-${laneAndNonce.lane}-${laneAndNonce.nonce}` },
     },
