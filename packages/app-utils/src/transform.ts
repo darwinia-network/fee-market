@@ -24,21 +24,23 @@ export const transformEthRelayerRewardSlash = (data: {
     rewards: Pick<RewardEntity, "amount" | "blockTime">[] | null;
   } | null;
 }): { rewards: [number, BN][]; slashs: [number, BN][] } => {
-  const slashes =
-    data.relayer?.slashes?.reduce((acc, cur) => {
-      const time = new Date(adaptTime(cur.blockTime)).toISOString();
-      const date = `${time.split("T")[0]}T00:00:00Z`;
-      acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
-      return acc;
-    }, {} as Record<string, BN>) || {};
+  const slashes = data.relayer?.slashes?.length
+    ? data.relayer?.slashes.reduce((acc, cur) => {
+        const time = new Date(adaptTime(cur.blockTime)).toISOString();
+        const date = `${time.split("T")[0]}T00:00:00Z`;
+        acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
+        return acc;
+      }, {} as Record<string, BN>)
+    : {};
 
-  const rewards =
-    data.relayer?.rewards?.reduce((acc, cur) => {
-      const time = new Date(adaptTime(cur.blockTime)).toISOString();
-      const date = `${time.split("T")[0]}T00:00:00Z`;
-      acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
-      return acc;
-    }, {} as Record<string, BN>) || {};
+  const rewards = data.relayer?.rewards?.length
+    ? data.relayer?.rewards.reduce((acc, cur) => {
+        const time = new Date(adaptTime(cur.blockTime)).toISOString();
+        const date = `${time.split("T")[0]}T00:00:00Z`;
+        acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
+        return acc;
+      }, {} as Record<string, BN>)
+    : {};
 
   const combineDates = Array.from(
     Object.keys(rewards)
@@ -221,9 +223,12 @@ export const transformEthRelayerOrders = (data: {
 }): RelayerOrdersDataSource[] => {
   let dataSource: RelayerOrdersDataSource[] = [];
 
-  dataSource =
-    data.relayer?.rewards?.reduce((acc, cur) => reduceSlashReward(acc, cur, false), dataSource) || dataSource;
-  dataSource = data.relayer?.slashes?.reduce((acc, cur) => reduceSlashReward(acc, cur, true), dataSource) || dataSource;
+  dataSource = data.relayer?.rewards?.length
+    ? data.relayer?.rewards.reduce((acc, cur) => reduceSlashReward(acc, cur, false), dataSource)
+    : dataSource;
+  dataSource = data.relayer?.slashes?.length
+    ? data.relayer?.slashes.reduce((acc, cur) => reduceSlashReward(acc, cur, true), dataSource)
+    : dataSource;
 
   return dataSource.sort((a, b) => compareDesc(adaptTime(a.createBlockTime), adaptTime(b.createBlockTime)));
 };
