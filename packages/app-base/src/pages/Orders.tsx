@@ -14,7 +14,7 @@ const Orders = () => {
 
   return (
     <Spinner isLoading={ordersSummaryLoading || ordersTableLoading || false}>
-      <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
+      <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem] min-h-[38rem]"}>
         <OrdersSummary
           loading={ordersSummaryLoading}
           orders={{
