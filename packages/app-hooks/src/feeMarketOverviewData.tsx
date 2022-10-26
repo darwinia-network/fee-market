@@ -94,13 +94,21 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
   }, [speedTotalOrdersAndReward, speedTotalOrdersAndRewardLoading]);
 
   // ============================= Begin: Overview page「Orders Count」Chart ===================================
-  const { transformedData: marketOrdersHistoryEth, refetch: updateMarketOrdersHistoryEth } = useGrapgQuery<
-    { orders: Pick<OrderEntity, "createBlockTime">[] | null },
-    unknown,
-    [number, number][]
-  >(TOTAL_ORDERS_OVERVIEW_ETH, {}, transformTotalOrdersOverview);
+  const {
+    transformedData: marketOrdersHistoryEth,
+    loading: marketOrdersHistoryLoadingEth,
+    refetch: updateMarketOrdersHistoryEth,
+  } = useGrapgQuery<{ orders: Pick<OrderEntity, "createBlockTime">[] | null }, unknown, [number, number][]>(
+    TOTAL_ORDERS_OVERVIEW_ETH,
+    {},
+    transformTotalOrdersOverview
+  );
 
-  const { transformedData: marketOrdersHistoryPolkadot, refetch: updateMarketOrdersHistoryPolkadot } = useGrapgQuery<
+  const {
+    transformedData: marketOrdersHistoryPolkadot,
+    loading: marketOrdersHistoryLoadingPolkadot,
+    refetch: updateMarketOrdersHistoryPolkadot,
+  } = useGrapgQuery<
     { orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null },
     { destination: FeeMarketChain | undefined },
     [number, number][]
@@ -113,6 +121,10 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
     },
     transformTotalOrdersOverview
   );
+
+  const marketOrdersHistoryLoading = useMemo(() => {
+    return marketOrdersHistoryLoadingEth ?? marketOrdersHistoryLoadingPolkadot ?? false;
+  }, [marketOrdersHistoryLoadingEth, marketOrdersHistoryLoadingPolkadot]);
 
   const marketOrdersHistory = useMemo(() => {
     if (marketOrdersHistoryEth?.length) {
@@ -133,13 +145,21 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
 
   // ============================= Begin: Overview page「Fee History」Chart ===================================
 
-  const { transformedData: marketFeeHistoryEth, refetch: updateMarketFeeHistoryEth } = useGrapgQuery<
-    { feeHistories: { amount: string; blockTime: string }[] },
-    unknown,
-    [number, BN][]
-  >(FEE_HISTORY_ETH, {}, transformFeeHistory);
+  const {
+    transformedData: marketFeeHistoryEth,
+    loading: marketFeeHistoryLoadingEth,
+    refetch: updateMarketFeeHistoryEth,
+  } = useGrapgQuery<{ feeHistories: { amount: string; blockTime: string }[] }, unknown, [number, BN][]>(
+    FEE_HISTORY_ETH,
+    {},
+    transformFeeHistory
+  );
 
-  const { transformedData: marketFeeHistoryPolkadot, refetch: updateMarketFeeHistoryPolkadot } = useGrapgQuery<
+  const {
+    transformedData: marketFeeHistoryPolkadot,
+    loading: marketFeeHistoryLoadingPolkadot,
+    refetch: updateMarketFeeHistoryPolkadot,
+  } = useGrapgQuery<
     { feeHistory: Pick<FeeEntity, "data"> | null },
     { destination: FeeMarketChain | undefined },
     [number, BN][]
@@ -152,6 +172,10 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
     },
     transformFeeHistory
   );
+
+  const marketFeeHistoryLoading = useMemo(() => {
+    return marketFeeHistoryLoadingEth ?? marketFeeHistoryLoadingPolkadot ?? false;
+  }, [marketFeeHistoryLoadingEth, marketFeeHistoryLoadingPolkadot]);
 
   const marketFeeHistory = useMemo(() => {
     if (marketFeeHistoryEth?.length) {
@@ -336,5 +360,15 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
     updateMarketFeeHistory,
   ]);
 
-  return { averageSpeed, totalOrders, totalReward, totalRelayers, currentFee, marketOrdersHistory, marketFeeHistory };
+  return {
+    averageSpeed,
+    totalOrders,
+    totalReward,
+    totalRelayers,
+    currentFee,
+    marketOrdersHistory,
+    marketOrdersHistoryLoading,
+    marketFeeHistory,
+    marketFeeHistoryLoading,
+  };
 };
