@@ -6,11 +6,11 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useFeeMarket } from "@feemarket/app-provider";
 import { DATE_TIME_FORMATE, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
-import { formatBalance } from "@feemarket/app-utils";
+import { formatBalance, adaptTime } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
 
-const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
+const formatDateTime = (time: string) => `${format(adaptTime(time), DATE_TIME_FORMATE)} (+UTC)`;
 
 interface Order {
   id: string;

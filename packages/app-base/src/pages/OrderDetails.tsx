@@ -30,6 +30,7 @@ import {
   isPolkadotChain,
   transformEthOrderDetail,
   transformPolkadotOrderDetail,
+  adaptTime,
 } from "@feemarket/app-utils";
 import { useGrapgQuery, useAccountName } from "@feemarket/app-hooks";
 import { formatDistance, format } from "date-fns";
@@ -43,13 +44,6 @@ const adaptSlotIndex = (slot: number, api: unknown) => {
     return slot - 1;
   }
   return slot;
-};
-
-const adaptTime = (time: string): number => {
-  if (Number.isNaN(Number(time))) {
-    return new Date(`${time}Z`).getTime();
-  }
-  return new Date(Number(time) * 1000).getTime();
 };
 
 const formatNonce = (nonce: string) => {

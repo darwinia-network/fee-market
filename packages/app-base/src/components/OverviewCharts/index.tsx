@@ -5,11 +5,17 @@ import { OrdersCountChart } from "../Chart/OrdersCountChart";
 import { FeeHistoryChart } from "../Chart/FeeHistoryChart";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
+import { BN } from "@polkadot/util";
+import { utils as ethersUtils } from "ethers";
+
+const convertItem = (item: [number, BN], decimals = 9): [number, number] => {
+  return [item[0], Number(ethersUtils.formatUnits(item[1].toString(), decimals))];
+};
 
 interface Props {
   currentMarket: Market | null;
   ordersCountData: [number, number][];
-  feeHistoryData: [number, number][];
+  feeHistoryData: [number, BN][];
 }
 
 const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryData }: Props) => {
@@ -26,7 +32,7 @@ const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryData }: Prop
       <OrdersCountChart title={t(localeKeys.ordersCount)} data={ordersCountData} />
       <FeeHistoryChart
         title={t(localeKeys.feeHistory, { currency: nativeToken?.symbol || "-" })}
-        data={feeHistoryData}
+        data={feeHistoryData.map((item) => convertItem(item, nativeToken?.decimals))}
       />
     </div>
   );

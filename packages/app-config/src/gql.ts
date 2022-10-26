@@ -186,8 +186,23 @@ export const ORDER_DETAIL_POLKADOT = gql`
   }
 `;
 
-export const RELAYER_REWARD_SLASH = gql`
-  query relayerRewardSlash($relayerId: String!) {
+export const RELAYER_REWARD_SLASH_ETH = gql`
+  query ethRelayerRewardSlash($relayerId: String!) {
+    relayer(id: $relayerId) {
+      slashes {
+        amount
+        blockTime
+      }
+      rewards {
+        amount
+        blockTime
+      }
+    }
+  }
+`;
+
+export const RELAYER_REWARD_SLASH_POLKADOT = gql`
+  query polkadotRelayerRewardSlash($relayerId: String!) {
     relayer(id: $relayerId) {
       slashes {
         nodes {
@@ -205,7 +220,18 @@ export const RELAYER_REWARD_SLASH = gql`
   }
 `;
 
-export const QUOTE_HISTORY = gql`
+export const QUOTE_HISTORY_ETH = gql`
+  query quoteHistory($relayerId: String!) {
+    relayer(id: $relayerId) {
+      quoteHistory {
+        amount
+        blockTime
+      }
+    }
+  }
+`;
+
+export const QUOTE_HISTORY_POLKADOT = gql`
   query quoteHistory($relayerId: String!) {
     quoteHistory(id: $relayerId) {
       data
@@ -213,7 +239,32 @@ export const QUOTE_HISTORY = gql`
   }
 `;
 
-export const RELAYER_ORDERS = gql`
+export const RELAYER_ORDERS_ETH = gql`
+  query relayerOrders($relayerId: String!) {
+    relayer(id: $relayerId) {
+      slashes {
+        order {
+          lane
+          nonce
+          createBlockTime
+        }
+        amount
+        relayerRole
+      }
+      rewards {
+        order {
+          lane
+          nonce
+          createBlockTime
+        }
+        amount
+        relayerRole
+      }
+    }
+  }
+`;
+
+export const RELAYER_ORDERS_POLKADOT = gql`
   query relayerOrders($relayerId: String!) {
     relayer(id: $relayerId) {
       slashes {

@@ -136,13 +136,13 @@ export const useFeeMarketOverviewData = ({ api, currentMarket, setRefresh }: Par
   const { transformedData: marketFeeHistoryEth, refetch: updateMarketFeeHistoryEth } = useGrapgQuery<
     { feeHistories: { amount: string; blockTime: string }[] },
     unknown,
-    [number, number][]
+    [number, BN][]
   >(FEE_HISTORY_ETH, {}, transformFeeHistory);
 
   const { transformedData: marketFeeHistoryPolkadot, refetch: updateMarketFeeHistoryPolkadot } = useGrapgQuery<
     { feeHistory: Pick<FeeEntity, "data"> | null },
     { destination: FeeMarketChain | undefined },
-    [number, number][]
+    [number, BN][]
   >(
     FEE_HISTORY_POLKADOT,
     {

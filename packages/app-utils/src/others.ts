@@ -130,3 +130,10 @@ export const isVec = <T extends Codec>(value: unknown): value is Vec<T> => {
 export const isOption = <T extends Codec>(value: unknown): value is Option<T> => {
   return isInstanceOf(value, Option);
 };
+
+export const adaptTime = (time: string): number => {
+  if (Number.isNaN(Number(time))) {
+    return new Date(`${time}Z`).getTime();
+  }
+  return new Date(Number(time) * 1000).getTime();
+};
