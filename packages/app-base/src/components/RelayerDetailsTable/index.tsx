@@ -10,6 +10,13 @@ import { formatBalance, adaptTime } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
 
+const formatNonce = (nonce: string) => {
+  if (nonce.startsWith("0x")) {
+    return `${nonce.slice(0, 4)}...${nonce.slice(-4)}`;
+  }
+  return `#${nonce}`;
+};
+
 const formatDateTime = (time: string) => `${format(adaptTime(time), DATE_TIME_FORMATE)}`;
 
 interface Order {
@@ -49,7 +56,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
         const to = `/orders/details?${urlSearchParams.toString()}`;
         return (
           <Link to={to} className="clickable text-primary text-14-bold">
-            #{row.nonce}
+            {formatNonce(row.nonce)}
           </Link>
         );
       },
