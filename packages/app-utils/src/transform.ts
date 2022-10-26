@@ -251,10 +251,12 @@ export const transformPolkadotRelayerOrders = (data: {
 }): RelayerOrdersDataSource[] => {
   let dataSource: RelayerOrdersDataSource[] = [];
 
-  dataSource =
-    data.relayer?.rewards?.nodes.reduce((acc, cur) => reduceSlashReward(acc, cur, false), dataSource) || dataSource;
-  dataSource =
-    data.relayer?.slashes?.nodes.reduce((acc, cur) => reduceSlashReward(acc, cur, true), dataSource) || dataSource;
+  dataSource = data.relayer?.rewards?.nodes?.length
+    ? data.relayer?.rewards?.nodes.reduce((acc, cur) => reduceSlashReward(acc, cur, false), dataSource)
+    : dataSource;
+  dataSource = data.relayer?.slashes?.nodes?.length
+    ? data.relayer?.slashes?.nodes.reduce((acc, cur) => reduceSlashReward(acc, cur, true), dataSource)
+    : dataSource;
 
   return dataSource.sort((a, b) => compareDesc(new Date(a.createBlockTime), new Date(b.createBlockTime)));
 };
