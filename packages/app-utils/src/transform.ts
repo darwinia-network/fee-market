@@ -73,19 +73,21 @@ export const transformPolkadotRelayerRewardSlash = (data: {
     rewards: { nodes: Pick<RewardEntity, "amount" | "blockTime">[] } | null;
   } | null;
 }): { rewards: [number, BN][]; slashs: [number, BN][] } => {
-  const slashes =
-    data.relayer?.slashes?.nodes.reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
-      acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
-      return acc;
-    }, {} as Record<string, BN>) || {};
+  const slashes = data.relayer?.slashes?.nodes?.length
+    ? data.relayer?.slashes?.nodes.reduce((acc, cur) => {
+        const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
+        acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
+        return acc;
+      }, {} as Record<string, BN>)
+    : {};
 
-  const rewards =
-    data.relayer?.rewards?.nodes.reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
-      acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
-      return acc;
-    }, {} as Record<string, BN>) || {};
+  const rewards = data.relayer?.rewards?.nodes?.length
+    ? data.relayer?.rewards?.nodes.reduce((acc, cur) => {
+        const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
+        acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
+        return acc;
+      }, {} as Record<string, BN>)
+    : {};
 
   const combineDates = Array.from(
     Object.keys(rewards)
