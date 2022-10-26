@@ -246,7 +246,7 @@ const OrdersTable = ({ loading, data }: Props) => {
           target="_blank"
           href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmedBlock}` : "#"}
         >
-          #{row.createBlock}
+          #{row.confirmedBlock}
         </a>
       ),
     },
