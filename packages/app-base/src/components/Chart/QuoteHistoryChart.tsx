@@ -12,6 +12,7 @@ export const QuoteHistoryChart = ({ title, data }: { title: string; data: [numbe
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("data", data);
     if (ref.current) {
       Highcharts.stockChart(ref.current, {
         ...getCommonOpts(title),

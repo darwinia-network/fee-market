@@ -129,7 +129,7 @@ export const transformEthRelayerQuotes = (data: {
     }, {} as Record<string, BN>) || {};
 
   const dates = Object.keys(datesValues).sort((a, b) => compareAsc(new Date(a), new Date(b)));
-  if (dates.length > 1) {
+  if (dates.length) {
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
     for (let cur = new Date(dates[0]); compareAsc(cur, end) < 0; cur = addDays(cur, 1)) {
       const next = addDays(cur, 1);
@@ -158,7 +158,7 @@ export const transformPolkadotRelayerQuotes = (data: {
     }, {} as Record<string, BN>) || {};
 
   const dates = Object.keys(datesValues).sort((a, b) => compareAsc(new Date(a), new Date(b)));
-  if (dates.length > 1) {
+  if (dates.length) {
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
     for (let cur = new Date(dates[0]); compareAsc(cur, end) < 0; cur = addDays(cur, 1)) {
       const next = addDays(cur, 1);
