@@ -9,7 +9,7 @@ const config: PolkadotChainConfig = {
     rpc: "wss://crab-parachain-rpc.darwinia.network/",
   },
   graphql: {
-    endpoint: "",
+    endpoint: "https://subql.darwinia.network/subql-apps-crab-parachain",
   },
   nativeToken: {
     symbol: "CRAB",
