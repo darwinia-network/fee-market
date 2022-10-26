@@ -74,7 +74,11 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   useEffect(() => {
     if (isEthChain(sourceChain)) {
       const rpc = ETH_CHAIN_CONF[sourceChain].provider.rpc;
-      setProviderApi(new providers.WebSocketProvider(rpc));
+      if (rpc.startsWith("ws")) {
+        setProviderApi(new providers.WebSocketProvider(rpc));
+      } else if (rpc.startsWith("http")) {
+        setProviderApi(new providers.JsonRpcProvider(rpc));
+      }
 
       if (typeof window.ethereum !== "undefined") {
         const provider = new providers.Web3Provider(window.ethereum);
