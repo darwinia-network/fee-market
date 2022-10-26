@@ -33,7 +33,11 @@ interface Params {
 }
 
 export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefresh }: Params) => {
-  const { transformedData: ethRewardAndSlashData, refetch: refetchEthRewardAndSlash } = useGrapgQuery<
+  const {
+    transformedData: ethRewardAndSlashData,
+    loading: ethRewardAndSlashLoading,
+    refetch: refetchEthRewardAndSlash,
+  } = useGrapgQuery<
     {
       relayer: {
         slashes: Pick<SlashEntity, "amount" | "blockTime">[] | null;
@@ -52,7 +56,11 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     transformEthRelayerRewardSlash
   );
 
-  const { transformedData: polkadotRewardAndSlashData, refetch: refetchPolkadotRewardAndSlash } = useGrapgQuery<
+  const {
+    transformedData: polkadotRewardAndSlashData,
+    loading: polkadotRewardAndSlashLoading,
+    refetch: refetchPolkadotRewardAndSlash,
+  } = useGrapgQuery<
     {
       relayer: {
         slashes: { nodes: Pick<SlashEntity, "amount" | "blockTime">[] } | null;
@@ -70,6 +78,10 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     },
     transformPolkadotRelayerRewardSlash
   );
+
+  const rewardAndSlashLoading = useMemo(() => {
+    return ethRewardAndSlashLoading ?? polkadotRewardAndSlashLoading ?? false;
+  }, [ethRewardAndSlashLoading, polkadotRewardAndSlashLoading]);
 
   const rewardAndSlashData = useMemo<{
     rewards: [number, BN][];
@@ -89,7 +101,11 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     refetchPolkadotRewardAndSlash();
   }, [refetchEthRewardAndSlash, refetchPolkadotRewardAndSlash]);
 
-  const { transformedData: ethQuoteHistoryData, refetch: refetchEthQuoteHistory } = useGrapgQuery<
+  const {
+    transformedData: ethQuoteHistoryData,
+    loading: ethQuoteHistoryLoading,
+    refetch: refetchEthQuoteHistory,
+  } = useGrapgQuery<
     {
       relayer: {
         quoteHistory: {
@@ -110,11 +126,11 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     transformEthRelayerQuotes
   );
 
-  const { transformedData: polkadotQuoteHistoryData, refetch: refetchPolkadotQuoteHistory } = useGrapgQuery<
-    { quoteHistory: Pick<QuoteEntity, "data"> | null },
-    { relayerId: string },
-    [number, BN][]
-  >(
+  const {
+    transformedData: polkadotQuoteHistoryData,
+    loading: polkadotQuoteHistoryLoading,
+    refetch: refetchPolkadotQuoteHistory,
+  } = useGrapgQuery<{ quoteHistory: Pick<QuoteEntity, "data"> | null }, { relayerId: string }, [number, BN][]>(
     QUOTE_HISTORY_POLKADOT,
     {
       variables: {
@@ -123,6 +139,10 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     },
     transformPolkadotRelayerQuotes
   );
+
+  const quoteHistoryLoading = useMemo(() => {
+    return ethQuoteHistoryLoading ?? polkadotQuoteHistoryLoading ?? false;
+  }, [ethQuoteHistoryLoading, polkadotQuoteHistoryLoading]);
 
   const quoteHistoryData = useMemo(() => {
     if (ethQuoteHistoryData?.length) {
@@ -139,7 +159,11 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     refetchPolkadotQuoteHistory();
   }, [refetchEthQuoteHistory, refetchPolkadotQuoteHistory]);
 
-  const { transformedData: ethRelayerRelatedOrdersData, refetch: refetchEthRelayerRelatedOrders } = useGrapgQuery<
+  const {
+    transformedData: ethRelayerRelatedOrdersData,
+    loading: ethRelayerRelatedOrdersLoading,
+    refetch: refetchEthRelayerRelatedOrders,
+  } = useGrapgQuery<
     {
       relayer?: {
         slashes:
@@ -166,33 +190,40 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     transformEthRelayerOrders
   );
 
-  const { transformedData: polkadotRelayerRelatedOrdersData, refetch: refetchPolkadotRelayerRelatedOrders } =
-    useGrapgQuery<
-      {
-        relayer?: {
-          slashes: {
-            nodes: (Pick<SlashEntity, "amount" | "relayerRole"> & {
-              order: Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> | null;
-            })[];
-          } | null;
-          rewards: {
-            nodes: (Pick<SlashEntity, "amount" | "relayerRole"> & {
-              order: Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> | null;
-            })[];
-          } | null;
+  const {
+    transformedData: polkadotRelayerRelatedOrdersData,
+    loading: polkadotRelayerRelatedOrdersLoading,
+    refetch: refetchPolkadotRelayerRelatedOrders,
+  } = useGrapgQuery<
+    {
+      relayer?: {
+        slashes: {
+          nodes: (Pick<SlashEntity, "amount" | "relayerRole"> & {
+            order: Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> | null;
+          })[];
         } | null;
+        rewards: {
+          nodes: (Pick<SlashEntity, "amount" | "relayerRole"> & {
+            order: Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> | null;
+          })[];
+        } | null;
+      } | null;
+    },
+    { relayerId: string },
+    RelayerOrdersDataSource[]
+  >(
+    RELAYER_ORDERS_POLKADOT,
+    {
+      variables: {
+        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
       },
-      { relayerId: string },
-      RelayerOrdersDataSource[]
-    >(
-      RELAYER_ORDERS_POLKADOT,
-      {
-        variables: {
-          relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
-        },
-      },
-      transformPolkadotRelayerOrders
-    );
+    },
+    transformPolkadotRelayerOrders
+  );
+
+  const relayerRelatedOrdersLoading = useMemo(() => {
+    return ethRelayerRelatedOrdersLoading ?? polkadotRelayerRelatedOrdersLoading ?? false;
+  }, [ethRelayerRelatedOrdersLoading, polkadotRelayerRelatedOrdersLoading]);
 
   const relayerRelatedOrdersData = useMemo(() => {
     if (ethRelayerRelatedOrdersData?.length) {
@@ -217,5 +248,12 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     });
   }, [setRefresh, refetchRewardAndSlash, refetchQuoteHistory, refetchRelayerRelatedOrders]);
 
-  return { rewardAndSlashData, quoteHistoryData, relayerRelatedOrdersData };
+  return {
+    rewardAndSlashLoading,
+    rewardAndSlashData,
+    quoteHistoryLoading,
+    quoteHistoryData,
+    relayerRelatedOrdersLoading,
+    relayerRelatedOrdersData,
+  };
 };
