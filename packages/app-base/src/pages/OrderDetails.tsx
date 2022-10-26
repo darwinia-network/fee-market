@@ -22,6 +22,7 @@ import {
   DATE_TIME_FORMATE,
   ETH_CHAIN_CONF,
   POLKADOT_CHAIN_CONF,
+  MAPPING_CHAIN_2_URL_SEARCH_PARAM,
 } from "@feemarket/app-config";
 import {
   formatBalance,
@@ -35,7 +36,7 @@ import {
 import { useGrapgQuery, useAccountName } from "@feemarket/app-hooks";
 import { formatDistance, format } from "date-fns";
 import { capitalize } from "lodash";
-import { useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 const ETH_LANE = "eth";
 
@@ -628,23 +629,18 @@ const AccountName = ({ address, className }: { address: string; className?: stri
   const { api } = useApi();
   const { displayName } = useAccountName(api, address);
 
-  const sourceChain = currentMarket?.source;
-  const sub = isEthChain(sourceChain) ? "address/" : isPolkadotChain(sourceChain) ? "account/" : null;
-  const chainConfig = isEthChain(sourceChain)
-    ? ETH_CHAIN_CONF[sourceChain]
-    : isPolkadotChain(sourceChain)
-    ? POLKADOT_CHAIN_CONF[sourceChain]
-    : null;
+  const urlSearchParams = new URLSearchParams();
+  if (currentMarket) {
+    urlSearchParams.set(UrlSearchParamsKey.FROM, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.source]);
+    urlSearchParams.set(UrlSearchParamsKey.TO, MAPPING_CHAIN_2_URL_SEARCH_PARAM[currentMarket.destination]);
+  }
+  urlSearchParams.set(UrlSearchParamsKey.ID, address);
+  const to = `/relayers-overview/details?${urlSearchParams.toString()}`;
 
   return (
-    <a
-      className={`hover:opacity-80 ${className}`}
-      rel="noopener noreferrer"
-      target={"_blank"}
-      href={sub && chainConfig ? `${chainConfig.explorer.url}${sub}${address}` : "#"}
-    >
+    <NavLink className={`hover:opacity-80 ${className}`} to={to}>
       {displayName}
-    </a>
+    </NavLink>
   );
 };
 
