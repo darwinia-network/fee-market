@@ -128,10 +128,14 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
           api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayerAddress)
         ).subscribe({
           next: (res) => {
-            if (isOption(res) && res.isSome) {
-              const { fee, collateral } = res.unwrap();
-              if (fee.gt(BN_ZERO) || collateral.gt(BN_ZERO)) {
-                setRegistered(true);
+            if (isOption(res)) {
+              if (res.isSome) {
+                const { fee, collateral } = res.unwrap();
+                if (fee.gt(BN_ZERO) || collateral.gt(BN_ZERO)) {
+                  setRegistered(true);
+                } else {
+                  setRegistered(false);
+                }
               } else {
                 setRegistered(false);
               }
