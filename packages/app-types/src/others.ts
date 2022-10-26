@@ -1,6 +1,8 @@
 import type { AccountId, Balance, Struct, BN } from "./polkadot";
 import type { RelayerRole } from "./relayer";
 import type { OrderEntity, SlashEntity, RelayerEntity } from "./entity";
+import type { U8aFixed, u64, u128, Vec } from "@polkadot/types";
+import type { AccountId32 } from "@polkadot/types/interfaces";
 
 export type Page = "Overview" | "Relayers" | "Orders";
 export type PagePath = Record<Page, Lowercase<Page>>;
@@ -18,6 +20,18 @@ export interface PalletFeeMarketRelayer extends Struct {
   id: AccountId;
   collateral: Balance;
   fee: Balance;
+}
+
+export interface PalletFeeMarketOrder extends Struct {
+  readonly lane: U8aFixed;
+  readonly message: u64;
+  readonly lockedCollateral: u128;
+  readonly relayers: Vec<PalletFeeMarketPriorRelayer>;
+}
+
+interface PalletFeeMarketPriorRelayer extends Struct {
+  readonly id: AccountId32;
+  readonly fee: u128;
 }
 
 export interface RelayerOrdersDataSource extends Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> {

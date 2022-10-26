@@ -23,6 +23,7 @@ import type {
   FeeMarketSourceChainPolkadot,
   FeeMarketSourceChainEth,
   PalletFeeMarketRelayer,
+  PalletFeeMarketOrder,
 } from "@feemarket/app-types";
 import { from, forkJoin, EMPTY } from "rxjs";
 
@@ -93,16 +94,44 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     } else if (registered && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        return from(
-          api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayerAddress)
-        ).subscribe({
-          next: (res) => {
-            if (isOption(res) && res.isSome) {
-              const { collateral, fee } = res.unwrap();
-              setCollateralAmount(BigNumber.from(collateral.toString()));
-              setCurrentQuoteAmount(BigNumber.from(fee.toString()));
-            } else if (res) {
-              const { collateral, fee } = res as PalletFeeMarketRelayer;
+        from(api.query[apiSection].orders({})).subscribe({
+          next: (res) => console.log("orders:", res),
+          error: (error) => console.error("oreders:", error),
+          complete: () => console.log("orders conplete"),
+        });
+        return forkJoin([
+          api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayerAddress),
+          api.query[apiSection].orders<Option<PalletFeeMarketOrder>>({}),
+        ]).subscribe({
+          next: ([relayer, order]) => {
+            if (isOption(relayer)) {
+              if (relayer.isSome) {
+                const { collateral, fee, id } = relayer.unwrap();
+
+                if (order.isSome) {
+                  const { lockedCollateral, relayers } = order.unwrap();
+                  const count = relayers.reduce(
+                    (acc, cur) => (cur.id.toString().toLowerCase() === id.toString().toLowerCase() ? acc + 1 : acc),
+                    0
+                  );
+                  setCurrentLockedAmount(BigNumber.from(lockedCollateral.muln(count).toString()));
+                }
+
+                setCollateralAmount(BigNumber.from(collateral.toString()));
+                setCurrentQuoteAmount(BigNumber.from(fee.toString()));
+              }
+            } else if (relayer) {
+              const { collateral, fee, id } = relayer as PalletFeeMarketRelayer;
+
+              if (order.isSome) {
+                const { lockedCollateral, relayers } = order.unwrap();
+                const count = relayers.reduce(
+                  (acc, cur) => (cur.id.toString().toLowerCase() === id.toString().toLowerCase() ? acc + 1 : acc),
+                  0
+                );
+                setCurrentLockedAmount(BigNumber.from(lockedCollateral.muln(count).toString()));
+              }
+
               setCollateralAmount(BigNumber.from(collateral.toString()));
               setCurrentQuoteAmount(BigNumber.from(fee.toString()));
             }

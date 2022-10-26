@@ -200,7 +200,7 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
         />
       </div>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Balance relayerAddress={relayerAddress} registered={isRegistered} matchNetwork={!isNotificationVisible} />
+        <Balance relayerAddress={relayerAddress} registered={true} matchNetwork={!isNotificationVisible} />
       </div>
       {/*Charts*/}
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
