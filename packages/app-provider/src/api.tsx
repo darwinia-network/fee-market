@@ -12,7 +12,6 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import keyring from "@polkadot/ui-keyring";
 
 export interface ApiCtx {
-  apiPolkadot: ApiPromise | null;
   apiEth: providers.Web3Provider | null;
   api: providers.Web3Provider | ApiPromise | null;
   accounts: string[] | null;
@@ -26,7 +25,6 @@ export interface ApiCtx {
 const defaultValue: ApiCtx = {
   api: null,
   apiEth: null,
-  apiPolkadot: null,
   accounts: null,
   currentAccount: null,
   currentChainId: null,
@@ -40,7 +38,6 @@ export const ApiContext = createContext<ApiCtx>(defaultValue);
 export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const { currentMarket } = useFeeMarket();
   const [apiEth, setApiEth] = useState<providers.Web3Provider | null>(null);
-  const [apiPolkadot, setApiPolkadot] = useState<ApiPromise | null>(null);
   const [api, setApi] = useState<providers.Web3Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<string[] | null>(null);
   const [currentAccount, setCurrentAccount] = useState<string | null>(null);
@@ -169,7 +166,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       value={{
         api,
         apiEth,
-        apiPolkadot,
         accounts,
         currentAccount,
         accountBalance,
