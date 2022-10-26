@@ -13,10 +13,17 @@ import type {
   AddEthereumChainParameter,
   PalletFeeMarketRelayer,
 } from "@feemarket/app-types";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
+import { BN_ZERO, ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
 import { useFeeMarket, useApi } from "@feemarket/app-provider";
 import { useRelayersDetailData } from "@feemarket/app-hooks";
-import { isEthApi, isEthChain, isPolkadotApi, isPolkadotChain, getFeeMarketApiSection } from "@feemarket/app-utils";
+import {
+  isEthApi,
+  isEthChain,
+  isPolkadotApi,
+  isPolkadotChain,
+  getFeeMarketApiSection,
+  isOption,
+} from "@feemarket/app-utils";
 import { utils as ethersUtils, Contract } from "ethers";
 import { from, EMPTY } from "rxjs";
 
@@ -117,9 +124,22 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
     } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        return from(api.query[apiSection].relayersMap<Option<PalletFeeMarketRelayer>>(relayerAddress)).subscribe({
+        return from(
+          api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayerAddress)
+        ).subscribe({
           next: (res) => {
-            if (res.isSome) {
+            if (isOption(res) && res.isSome) {
+              const { fee, collateral } = res.unwrap();
+              if (fee.gt(BN_ZERO) || collateral.gt(BN_ZERO)) {
+                setRegistered(true);
+              } else {
+                setRegistered(false);
+              }
+            } else if (
+              res &&
+              ((res as PalletFeeMarketRelayer).fee.gt(BN_ZERO) ||
+                (res as PalletFeeMarketRelayer).collateral.gt(BN_ZERO))
+            ) {
               setRegistered(true);
             } else {
               setRegistered(false);

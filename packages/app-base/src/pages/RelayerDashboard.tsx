@@ -8,7 +8,7 @@ const RelayerDashboard = () => {
   const { api, requestAccounts } = useApi();
 
   // const { currentAccount } = useApi();
-  const currentAccount = "0x68898db1012808808c903f390909c52d9f706749";
+  const currentAccount = "5H9Aq1mZQh5yZBuNWqbSaZAmdiQFBWSdtzosSL3H6FNknLbW";
 
   return (
     <>
