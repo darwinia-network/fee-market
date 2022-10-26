@@ -17,6 +17,7 @@ import {
   isPolkadotApi,
   getFeeMarketApiSection,
   isPolkadotChain,
+  isOption,
 } from "@feemarket/app-utils";
 import type {
   FeeMarketSourceChainPolkadot,
@@ -92,10 +93,16 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     } else if (registered && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
       if (apiSection) {
-        return from(api.query[apiSection].relayersMap<Option<PalletFeeMarketRelayer>>(relayerAddress)).subscribe({
+        return from(
+          api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayerAddress)
+        ).subscribe({
           next: (res) => {
-            if (res.isSome) {
+            if (isOption(res) && res.isSome) {
               const { collateral, fee } = res.unwrap();
+              setCollateralAmount(BigNumber.from(collateral.toString()));
+              setCurrentQuoteAmount(BigNumber.from(fee.toString()));
+            } else if (res) {
+              const { collateral, fee } = res as PalletFeeMarketRelayer;
               setCollateralAmount(BigNumber.from(collateral.toString()));
               setCurrentQuoteAmount(BigNumber.from(fee.toString()));
             }
