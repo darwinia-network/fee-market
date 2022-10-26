@@ -9,7 +9,7 @@ const config: EthChainConfig = {
   displayName: "Pangoro Smart Chain",
   chainLogo,
   graphql: {
-    endpoint: "",
+    endpoint: "https://thegraph.darwinia.network/feemarket/subgraphs/name/feemarket-pangoro",
   },
   nativeToken: {
     symbol: "ORING",

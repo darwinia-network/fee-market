@@ -112,7 +112,7 @@ export const formatBalance = (
 ): string => {
   if ((amount || amount === 0) && decimals) {
     const precision = overrides?.precision ?? decimals === 9 ? 1 : decimals === 18 ? 4 : BALANCE_DECIMALS;
-    const [integer, decimal] = ethersUtils.formatUnits(amount.toString(), decimals).split(".");
+    const [integer, decimal] = ethersUtils.commify(ethersUtils.formatUnits(amount.toString(), decimals)).split(".");
     const balance = Number(decimal) ? `${integer}.${precision ? decimal.slice(0, precision) : decimal}` : integer;
     return symbol ? `${balance} ${symbol}` : balance;
   }
@@ -129,4 +129,11 @@ export const isVec = <T extends Codec>(value: unknown): value is Vec<T> => {
 
 export const isOption = <T extends Codec>(value: unknown): value is Option<T> => {
   return isInstanceOf(value, Option);
+};
+
+export const adaptTime = (time: string): number => {
+  if (Number.isNaN(Number(time))) {
+    return new Date(time.endsWith("Z") ? time : `${time}Z`).getTime();
+  }
+  return new Date(Number(time) * 1000).getTime();
 };

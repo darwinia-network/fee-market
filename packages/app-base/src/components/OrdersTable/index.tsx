@@ -19,13 +19,7 @@ import type {
 } from "@feemarket/app-types";
 import { useApi, useFeeMarket } from "@feemarket/app-provider";
 import { useAccountName } from "@feemarket/app-hooks";
-import {
-  DATE_TIME_FORMATE,
-  ETH_CHAIN_CONF,
-  POLKADOT_CHAIN_CONF,
-  MAPPING_CHAIN_2_URL_SEARCH_PARAM,
-} from "@feemarket/app-config";
-import { format } from "date-fns";
+import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
 
 enum TimeDimension {
   DATE = "date",
@@ -61,6 +55,13 @@ const dimensionOptions: OptionProps[] = [
     value: TimeDimension.DATE,
   },
 ];
+
+const formatNonce = (nonce: string) => {
+  if (nonce.startsWith("0x")) {
+    return `${nonce.slice(0, 4)}...${nonce.slice(-4)}`;
+  }
+  return `#${nonce}`;
+};
 
 const formatStatus = (status: OrderStatusFilter): string => {
   switch (status) {
@@ -136,8 +137,6 @@ const slotIndexOptions: OptionProps[] = [
   },
 ];
 
-const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
-
 interface Props {
   loading?: boolean;
   data: DataSource[];
@@ -201,7 +200,7 @@ const OrdersTable = ({ loading, data }: Props) => {
         const to = `${location.pathname}/details?${urlSearchParams.toString()}`;
         return (
           <Link to={to} className="text-primary text-14-bold clickable">
-            #{row.nonce}
+            {formatNonce(row.nonce)}
           </Link>
         );
       },
@@ -226,17 +225,14 @@ const OrdersTable = ({ loading, data }: Props) => {
       key: "createdAt",
       title: t([localeKeys.createdAt]),
       render: (row) => (
-        <div className="flex flex-col">
-          <a
-            className="text-primary text-14-bold clickable"
-            rel="noopener noreferrer"
-            target="_blank"
-            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.createBlock}` : "#"}
-          >
-            #{row.createBlock}
-          </a>
-          <span className="text-12">{formatDateTime(row.createdAt)}</span>
-        </div>
+        <a
+          className="text-primary text-14-bold clickable"
+          rel="noopener noreferrer"
+          target="_blank"
+          href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.createBlock}` : "#"}
+        >
+          #{row.createBlock}
+        </a>
       ),
     },
     {
@@ -244,17 +240,14 @@ const OrdersTable = ({ loading, data }: Props) => {
       key: "confirmedAt",
       title: t([localeKeys.confirmAt]),
       render: (row) => (
-        <div className="flex flex-col">
-          <a
-            className="text-primary text-14-bold clickable"
-            rel="noopener noreferrer"
-            target="_blank"
-            href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmedBlock}` : "#"}
-          >
-            #{row.createBlock}
-          </a>
-          <span className="text-12">{row.confirmedAt ? formatDateTime(row.confirmedAt) : "-"}</span>
-        </div>
+        <a
+          className="text-primary text-14-bold clickable"
+          rel="noopener noreferrer"
+          target="_blank"
+          href={chainConfig?.explorer ? `${chainConfig.explorer.url}block/${row.confirmedBlock}` : "#"}
+        >
+          #{row.confirmedBlock}
+        </a>
       ),
     },
     {

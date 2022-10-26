@@ -9,11 +9,11 @@ const config: PolkadotChainConfig = {
     rpc: "wss://pangolin-parachain-rpc.darwinia.network",
   },
   graphql: {
-    endpoint: "",
+    endpoint: "https://subql.darwinia.network/subql-apps-pangolin-parachain",
   },
   nativeToken: {
     symbol: "PRING",
-    decimals: 9,
+    decimals: 18,
   },
   explorer: {
     url: "https://pangolin-parachain.subscan.io/",

@@ -1,10 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { formatDistanceStrict } from "date-fns";
-import { utils as ethersUtils } from "ethers";
+import { utils as ethersUtils, BigNumber } from "ethers";
 import type { BN } from "@polkadot/util";
-import type { Balance } from "@polkadot/types/interfaces";
-
 import localeKeys from "../../locale/localeKeys";
+import { formatBalance } from "@feemarket/app-utils";
 import type { Market } from "@feemarket/app-provider";
 import type { FeeMarketSourceChainEth, FeeMarketSourceChainPolkadot } from "@feemarket/app-types";
 import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/app-config";
@@ -15,18 +14,18 @@ const formatRelayers = (active?: number | null, total?: number | null): string =
   return `${a} / ${t}`;
 };
 
-const formatSpeed = (speed?: number | null): string => {
+const formatSpeed = (speed?: number | string | null): string => {
   if (speed || speed === 0) {
     const now = Date.now();
-    const distance = formatDistanceStrict(now, now + speed).split(" ");
+    const distance = formatDistanceStrict(now, Number(now) + Number(speed)).split(" ");
     return `${distance[0]}${distance[1].slice(0, 1)}`;
   }
   return "-";
 };
 
-const formatCurrentFee = (fee?: BN | Balance | null, decimals?: number | null, symbol?: string | null): string => {
+const formatCurrentFee = (fee?: BN | BigNumber | null, decimals?: number | null, symbol?: string | null): string => {
   if (fee && decimals && symbol) {
-    return `${ethersUtils.commify(ethersUtils.formatUnits(fee.toString(), decimals).split(".")[0])} ${symbol}`;
+    return formatBalance(fee, decimals, symbol);
   }
   return "-";
 };
@@ -47,7 +46,7 @@ const formatOrders = (orders?: number | null): string => {
 
 interface Props {
   averageSpeed: {
-    value: number | null | undefined;
+    value: number | string | null | undefined;
     loading: boolean;
   };
   totalOrders: {
@@ -64,7 +63,7 @@ interface Props {
     loading: boolean;
   };
   currentFee: {
-    value: BN | Balance | null | undefined;
+    value: BN | BigNumber | null | undefined;
     loading: boolean;
   };
   currentMarket: Market | null;

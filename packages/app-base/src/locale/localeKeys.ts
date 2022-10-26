@@ -32,9 +32,10 @@ const localeKeys = {
   ordersCount: "ordersCount",
   days: "days",
   all: "all",
-  freeHistory: "freeHistory",
+  feeHistory: "feeHistory",
   searchByRelayerAddress: "searchByRelayerAddress",
   allRelayers: "allRelayers",
+  assignedRelayer: "assignedRelayer",
   assignedRelayers: "assignedRelayers",
   relayer: "relayer",
   count: "count",
@@ -132,6 +133,7 @@ const localeKeys = {
   search: "search",
   failed: "failed",
   successed: "successed",
+  transaction: "transaction",
 };
 
 export default localeKeys;

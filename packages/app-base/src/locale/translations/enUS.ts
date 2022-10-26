@@ -32,9 +32,10 @@ const enUs = {
   [localeKeys.ordersCount]: "orders count",
   [localeKeys.days]: "{{daysNumber}}D",
   [localeKeys.all]: "all",
-  [localeKeys.freeHistory]: `free history (<span style="text-transform: uppercase;">{{currency}}</span>)`,
+  [localeKeys.feeHistory]: `fee history (<span style="text-transform: uppercase;">{{currency}}</span>)`,
   [localeKeys.searchByRelayerAddress]: "search by relayer address",
   [localeKeys.allRelayers]: "all relayers",
+  [localeKeys.assignedRelayer]: "assigned relayer",
   [localeKeys.assignedRelayers]: "assigned relayers",
   [localeKeys.relayer]: "relayer",
   [localeKeys.count]: "count",
@@ -115,7 +116,7 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.currentQuoteTooltip]: `This is the price that you wish the users to pay for sending a cross-chain message. The system will consider the order assignment based on your quoted information. <br/><br/><div>You can modify it using the modify button below .</div>`,
   [localeKeys.registerRelayerTooltip]: `registering in the current Fee Market system requires you to deposit a certain amount of collateral and to quote an order for relaying message. After registration, the system will assign you orders with reference to your collateral Balance and quotes.`,
   [localeKeys.runBridgerTooltip]: `You need to Run a Relayer Client to Relay Message.`,
-  [localeKeys.orderNumberDetails]: `Order > #{{orderNumber}}`,
+  [localeKeys.orderNumberDetails]: `Order > {{orderNumber}}`,
   [localeKeys.details]: "details",
   [localeKeys.nonce]: "nonce",
   [localeKeys.laneId]: "laneID",
@@ -134,6 +135,7 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.search]: "search",
   [localeKeys.failed]: "failed",
   [localeKeys.successed]: "successed",
+  [localeKeys.transaction]: "transaction",
 };
 
 export default enUs;

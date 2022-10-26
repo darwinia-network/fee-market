@@ -8,6 +8,13 @@ import localeKeys from "./locale/localeKeys";
 import { Spinner } from "@darwinia/ui";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 
+const formatOrderId = (nonce: string) => {
+  if (nonce.startsWith("0x")) {
+    return `${nonce.slice(0, 4)}...${nonce.slice(-4)}`;
+  }
+  return `#${nonce}`;
+};
+
 const App = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -22,7 +29,7 @@ const App = () => {
     "/orders/details": () => {
       const params = new URLSearchParams(location.search);
       const orderId = params.get(UrlSearchParamsKey.NONCE) ?? "";
-      return t(localeKeys.orderNumberDetails, { orderNumber: orderId });
+      return t(localeKeys.orderNumberDetails, { orderNumber: formatOrderId(orderId) });
     },
   };
 

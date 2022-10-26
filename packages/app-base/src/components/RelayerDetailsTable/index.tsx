@@ -6,11 +6,18 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useFeeMarket } from "@feemarket/app-provider";
 import { DATE_TIME_FORMATE, MAPPING_CHAIN_2_URL_SEARCH_PARAM } from "@feemarket/app-config";
-import { formatBalance } from "@feemarket/app-utils";
+import { formatBalance, adaptTime } from "@feemarket/app-utils";
 import { UrlSearchParamsKey } from "@feemarket/app-types";
 import type { RelayerOrdersDataSource } from "@feemarket/app-types";
 
-const formatDateTime = (time: string) => `${format(new Date(`${time}Z`), DATE_TIME_FORMATE)} (+UTC)`;
+const formatNonce = (nonce: string) => {
+  if (nonce.startsWith("0x")) {
+    return `${nonce.slice(0, 4)}...${nonce.slice(-4)}`;
+  }
+  return `#${nonce}`;
+};
+
+const formatDateTime = (time: string) => `${format(adaptTime(time), DATE_TIME_FORMATE)}`;
 
 interface Order {
   id: string;
@@ -49,7 +56,7 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
         const to = `/orders/details?${urlSearchParams.toString()}`;
         return (
           <Link to={to} className="clickable text-primary text-14-bold">
-            #{row.nonce}
+            {formatNonce(row.nonce)}
           </Link>
         );
       },
@@ -77,7 +84,13 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     {
       id: "5",
       key: "time",
-      title: <div className={"capitalize"}>{t([localeKeys.time])}</div>,
+      title: (
+        <div className="flex items-center">
+          <span className={"capitalize"}>{t([localeKeys.time])}</span>
+          <span>&nbsp;</span>
+          <span className="uppercase">(UTC+0)</span>
+        </div>
+      ),
       render: (row) => <span>{formatDateTime(row.time)}</span>,
     },
   ];

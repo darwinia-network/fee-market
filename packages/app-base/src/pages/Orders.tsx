@@ -14,7 +14,7 @@ const Orders = () => {
 
   return (
     <Spinner isLoading={ordersSummaryLoading || ordersTableLoading || false}>
-      <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
+      <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem] min-h-[38rem]"}>
         <OrdersSummary
           loading={ordersSummaryLoading}
           orders={{
@@ -24,32 +24,24 @@ const Orders = () => {
           }}
         />
         <OrdersTable
-          data={
-            ordersTableData?.orders?.nodes.length
-              ? [...ordersTableData.orders.nodes]
-                  .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
-                  .map((node, index) => {
-                    return {
-                      id: index.toString(),
-                      lane: node.lane,
-                      nonce: node.nonce,
-                      sender: node.sender,
-                      status: node.status,
-                      slotIndex: node.slotIndex,
-                      deliveryRelayer: node.deliveryRelayers?.nodes.length
-                        ? node.deliveryRelayers.nodes[0].deliveryRelayer.address
-                        : null,
-                      confirmationRelayer: node.confirmationRelayers?.nodes.length
-                        ? node.confirmationRelayers.nodes[0].confirmationRelayer.address
-                        : null,
-                      createdAt: node.createBlockTime,
-                      confirmedAt: node.finishBlockTime,
-                      createBlock: node.createBlockNumber,
-                      confirmedBlock: node.finishBlockNumber,
-                    };
-                  })
-              : []
-          }
+          data={[...ordersTableData]
+            .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
+            .map((item, index) => {
+              return {
+                id: index.toString(),
+                lane: item.lane,
+                nonce: item.nonce,
+                sender: item.sender,
+                status: item.status,
+                slotIndex: item.slotIndex,
+                deliveryRelayer: item.deliveryRelayers.length ? item.deliveryRelayers[0].address : null,
+                confirmationRelayer: item.confirmationRelayers.length ? item.confirmationRelayers[0].address : null,
+                createdAt: item.createBlockTime,
+                confirmedAt: item.finishBlockTime,
+                createBlock: item.createBlockNumber,
+                confirmedBlock: item.finishBlockNumber,
+              };
+            })}
         />
       </div>
     </Spinner>
