@@ -133,7 +133,7 @@ export const isOption = <T extends Codec>(value: unknown): value is Option<T> =>
 
 export const adaptTime = (time: string): number => {
   if (Number.isNaN(Number(time))) {
-    return new Date(`${time}Z`).getTime();
+    return new Date(time.endsWith("Z") ? time : `${time}Z`).getTime();
   }
   return new Date(Number(time) * 1000).getTime();
 };
