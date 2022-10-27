@@ -36,7 +36,7 @@ const RelayerDashboard = ({ relayerAddress }: Props) => {
   const { currentMarket, setRefresh } = useFeeMarket();
   const { signerApi: api, currentChainId } = useApi();
   const { rewardAndSlashData, quoteHistoryData, relayerRelatedOrdersData } = useRelayersDetailData({
-    relayerAddress,
+    relayerAddress: relayerAddress.startsWith("0x") ? relayerAddress.toLowerCase() : relayerAddress,
     currentMarket,
     setRefresh,
   });
