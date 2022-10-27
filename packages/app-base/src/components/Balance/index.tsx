@@ -36,7 +36,7 @@ interface Props {
 const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { signerApi: api } = useApi();
   const [isModifyQuoteModalVisible, setModifyQuoteModalVisible] = useState(false);
   const [isModifyCollateralBalanceModalVisible, setModifyCollateralBalanceModalVisible] = useState(false);
   const [collateralAmount, setCollateralAmount] = useState<BigNumber>(BigNumber.from(0));

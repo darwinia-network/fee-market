@@ -7,7 +7,7 @@ import { useMemo } from "react";
 
 const Overview = () => {
   const { currentMarket, setRefresh } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const {
     averageSpeed,
     totalOrders,

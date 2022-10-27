@@ -9,7 +9,7 @@ interface Props {
 
 const AccountMini = ({ address }: Props) => {
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { displayName } = useAccountName(api, address);
 
   const sourceChain = currentMarket?.source;

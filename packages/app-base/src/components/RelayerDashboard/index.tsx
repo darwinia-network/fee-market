@@ -34,7 +34,7 @@ interface Props {
 const RelayerDashboard = ({ relayerAddress }: Props) => {
   const { t } = useTranslation();
   const { currentMarket, setRefresh } = useFeeMarket();
-  const { api, currentChainId } = useApi();
+  const { signerApi: api, currentChainId } = useApi();
   const { rewardAndSlashData, quoteHistoryData, relayerRelatedOrdersData } = useRelayersDetailData({
     relayerAddress,
     currentMarket,

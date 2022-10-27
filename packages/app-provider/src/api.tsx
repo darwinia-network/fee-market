@@ -11,7 +11,6 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import keyring from "@polkadot/ui-keyring";
 
 export interface ApiCtx {
-  api: providers.Provider | ApiPromise | null;
   signerApi: providers.Provider | ApiPromise | null;
   providerApi: providers.Provider | ApiPromise | null;
   accounts: string[] | null;
@@ -22,7 +21,6 @@ export interface ApiCtx {
 }
 
 const defaultValue: ApiCtx = {
-  api: null,
   signerApi: null,
   providerApi: null,
   accounts: null,
@@ -36,7 +34,6 @@ export const ApiContext = createContext<ApiCtx>(defaultValue);
 
 export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const { currentMarket } = useFeeMarket();
-  const [api, setApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [signerApi, setSignerApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [providerApi, setProviderApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<string[] | null>(null);
@@ -72,6 +69,8 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   }, [signerApi]);
 
   useEffect(() => {
+    let api: ApiPromise | null = null;
+
     if (isEthChain(sourceChain)) {
       const rpc = ETH_CHAIN_CONF[sourceChain].provider.rpc;
       if (rpc.startsWith("ws")) {
@@ -82,12 +81,10 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
 
       if (typeof window.ethereum !== "undefined") {
         const provider = new providers.Web3Provider(window.ethereum);
-        setApi(provider);
         setSignerApi(provider);
 
         window.ethereum.on("chainChanged", () => {
           const provider = new providers.Web3Provider(window.ethereum);
-          setApi(provider);
           setSignerApi(provider);
         });
 
@@ -99,31 +96,29 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     } else if (isPolkadotChain(sourceChain)) {
       const rpc = POLKADOT_CHAIN_CONF[sourceChain].provider.rpc;
       const provider = new WsProvider(rpc);
-      const api = new ApiPromise({ provider });
+      api = new ApiPromise({ provider });
       api.on("error", () => {
-        setApi(null);
         setSignerApi(null);
         setProviderApi(null);
       });
       api.on("ready", () => {
-        setApi((prev) => prev ?? api);
         setSignerApi((prev) => prev ?? api);
         setProviderApi((prev) => prev ?? api);
       });
       api.on("disconnected", () => {
-        setApi(null);
         setSignerApi(null);
         setProviderApi(null);
       });
     }
 
     return () => {
-      api?.off("error", () => undefined);
-      api?.off("ready", () => undefined);
-      api?.off("connected", () => undefined);
-      api?.off("disconnected", () => undefined);
+      if (api) {
+        api.off("error", () => undefined);
+        api.off("ready", () => undefined);
+        api.off("connected", () => undefined);
+        api.off("disconnected", () => undefined);
+      }
 
-      setApi(null);
       setSignerApi(null);
       setProviderApi(null);
       setAccounts(null);
@@ -154,7 +149,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   return (
     <ApiContext.Provider
       value={{
-        api,
         signerApi,
         providerApi,
         accounts,

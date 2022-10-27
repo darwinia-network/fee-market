@@ -95,7 +95,7 @@ const OrderDetails = () => {
     nonce: null,
   });
   const { currentMarket, setRefresh } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
 
   const sourceChain = currentMarket?.source;
   // const destinationChain = currentMarket?.destination;
@@ -626,7 +626,7 @@ const AccountAddress = ({ address, className }: { address: string; className?: s
 
 const AccountName = ({ address, className }: { address: string; className?: string }) => {
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { displayName } = useAccountName(api, address);
 
   const urlSearchParams = new URLSearchParams();
