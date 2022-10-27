@@ -32,7 +32,7 @@ const formatCurrentFee = (fee?: BN | BigNumber | null, decimals?: number | null,
 
 const formatRewards = (rewards?: BN | null, decimals?: number | null): string => {
   if (rewards && decimals) {
-    return ethersUtils.commify(ethersUtils.formatUnits(rewards.toString(), decimals).split(".")[0]);
+    return formatBalance(rewards, decimals);
   }
   return "-";
 };
