@@ -354,7 +354,7 @@ const OrderDetails = () => {
           .filter((item) => item.relayerRole === "Assigned")
           .map((item, index) => ({
             id: `2-${index}`,
-            label: t(localeKeys.assignedRelayers),
+            label: t(localeKeys.dutyRelayer),
             details: (
               <div className={"flex flex-col lg:flex-row lg:gap-[0.625rem]"}>
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
