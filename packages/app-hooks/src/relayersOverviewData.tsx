@@ -73,7 +73,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                     { relayerId: string }
                   >({
                     query: RELAYER_OVERVIEW,
-                    variables: { relayerId: `${destinationChain}-${relayer.toString()}` },
+                    variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
                   })
                 )
               ),
@@ -84,7 +84,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                     { relayerId: string }
                   >({
                     query: RELAYER_OVERVIEW,
-                    variables: { relayerId: `${destinationChain}-${relayer.toString()}` },
+                    variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
                   })
                 )
               )

@@ -23,7 +23,7 @@ const RelayerDetails = () => {
     quoteHistoryData,
     relayerRelatedOrdersData,
   } = useRelayersDetailData({
-    relayerAddress,
+    relayerAddress: relayerAddress.startsWith("0x") ? relayerAddress.toLowerCase() : relayerAddress,
     currentMarket,
     setRefresh,
   });
