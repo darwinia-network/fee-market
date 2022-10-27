@@ -37,7 +37,7 @@ const RelayersOverview = () => {
   const [keywords, setKeywords] = useState("");
 
   const { currentMarket, setRefresh } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { relayersOverviewData } = useRelayersOverviewData({ currentMarket, api, setRefresh });
 
   const nativeToken = currentMarket?.source
@@ -223,7 +223,7 @@ const RelayersOverview = () => {
 
 const RelayerAccount = ({ address }: { address: string }) => {
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { displayName } = useAccountName(api, address);
 
   let to = "#";

@@ -146,25 +146,19 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
   );
 };
 
-const RoleOrderMapping: Record<string, number> = {
-  Assigned: 0,
-  Delivery: 1,
-  Confirmation: 2,
-};
+const ALL_ROLES = ["Assigned", "Delivery", "Confirmation"];
 
 const getRelayerRolesColumn = (row: Order) => {
   return (
     <div className={"flex-wrap flex flex-row gap-[0.625rem] text-12"}>
-      {[...row.relayerRoles]
-        .sort((a, b) => RoleOrderMapping[a] - RoleOrderMapping[b])
-        .map((role, index) => {
-          const roleBg = role.toLowerCase() === "assigned" ? "bg-primary" : "";
-          return (
-            <div key={index} className={`${roleBg} rounded-sm border border-primary px-[0.8125rem] py-[0.21875rem]`}>
-              {role}
-            </div>
-          );
-        })}
+      {ALL_ROLES.map((role, index) => {
+        const roleBg = row.relayerRoles.includes(role) ? "bg-primary" : "";
+        return (
+          <div key={index} className={`${roleBg} rounded-sm border border-primary px-[0.8125rem] py-[0.21875rem]`}>
+            {role}
+          </div>
+        );
+      })}
     </div>
   );
 };

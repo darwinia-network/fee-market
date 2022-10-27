@@ -74,7 +74,7 @@ interface Props {
 const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { signerApi: api } = useApi();
 
   const [busy, setBusy] = useState(false);
   const [fee] = useState<BigNumber | BN | null>(null);

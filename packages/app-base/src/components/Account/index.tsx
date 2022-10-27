@@ -28,7 +28,7 @@ const Account = ({
   onSuccess = () => undefined,
 }: Props) => {
   const { t } = useTranslation();
-  const { api } = useApi();
+  const { signerApi: api } = useApi();
   const { displayName } = useAccountName(api, relayerAddress);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);

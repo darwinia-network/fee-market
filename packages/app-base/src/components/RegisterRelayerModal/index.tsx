@@ -76,7 +76,7 @@ export interface Props {
 const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { signerApi: api } = useApi();
   const { balance: relayerBalance, refresh: refreshBalance } = useBalance(api, relayerAddress);
 
   const [busy, setBusy] = useState(false);

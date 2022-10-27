@@ -16,14 +16,14 @@ export interface AccountSelectionModalProps {
 }
 
 const AccountName = ({ address }: { address: string }) => {
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { displayName } = useAccountName(api, address);
   return <div className={"text-18-bold"}>{displayName}</div>;
 };
 
 const AccountBalance = ({ address }: { address: string }) => {
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { balance } = useBalance(api, address);
 
   const nativeToken = currentMarket?.source

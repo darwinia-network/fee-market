@@ -65,7 +65,7 @@ interface Props {
 const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
   const { t } = useTranslation();
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { signerApi: api } = useApi();
   const [busy, setBusy] = useState(false);
 
   const sourceChain = currentMarket?.source;

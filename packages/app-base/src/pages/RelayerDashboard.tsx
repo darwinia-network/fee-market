@@ -5,7 +5,7 @@ import { useApi, useFeeMarket } from "@feemarket/app-provider";
 
 const RelayerDashboard = () => {
   const { currentMarket } = useFeeMarket();
-  const { api, requestAccounts } = useApi();
+  const { signerApi: api, requestAccounts } = useApi();
 
   const { currentAccount } = useApi();
 

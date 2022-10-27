@@ -529,7 +529,7 @@ const OrdersTable = ({ loading, data }: Props) => {
 
 const RelayerAccount = ({ address }: { address: string }) => {
   const { currentMarket } = useFeeMarket();
-  const { api } = useApi();
+  const { providerApi: api } = useApi();
   const { displayName } = useAccountName(api, address);
 
   return (

@@ -19,7 +19,7 @@ const config: EthChainConfig = {
     url: "https://goerli.etherscan.io/",
   },
   provider: {
-    rpc: "https://goerli.infura.io/v3/",
+    rpc: "https://eth-goerli.g.alchemy.com/v2/oanvaPnbDzYvigj3O_67w3SBcvbDvim8",
   },
   contractAddress: "0xdb5E16A6E25ABF29dbe26e701D1DDCad03180E92",
   contractInterface,
