@@ -1,4 +1,3 @@
-import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useState } from "react";
@@ -8,9 +7,10 @@ import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
 import { useAccountName } from "@feemarket/app-hooks";
-import { isEthChain } from "@feemarket/app-utils";
+import { isEthChain, isPolkadotChain } from "@feemarket/app-utils";
 import { useApi } from "@feemarket/app-provider";
 import type { FeeMarketSourceChan } from "@feemarket/app-types";
+import { Identicon } from "@polkadot/react-identicon";
 
 interface Props {
   advanced?: boolean;
@@ -74,7 +74,7 @@ const Account = ({
       className={`flex card gap-[0.9375rem] ${advanced ? "flex-col lg:flex-row lg:items-center" : "lg:items-center"}`}
     >
       <div className={"flex flex-1 lg:items-center gap-[0.9375rem] overflow-hidden"}>
-        <img className={"rounded-full w-[2.5rem] h-[2.5rem] shrink-0"} src={relayerAvatar} alt="image" />
+        <Identicon value={relayerAddress} size={40} theme={isPolkadotChain(sourceChain) ? "polkadot" : "ethereum"} />
         <div
           className={`overflow-hidden flex ${advanced ? "" : "lg:items-center"} flex-1 flex-col ${
             advanced ? "" : "lg:flex-row lg:gap-[0.9375rem]"
