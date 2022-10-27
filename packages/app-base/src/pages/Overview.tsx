@@ -24,6 +24,10 @@ const Overview = () => {
     setRefresh,
   });
 
+  if (totalReward.value) {
+    console.log(totalReward.value.toString());
+  }
+
   const loading = useMemo(() => {
     return (
       averageSpeed.loading ||
