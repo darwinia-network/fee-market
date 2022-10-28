@@ -126,7 +126,12 @@ $opacityDuration: 300ms;
     height: var(--26px);
   }
 
-  &.dw-selected-option {
+  &.dw-multiple-selected-option {
     background-color: var(--link);
+  }
+
+  &.dw-selected-option {
+    background-color: var(--black);
+    opacity: 0.8;
   }
 }
