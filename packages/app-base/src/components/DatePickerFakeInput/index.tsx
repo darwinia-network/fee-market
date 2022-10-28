@@ -1,7 +1,9 @@
 import localeKeys from "../../locale/localeKeys";
-import { DatePickEvent, DateRangePicker } from "@darwinia/ui";
+import { DatePickEvent, DateRangePicker, DateRangePickerRef } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
+import clearIcon from "../../assets/images/clear.svg";
+import caretDown from "../../assets/images/caret-down.svg";
 
 interface Param {
   start: number | undefined;
@@ -14,6 +16,7 @@ interface Props {
 
 const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
   const { t } = useTranslation();
+  const dateRangePickerRef = useRef<DateRangePickerRef>(null);
 
   const handleDone = useCallback(
     (event: DatePickEvent) => {
@@ -24,6 +27,14 @@ const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
     },
     [onChange]
   );
+
+  const onDateRangeReset = () => {
+    // auto close the date range picker
+    document.body.click();
+    if (dateRangePickerRef.current) {
+      dateRangePickerRef.current.resetDatePicker();
+    }
+  };
 
   const getDateRenderer = (event?: DatePickEvent) => {
     const startDateJSX =
@@ -39,51 +50,40 @@ const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
         <div className={"text-halfWhite"}>{t(localeKeys.endDate)}</div>
       );
     return (
-      <div>
-        <div className={"hidden lg:flex flex-col shrink-0"}>
-          <div className={"flex flex-1 shrink-0 items-center gap-[0.625rem]"}>
-            <div className={"w-[8rem]"}>
-              <div
-                className={
-                  "h-[1.625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
-                }
-              >
-                {startDateJSX}
+      <div className={"text-12"}>
+        <div className={"flex shrink-0"}>
+          <div
+            className={
+              "flex rounded-[0.3125rem] px-[0.625rem] w-[13.25rem] flex-1 gap-[0.625rem] relative bg-blackSecondary select-none border border-halfWhite shrink-0 items-center justify-between"
+            }
+          >
+            <div className={"relative flex gap-[0.4rem]"}>
+              <div>
+                <div className={"h-[2.375rem] lg:h-[1.5rem] rounded-[0.3125rem] flex gap-[0.625rem] items-center"}>
+                  {startDateJSX}
+                </div>
+              </div>
+              <div className={`${event && event.startDateString ? "" : "text-halfWhite"} items-center flex`}>-</div>
+              <div>
+                <div className={"h-[2.375rem] lg:h-[1.5rem] rounded-[0.3125rem] flex gap-[0.625rem] items-center"}>
+                  {endDateJSX}
+                </div>
               </div>
             </div>
-            <div>{t(localeKeys.to)}</div>
-            <div className={"w-[8rem]"}>
-              <div
-                className={
-                  "h-[1.625rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
-                }
-              >
-                {endDateJSX}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={"flex lg:hidden flex-col gap-[0.625rem]"}>
-          <div className={"flex gap-[0.625rem]"}>
-            <div className={"flex-1 flex flex-col gap-[0.625rem]"}>
-              <div className={"text-12"}>{t(localeKeys.date)}</div>
-              <div
-                className={
-                  "h-[2.5rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
-                }
-              >
-                {startDateJSX}
-              </div>
-            </div>
-            <div className={"flex-1 flex flex-col gap-[0.625rem]"}>
-              <div className={"text-12"}>{t(localeKeys.to)}</div>
-              <div
-                className={
-                  "h-[2.5rem] rounded-[0.3125rem] select-none px-[0.625rem] flex gap-[0.625rem] items-center bg-blackSecondary border border-halfWhite"
-                }
-              >
-                {endDateJSX}
-              </div>
+            <div className={"w-[1rem]"}>
+              {event && event.startDateString ? (
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDateRangeReset();
+                  }}
+                  className={"clickable"}
+                  src={clearIcon}
+                  alt="image"
+                />
+              ) : (
+                <img src={caretDown} alt="image" />
+              )}
             </div>
           </div>
         </div>
@@ -92,9 +92,11 @@ const DatePickerFakeInput = ({ onChange = () => undefined }: Props) => {
   };
 
   return (
-    <div className={"flex items-center gap-[0.625rem]"}>
-      <div className={"hidden lg:block"}>{t(localeKeys.date)}</div>
+    <div className={"flex flex-col lg:flex-row lg:items-center gap-[0.625rem]"}>
+      <div className={"text-12"}>{t(localeKeys.date)}</div>
       <DateRangePicker
+        ref={dateRangePickerRef}
+        className={"lg:ml-[4.875rem]"}
         monthClassName={"w-[288px]"}
         dateRender={getDateRenderer}
         onDateChange={() => undefined}

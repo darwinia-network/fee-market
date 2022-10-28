@@ -137,8 +137,10 @@ const Select = ({
     const someOptions = optionsList.map((item) => {
       const selectedOption = isMultiple
         ? selectedValuesRef.current.includes(item.value)
-          ? "dw-selected-option"
+          ? "dw-multiple-selected-option"
           : ""
+        : selectedValuesRef.current.includes(item.value)
+        ? "dw-selected-option"
         : "";
 
       return (

@@ -57,6 +57,8 @@ const Calendar = ({
     if (!isVisible) {
       return;
     }
+    /* This will make sure that whenever calendar the component appears on screen
+     * it shows the startDate and endDate as passed in via props */
     if (passedInStartDate) {
       if (typeof passedInStartDate === "string") {
         const dateStandard = new Date(passedInStartDate);

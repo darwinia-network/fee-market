@@ -30,6 +30,7 @@ export interface DateRangePickerProps {
 export interface DateRangePickerRef {
   setStartDate: (startDate: Date | string) => void;
   setEndDate: (startDate: Date | string) => void;
+  resetDatePicker: () => void;
 }
 
 const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
@@ -51,6 +52,8 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
     const [isCalendarVisible, setCalendarVisibility] = useState(false);
+    /* lastDatePickEvent will be sent to the user when on done is fired. It'll also
+     * be used to render the  */
     const lastDatePickEvent = useRef<DatePickEvent>();
     const calendarRef = useRef<HTMLDivElement | null>(null);
 
@@ -76,10 +79,19 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
       }
     };
 
+    const resetDatePicker = () => {
+      setStartDate(undefined);
+      setEndDate(undefined);
+      lastDatePickEvent.current = undefined;
+      onDateChange({});
+      onDone({});
+    };
+
     useImperativeHandle(ref, () => {
       return {
         setStartDate: setCalendarStartDate,
         setEndDate: setCalendarEndDate,
+        resetDatePicker: resetDatePicker,
       };
     });
 
@@ -161,10 +173,14 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
     };
 
     const getRendererDate = (): DatePickEvent => {
+      //show the previous startDate and endDate if any exists
       if (lastDatePickEvent.current) {
         return lastDatePickEvent.current;
       }
 
+      /* this might be the first time this component is mounted, show the dates that
+      were passed from outside via props, if no props were passed in then startDate and endDate
+       will be undefined hence the placeholder will show */
       const output: DatePickEvent = {};
 
       if (passedInStartDate) {

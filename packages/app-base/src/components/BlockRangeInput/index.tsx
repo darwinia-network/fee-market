@@ -25,9 +25,9 @@ const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
   }, [start, end, onChange]);
 
   return (
-    <div className="flex gap-[0.625rem]">
+    <div className="text-12 flex gap-[0.625rem]">
       <div className="flex-1 flex flex-col lg:flex-row lg:items-center gap-[0.625rem]">
-        <span className="text-12">{t(localeKeys.block)}</span>
+        <span>{t(localeKeys.block)}</span>
         <Input
           placeholder={t(localeKeys.startBlock)}
           value={start ?? ""}
@@ -37,7 +37,7 @@ const BlockRangeInput = ({ onChange = () => undefined }: Props) => {
         />
       </div>
       <div className="flex-1 flex flex-col lg:flex-row lg:items-center gap-[0.625rem]">
-        <span className="text-12">{t(localeKeys.to)}</span>
+        <span>{t(localeKeys.to)}</span>
         <Input
           placeholder={t(localeKeys.endBlock)}
           value={end ?? ""}
