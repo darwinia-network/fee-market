@@ -173,11 +173,11 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 {formatBalance(collateralAmount, nativeToken.decimals, nativeToken.symbol)}
               </div>
             )}
-            {registered && (
+            {matchNetwork && (registered || isEthChain(sourceChain)) ? (
               <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
         {/*currently locked*/}
@@ -223,11 +223,11 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 })}
               </div>
             )}
-            {registered && (
+            {matchNetwork && registered ? (
               <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
