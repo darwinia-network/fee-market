@@ -23,7 +23,7 @@ jobs:
           yarn boot
 
       - name: Build
-        run: yarn build:app-base
+        run: yarn build:app
 
       - uses: ./.github/actions/smart-vercel
         name: Deploy to Vercel
@@ -32,7 +32,7 @@ jobs:
           vercel_group: itering
           preview_output: true
           project_name: feemarket
-          dist_path: packages/app-base/dist
+          dist_path: packages/app/dist
           script_run: false
           enable_cache: true
           enable_notify_comment: true

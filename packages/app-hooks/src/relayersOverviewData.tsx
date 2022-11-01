@@ -1,16 +1,17 @@
-import type { ApiPromise } from "@polkadot/api";
-import { Vec, Option } from "@polkadot/types";
-import type { AccountId32 } from "@polkadot/types/interfaces";
-import type { Market } from "@feemarket/app-provider";
-import type { PalletFeeMarketRelayer, RelayerEntity } from "@feemarket/app-types";
-import { getFeeMarketApiSection, isEthApi, isEthChain, isPolkadotApi, isPolkadotChain } from "@feemarket/app-utils";
+import { providers, Contract, BigNumber } from "ethers";
 import { useCallback, useEffect, useState } from "react";
 import { EMPTY, from, switchMap, forkJoin, map, zip, of, Observable } from "rxjs";
 import { useApolloClient } from "@apollo/client";
-import { RELAYER_OVERVIEW, ETH_CHAIN_CONF } from "@feemarket/app-config";
 import { bnToBn, BN, BN_ZERO } from "@polkadot/util";
-import { isVec, isOption } from "@feemarket/app-utils";
-import { providers, Contract, BigNumber } from "ethers";
+import type { Vec, Option } from "@polkadot/types";
+import type { AccountId32 } from "@polkadot/types/interfaces";
+import { useMarket } from "@feemarket/market";
+import type { PalletFeeMarketRelayer, OrderBook } from "@feemarket/types";
+import type { RelayerEntity } from "@feemarket/config";
+import { getFeeMarketApiSection, isEthApi, isEthChain, isPolkadotApi, isPolkadotChain } from "@feemarket/utils";
+import { RELAYER_OVERVIEW_DATA } from "@feemarket/config";
+import { isVec, isOption, getEthChainConfig } from "@feemarket/utils";
+import { useApi } from "@feemarket/api";
 
 interface DataSource {
   id: string;
@@ -22,13 +23,9 @@ interface DataSource {
   slash: BN | BigNumber;
 }
 
-interface Params {
-  currentMarket: Market | null;
-  api: ApiPromise | providers.Provider | null;
-  setRefresh: (fn: () => void) => void;
-}
-
-export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Params) => {
+export const useRelayersOverviewData = () => {
+  const { currentMarket, setRefresh } = useMarket();
+  const { providerApi: api } = useApi();
   const apolloClient = useApolloClient();
   const [relayersOverviewData, setRelayersOverviewData] = useState<{
     allRelayersDataSource: DataSource[];
@@ -45,11 +42,8 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
 
   const getRelayersOverviewData = useCallback(() => {
     if (isEthApi(api) && isEthChain(sourceChain)) {
-      const chainConfig = ETH_CHAIN_CONF[sourceChain];
+      const chainConfig = getEthChainConfig(sourceChain);
       const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      // index, relayers, fees, collaterals, locks
-      type OrderBook = [BigNumber, string[], BigNumber[], BigNumber[], BigNumber[]];
 
       const allRelayersObs = from(contract.relayerCount() as Promise<BigNumber>).pipe(
         switchMap((relayerCount) => from(contract.getOrderBook(relayerCount, true) as Promise<OrderBook>))
@@ -72,7 +66,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                     { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
                     { relayerId: string }
                   >({
-                    query: RELAYER_OVERVIEW,
+                    query: RELAYER_OVERVIEW_DATA,
                     variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
                   })
                 )
@@ -83,7 +77,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                     { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
                     { relayerId: string }
                   >({
-                    query: RELAYER_OVERVIEW,
+                    query: RELAYER_OVERVIEW_DATA,
                     variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
                   })
                 )
@@ -191,7 +185,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                       { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
                       { relayerId: string }
                     >({
-                      query: RELAYER_OVERVIEW,
+                      query: RELAYER_OVERVIEW_DATA,
                       variables: { relayerId: `${destinationChain}-${relayer.id.toString()}` },
                     })
                   )
@@ -203,7 +197,7 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
                           { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
                           { relayerId: string }
                         >({
-                          query: RELAYER_OVERVIEW,
+                          query: RELAYER_OVERVIEW_DATA,
                           variables: { relayerId: `${destinationChain}-${relayer.id.toString()}` },
                         })
                       )
@@ -259,7 +253,10 @@ export const useRelayersOverviewData = ({ currentMarket, api, setRefresh }: Para
 
   useEffect(() => {
     const sub$$ = getRelayersOverviewData();
-    return () => sub$$.unsubscribe();
+    return () => {
+      sub$$.unsubscribe();
+      setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
+    };
   }, [getRelayersOverviewData]);
 
   useEffect(() => {

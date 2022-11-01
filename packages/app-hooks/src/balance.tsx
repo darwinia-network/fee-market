@@ -1,42 +1,44 @@
-import { BigNumber, providers } from "ethers";
-import { BN } from "@polkadot/util";
+import { BigNumber } from "ethers";
 import { from, EMPTY } from "rxjs";
-import { ApiPromise } from "@polkadot/api";
-
-import type { BalanceResult } from "@feemarket/app-utils";
-import { getEthBalance, getPolkadotBalance, isEthApi, isPolkadotApi } from "@feemarket/app-utils";
 import { useCallback, useEffect, useState } from "react";
+import { BN } from "@polkadot/util";
+import type { BalanceResult } from "@feemarket/utils";
+import { useApi } from "@feemarket/api";
+import { getEthBalance, getPolkadotBalance, isEthApi, isPolkadotApi } from "@feemarket/utils";
 
-export const useBalance = (api: providers.Provider | ApiPromise | null, address: string) => {
-  const [balance, setBalance] = useState<BalanceResult<BigNumber | BN | null>>({ total: null, available: null });
+export const useBalance = (address: string) => {
+  const { providerApi: api } = useApi();
+  const [balance, setBalance] = useState<BalanceResult<BigNumber | BN | null> & { loading: boolean }>({
+    total: null,
+    available: null,
+    loading: false,
+  });
 
   const getBalance = useCallback(() => {
-    if (address) {
-      if (isEthApi(api)) {
-        setBalance((prev) => ({ ...prev, loading: true }));
+    if (isEthApi(api)) {
+      setBalance((prev) => ({ ...prev, loading: true }));
 
-        return from(getEthBalance(api, address)).subscribe({
-          next: ({ total, available }) => {
-            setBalance({ total, available, loading: false });
-          },
-          error: (error) => {
-            setBalance({ total: null, available: null, loading: false });
-            console.error("get eth balance:", error);
-          },
-        });
-      } else if (isPolkadotApi(api)) {
-        setBalance((prev) => ({ ...prev, loading: true }));
+      return from(getEthBalance(api, address)).subscribe({
+        next: ({ total, available }) => {
+          setBalance({ total, available, loading: false });
+        },
+        error: (error) => {
+          console.error("get eth balance:", error);
+          setBalance({ total: null, available: null, loading: false });
+        },
+      });
+    } else if (isPolkadotApi(api)) {
+      setBalance((prev) => ({ ...prev, loading: true }));
 
-        return from(getPolkadotBalance(api, address)).subscribe({
-          next: ({ total, available }) => {
-            setBalance({ total, available, loading: false });
-          },
-          error: (error) => {
-            setBalance({ total: null, available: null, loading: false });
-            console.error("get polkadot balance:", error);
-          },
-        });
-      }
+      return from(getPolkadotBalance(api, address)).subscribe({
+        next: ({ total, available }) => {
+          setBalance({ total, available, loading: false });
+        },
+        error: (error) => {
+          console.error("get polkadot balance:", error);
+          setBalance({ total: null, available: null, loading: false });
+        },
+      });
     }
 
     return EMPTY.subscribe();

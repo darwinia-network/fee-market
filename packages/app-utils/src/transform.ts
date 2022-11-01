@@ -1,24 +1,18 @@
-import { compareAsc, compareDesc, addDays } from "./date-fns";
-import { bnToBn } from "./polkadot";
-import { BN_ZERO } from "@feemarket/app-config";
-import {
-  BN,
+import { compareAsc, compareDesc, addDays } from "date-fns";
+import { bnToBn, BN_ZERO, BN } from "@polkadot/util";
+import type {
   RelayerRole,
-  RelayerOrdersDataSource,
   OrderEntity,
   FeeEntity,
   SlashEntity,
   RewardEntity,
-  SlashReward,
   QuoteEntity,
-  OrdersData,
   RelayerEntity,
-  OrderDetail,
-} from "@feemarket/app-types";
-import { adaptTime } from "./others";
+} from "@feemarket/config";
+import { unifyTime } from "./time";
 import { isSubQueryEntities, isTheGraphEntities } from "./entity";
 
-export const transformEthRelayerRewardSlash = (data: {
+export const transformRewardAndSlashEthData = (data: {
   relayer: {
     slashes: Pick<SlashEntity, "amount" | "blockTime">[] | null;
     rewards: Pick<RewardEntity, "amount" | "blockTime">[] | null;
@@ -26,7 +20,7 @@ export const transformEthRelayerRewardSlash = (data: {
 }): { rewards: [number, BN][]; slashs: [number, BN][] } => {
   const slashes = data.relayer?.slashes?.length
     ? data.relayer?.slashes.reduce((acc, cur) => {
-        const time = new Date(adaptTime(cur.blockTime)).toISOString();
+        const time = new Date(unifyTime(cur.blockTime)).toISOString();
         const date = `${time.split("T")[0]}T00:00:00Z`;
         acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
         return acc;
@@ -35,39 +29,42 @@ export const transformEthRelayerRewardSlash = (data: {
 
   const rewards = data.relayer?.rewards?.length
     ? data.relayer?.rewards.reduce((acc, cur) => {
-        const time = new Date(adaptTime(cur.blockTime)).toISOString();
+        const time = new Date(unifyTime(cur.blockTime)).toISOString();
         const date = `${time.split("T")[0]}T00:00:00Z`;
         acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
         return acc;
       }, {} as Record<string, BN>)
     : {};
 
-  const combineDates = Array.from(
+  let dates = Array.from(
     Object.keys(rewards)
       .concat(Object.keys(slashes))
-      .reduce((dates, date) => {
-        return dates.add(date);
+      .reduce((acc, cur) => {
+        return acc.add(cur);
       }, new Set<string>())
-  ).sort((a, b) => compareAsc(adaptTime(a), adaptTime(b)));
+  ).sort((a, b) => compareAsc(new Date(a), new Date(b)));
 
-  if (combineDates.length) {
+  if (dates.length) {
+    // now
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
 
-    for (let cur = new Date(adaptTime(combineDates[0])); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
+    for (let cur = new Date(dates[0]); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
       const date = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
-      if (!combineDates.some((item) => item === date)) {
-        combineDates.push(date);
+      if (!dates.some((item) => item === date)) {
+        dates.push(date);
       }
     }
+
+    dates = dates.sort((a, b) => compareAsc(new Date(a), new Date(b)));
   }
 
   return {
-    rewards: combineDates.map((date) => [new Date(date).getTime(), rewards[date] ? rewards[date] : BN_ZERO]),
-    slashs: combineDates.map((date) => [new Date(date).getTime(), slashes[date] ? slashes[date] : BN_ZERO]),
+    rewards: dates.map((date) => [new Date(date).getTime(), rewards[date] ?? BN_ZERO]),
+    slashs: dates.map((date) => [new Date(date).getTime(), slashes[date] ?? BN_ZERO]),
   };
 };
 
-export const transformPolkadotRelayerRewardSlash = (data: {
+export const transformRewardAndSlashPolkadotData = (data: {
   relayer: {
     slashes: { nodes: Pick<SlashEntity, "amount" | "blockTime">[] } | null;
     rewards: { nodes: Pick<RewardEntity, "amount" | "blockTime">[] } | null;
@@ -75,7 +72,8 @@ export const transformPolkadotRelayerRewardSlash = (data: {
 }): { rewards: [number, BN][]; slashs: [number, BN][] } => {
   const slashes = data.relayer?.slashes?.nodes?.length
     ? data.relayer?.slashes?.nodes.reduce((acc, cur) => {
-        const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
+        const time = new Date(unifyTime(cur.blockTime)).toISOString();
+        const date = `${time.split("T")[0]}T00:00:00Z`;
         acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
         return acc;
       }, {} as Record<string, BN>)
@@ -83,38 +81,42 @@ export const transformPolkadotRelayerRewardSlash = (data: {
 
   const rewards = data.relayer?.rewards?.nodes?.length
     ? data.relayer?.rewards?.nodes.reduce((acc, cur) => {
-        const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
+        const time = new Date(unifyTime(cur.blockTime)).toISOString();
+        const date = `${time.split("T")[0]}T00:00:00Z`;
         acc[date] = (acc[date] || BN_ZERO).add(bnToBn(cur.amount));
         return acc;
       }, {} as Record<string, BN>)
     : {};
 
-  const combineDates = Array.from(
+  let dates = Array.from(
     Object.keys(rewards)
       .concat(Object.keys(slashes))
-      .reduce((dates, date) => {
-        return dates.add(date);
+      .reduce((acc, cur) => {
+        return acc.add(cur);
       }, new Set<string>())
   ).sort((a, b) => compareAsc(new Date(a), new Date(b)));
 
-  if (combineDates.length) {
+  if (dates.length) {
+    // now
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
 
-    for (let cur = new Date(combineDates[0]); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
+    for (let cur = new Date(dates[0]); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
       const date = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
-      if (!combineDates.some((item) => item === date)) {
-        combineDates.push(date);
+      if (!dates.some((item) => item === date)) {
+        dates.push(date);
       }
     }
+
+    dates = dates.sort((a, b) => compareAsc(new Date(a), new Date(b)));
   }
 
   return {
-    rewards: combineDates.map((date) => [new Date(date).getTime(), rewards[date] ? rewards[date] : BN_ZERO]),
-    slashs: combineDates.map((date) => [new Date(date).getTime(), slashes[date] ? slashes[date] : BN_ZERO]),
+    rewards: dates.map((date) => [new Date(date).getTime(), rewards[date] ?? BN_ZERO]),
+    slashs: dates.map((date) => [new Date(date).getTime(), slashes[date] ?? BN_ZERO]),
   };
 };
 
-export const transformEthRelayerQuotes = (data: {
+export const transformQuoteHistoryEthData = (data: {
   relayer: {
     quoteHistory: {
       amount: string;
@@ -124,15 +126,17 @@ export const transformEthRelayerQuotes = (data: {
 }): [number, BN][] => {
   const datesValues =
     (data.relayer?.quoteHistory || []).reduce((acc, cur) => {
-      const time = new Date(adaptTime(cur.blockTime)).toISOString();
+      const time = new Date(unifyTime(cur.blockTime)).toISOString();
       const date = `${time.split("T")[0]}T00:00:00Z`;
-      acc[date] = (acc[date] || new BN(cur.amount)).add(new BN(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
+      acc[date] = (acc[date] || bnToBn(cur.amount)).add(bnToBn(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
       return acc;
     }, {} as Record<string, BN>) || {};
 
   const dates = Object.keys(datesValues).sort((a, b) => compareAsc(new Date(a), new Date(b)));
   if (dates.length) {
+    // now
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
+
     for (let cur = new Date(dates[0]); compareAsc(cur, end) < 0; cur = addDays(cur, 1)) {
       const next = addDays(cur, 1);
       const dateCur = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
@@ -149,19 +153,22 @@ export const transformEthRelayerQuotes = (data: {
 };
 
 // eslint-disable-next-line complexity
-export const transformPolkadotRelayerQuotes = (data: {
+export const transformQuoteHistoryPolkadotData = (data: {
   quoteHistory: Pick<QuoteEntity, "data"> | null;
 }): [number, BN][] => {
   const datesValues =
     (data.quoteHistory?.data || []).reduce((acc, cur) => {
-      const date = `${cur.blockTime.split("T")[0]}T00:00:00Z`;
-      acc[date] = (acc[date] || new BN(cur.amount)).add(new BN(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
+      const time = new Date(unifyTime(cur.blockTime)).toISOString();
+      const date = `${time.split("T")[0]}T00:00:00Z`;
+      acc[date] = (acc[date] || bnToBn(cur.amount)).add(bnToBn(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
       return acc;
     }, {} as Record<string, BN>) || {};
 
   const dates = Object.keys(datesValues).sort((a, b) => compareAsc(new Date(a), new Date(b)));
   if (dates.length) {
+    // now
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
+
     for (let cur = new Date(dates[0]); compareAsc(cur, end) < 0; cur = addDays(cur, 1)) {
       const next = addDays(cur, 1);
       const dateCur = `${cur.toISOString().split("T")[0]}T00:00:00Z`;
@@ -176,6 +183,16 @@ export const transformPolkadotRelayerQuotes = (data: {
     .sort((a, b) => compareAsc(new Date(a), new Date(b)))
     .map((date) => [new Date(date).getTime(), datesValues[date]]);
 };
+
+export interface RelayerOrdersDataSource extends Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> {
+  reward: BN;
+  slash: BN;
+  relayerRoles: RelayerRole[];
+}
+
+export interface SlashReward extends Pick<SlashEntity, "amount" | "relayerRole"> {
+  order: Pick<OrderEntity, "lane" | "nonce" | "createBlockTime"> | null;
+}
 
 const reduceSlashReward = (
   previous: RelayerOrdersDataSource[],
@@ -209,7 +226,7 @@ const reduceSlashReward = (
   return previous;
 };
 
-export const transformEthRelayerOrders = (data: {
+export const transformRelayerRelatedOrdersEthData = (data: {
   relayer?: {
     slashes:
       | (Pick<SlashEntity, "amount" | "relayerRole"> & {
@@ -232,10 +249,10 @@ export const transformEthRelayerOrders = (data: {
     ? data.relayer?.slashes.reduce((acc, cur) => reduceSlashReward(acc, cur, true), dataSource)
     : dataSource;
 
-  return dataSource.sort((a, b) => compareDesc(adaptTime(a.createBlockTime), adaptTime(b.createBlockTime)));
+  return dataSource.sort((a, b) => compareDesc(unifyTime(a.createBlockTime), unifyTime(b.createBlockTime)));
 };
 
-export const transformPolkadotRelayerOrders = (data: {
+export const transformRelayerRelatedOrdersPolkadotData = (data: {
   relayer?: {
     slashes: {
       nodes: (Pick<SlashEntity, "amount" | "relayerRole"> & {
@@ -261,7 +278,7 @@ export const transformPolkadotRelayerOrders = (data: {
   return dataSource.sort((a, b) => compareDesc(new Date(a.createBlockTime), new Date(b.createBlockTime)));
 };
 
-export const transformTotalOrdersOverview = (data: {
+export const transformOrdersCountData = (data: {
   orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | Pick<OrderEntity, "createBlockTime">[] | null;
 }): [number, number][] => {
   const entities = isTheGraphEntities<Pick<OrderEntity, "createBlockTime">>(data.orders)
@@ -272,9 +289,7 @@ export const transformTotalOrdersOverview = (data: {
 
   const datesOrders =
     entities.reduce((acc, { createBlockTime }) => {
-      const time = Number.isNaN(Number(createBlockTime))
-        ? createBlockTime
-        : new Date(Number(createBlockTime) * 1000).toISOString();
+      const time = new Date(unifyTime(createBlockTime)).toISOString();
       const date = `${time.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || 0) + 1;
       return acc;
@@ -282,6 +297,7 @@ export const transformTotalOrdersOverview = (data: {
 
   const dates = Object.keys(datesOrders).sort((a, b) => compareAsc(new Date(a), new Date(b)));
   if (dates.length) {
+    // now
     const end = new Date(`${new Date().toISOString().split("T")[0]}T00:00:00Z`);
 
     for (let cur = new Date(dates[0]); compareAsc(cur, end) <= 0; cur = addDays(cur, 1)) {
@@ -297,14 +313,14 @@ export const transformTotalOrdersOverview = (data: {
     .map((date) => [new Date(date).getTime(), datesOrders[date]]);
 };
 
-export const transformFeeHistory = (data: {
+export const transformFeeHistoryData = (data: {
   feeHistory?: Pick<FeeEntity, "data"> | null;
   feeHistories?: { amount: string; blockTime: string }[];
 }): [number, BN][] => {
   const entities = data.feeHistory?.data ?? data.feeHistories ?? [];
   const datesValues =
     entities.reduce((acc, cur) => {
-      const time = new Date(adaptTime(cur.blockTime)).toISOString();
+      const time = new Date(unifyTime(cur.blockTime)).toISOString();
       const date = `${time.split("T")[0]}T00:00:00Z`;
       acc[date] = (acc[date] || new BN(cur.amount)).add(new BN(cur.amount)).divn(2); // eslint-disable-line no-magic-numbers
       return acc;
@@ -313,7 +329,23 @@ export const transformFeeHistory = (data: {
   return Object.keys(datesValues).map((date) => [new Date(date).getTime(), datesValues[date]]);
 };
 
-export const transformEthOrdersData = (data: {
+export type OrdersData = Pick<
+  OrderEntity,
+  | "lane"
+  | "nonce"
+  | "sender"
+  | "createBlockTime"
+  | "finishBlockTime"
+  | "createBlockNumber"
+  | "finishBlockNumber"
+  | "status"
+  | "slotIndex"
+> & {
+  deliveryRelayers: { address: string }[];
+  confirmationRelayers: { address: string }[];
+};
+
+export const transformOrdersOverviewEthData = (data: {
   orders: (Pick<
     OrderEntity,
     | "lane"
@@ -338,7 +370,7 @@ export const transformEthOrdersData = (data: {
   }));
 };
 
-export const transformPolkadotOrdersData = (data: {
+export const transformOrdersOverviewPolkadotData = (data: {
   orders: {
     nodes: (Pick<
       OrderEntity,
@@ -367,7 +399,31 @@ export const transformPolkadotOrdersData = (data: {
   );
 };
 
-export const transformEthOrderDetail = (data: {
+export type OrderDetail = Pick<
+  OrderEntity,
+  | "lane"
+  | "nonce"
+  | "fee"
+  | "sender"
+  | "sourceTxHash"
+  | "slotIndex"
+  | "status"
+  | "createBlockTime"
+  | "finishBlockTime"
+  | "createBlockNumber"
+  | "finishBlockNumber"
+  | "treasuryAmount"
+  | "assignedRelayersAddress"
+> & {
+  slashes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex" | "txHash"> & {
+    relayer: Pick<RelayerEntity, "address">;
+  })[];
+  rewards: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex" | "txHash"> & {
+    relayer: Pick<RelayerEntity, "address">;
+  })[];
+};
+
+export const transformOrderDetailEthData = (data: {
   order:
     | (Pick<
         OrderEntity,
@@ -403,7 +459,7 @@ export const transformEthOrderDetail = (data: {
     : null;
 };
 
-export const transformPolkadotOrderDetail = (data: {
+export const transformOrderDetailPolkadotData = (data: {
   order:
     | (Pick<
         OrderEntity,

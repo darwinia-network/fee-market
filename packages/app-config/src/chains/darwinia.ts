@@ -1,10 +1,10 @@
-import type { PolkadotChainConfig } from "@feemarket/app-types";
-import DarwiniaLogo from "../images/network/darwinia.svg";
+import type { PolkadotChainConfig } from "./types";
+import chainLogo from "../images/network/darwinia.svg";
 
 const config: PolkadotChainConfig = {
   chainName: "Darwinia",
   displayName: "Darwinia Chain",
-  chainLogo: DarwiniaLogo,
+  chainLogo,
   provider: {
     rpc: "wss://rpc.darwinia.network",
   },

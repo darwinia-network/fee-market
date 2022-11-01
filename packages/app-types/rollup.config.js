@@ -16,7 +16,7 @@ const config = [
       },
     ],
     plugins: [resolve(), commonjs(), typescript({ clean: true })],
-    external: (id) => /node_modules/.test(id),
+    external: (id) => /node_modules|@feemarket/.test(id),
   },
 ];
 

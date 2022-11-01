@@ -1,4 +1,5 @@
-import { providers, Contract } from "ethers";
+import { providers, Contract, BigNumber } from "ethers";
+import type { OrderBook } from "@feemarket/types";
 
 export type ErrorCallbackType = ({ error }: { error: unknown }) => void;
 export type ResponseCallbackType = ({ response }: { response: providers.TransactionResponse }) => void;
@@ -41,4 +42,44 @@ export const triggerContract = async (
     console.error("[triggerContract]", error);
     errorCallback({ error });
   }
+};
+
+export const getQuotePrev = async (contract: Contract, relayer: string, quote: BigNumber = BigNumber.from(0)) => {
+  let prevOld: string | null = null;
+  let prevNew: string | null = null;
+
+  try {
+    const relayerCount = await (await (contract.relayerCount() as Promise<BigNumber>)).toNumber();
+    const book = await (contract.getOrderBook(relayerCount, true) as Promise<OrderBook>);
+
+    const sentinelHead = "0x0000000000000000000000000000000000000001";
+
+    {
+      const idx = book[1].findIndex((item) => item.toLowerCase() === relayer.toLowerCase());
+      if (idx > 0) {
+        prevOld = book[1][idx - 1];
+      } else if (idx === 0) {
+        prevOld = sentinelHead;
+      }
+    }
+
+    {
+      const idx = book[2].findIndex((item) => quote.lt(item));
+      if (idx === 0) {
+        prevNew = sentinelHead;
+      } else if (idx < 0) {
+        prevNew = book[1][book[1].length - 1];
+      } else {
+        prevNew = book[1][idx - 1];
+      }
+
+      if (prevNew.toLowerCase() === relayer.toLowerCase()) {
+        prevNew = prevOld;
+      }
+    }
+  } catch (error) {
+    console.error("Get quote prev:", error);
+  }
+
+  return { prevOld, prevNew };
 };

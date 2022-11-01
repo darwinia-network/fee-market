@@ -1,5 +1,5 @@
 {
-  "name": "@feemarket/app-types",
+  "name": "@feemarket/types",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -20,5 +20,9 @@
     "rollup-plugin-typescript2": "^0.34.0",
     "tslib": "^2.4.0",
     "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@polkadot/api": "^9.6.1",
+    "ethers": "^5.7.2"
   }
 }

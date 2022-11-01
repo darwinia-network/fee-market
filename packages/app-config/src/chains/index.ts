@@ -1,9 +1,4 @@
-import type {
-  EthChainConfig,
-  PolkadotChainConfig,
-  FeeMarketSourceChainEth,
-  FeeMarketSourceChainPolkadot,
-} from "@feemarket/app-types";
+import type { EthChainConfig, PolkadotChainConfig, FeeMarketEthChain, FeeMarketPolkadotChain } from "./types";
 
 // Eth
 import goerli from "./goerli";
@@ -19,14 +14,17 @@ import pangoro from "./pangoro";
 import crabParachain from "./crabParachain";
 import pangolinParachain from "./pangolinParachain";
 
-export const ETH_CHAIN_CONF: Record<FeeMarketSourceChainEth, EthChainConfig> = {
+export * from "./types";
+export * from "./config";
+
+export const ETH_CHAIN_CONF: Record<FeeMarketEthChain, EthChainConfig> = {
   Goerli: goerli,
   Ethereum: ethereum,
   "Pangoro Smart Chain": pangoroSmartChain,
   "Darwinia Smart Chain": darwiniaSmartChain,
 };
 
-export const POLKADOT_CHAIN_CONF: Record<FeeMarketSourceChainPolkadot, PolkadotChainConfig> = {
+export const POLKADOT_CHAIN_CONF: Record<FeeMarketPolkadotChain, PolkadotChainConfig> = {
   Crab: crab,
   Darwinia: darwinia,
   Pangolin: pangolin,

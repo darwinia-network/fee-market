@@ -1,10 +1,9 @@
-import type { EthChainConfig } from "@feemarket/app-types";
-import { ChainID } from "@feemarket/app-types";
+import type { EthChainConfig } from "./types";
 import chainLogo from "../images/network/ethereum.svg";
 import contractInterface from "../abi/eth.json";
 
 const config: EthChainConfig = {
-  chainId: ChainID.ETHEREUM,
+  chainId: 1,
   chainName: "Ethereum",
   displayName: "Ethereum",
   chainLogo,
