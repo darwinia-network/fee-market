@@ -7,31 +7,27 @@ import { isPolkadotApi, toShortAddress } from "@feemarket/utils";
 export const useAccountName = (address: string) => {
   const { providerApi: api, accounts } = useApi();
 
-  const [displayName, setDisplayName] = useState(
-    accounts.find((item) => item.address.toLowerCase() === address.toLowerCase())?.meta?.name ?? toShortAddress(address)
-  );
+  const defaultName =
+    accounts.find((item) => item.address.toLowerCase() === address.toLowerCase())?.meta?.name ??
+    toShortAddress(address);
+
+  const [displayName, setDisplayName] = useState(defaultName);
 
   useEffect(() => {
     let sub$$: Subscription;
 
     if (isPolkadotApi(api)) {
-      sub$$ = from(api.derive.accounts.info(address)).subscribe(({ accountId, accountIndex, identity, nickname }) => {
-        const cacheAddr = (accountId || address || "").toString();
-
+      sub$$ = from(api.derive.accounts.info(address)).subscribe(({ accountIndex, identity, nickname }) => {
         if (isFunction(api.query.identity?.identityOf)) {
           if (identity.display) {
             setDisplayName(identity.displayParent ? `${identity.displayParent}/${identity.display}` : identity.display);
           } else {
-            setDisplayName(
-              accountIndex ? `${toShortAddress(cacheAddr)} ${accountIndex.toNumber()}` : toShortAddress(cacheAddr)
-            );
+            setDisplayName(accountIndex ? `${defaultName} ${accountIndex.toNumber()}` : defaultName);
           }
         } else if (nickname) {
           setDisplayName(nickname);
         } else {
-          setDisplayName(
-            accountIndex ? `${toShortAddress(cacheAddr)} ${accountIndex.toNumber()}` : toShortAddress(cacheAddr)
-          );
+          setDisplayName(accountIndex ? `${defaultName} ${accountIndex.toNumber()}` : defaultName);
         }
       });
     }
