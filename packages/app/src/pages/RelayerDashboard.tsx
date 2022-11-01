@@ -6,14 +6,19 @@ import { useApi } from "@feemarket/api";
 
 const RelayerDashboard = () => {
   const { currentMarket } = useMarket();
-  const { signerApi: api, currentAccount, requestAccounts } = useApi();
+  const { signerApi: api, currentAccount, isWalletInstalled, requestAccounts } = useApi();
 
   return (
     <>
       {currentAccount ? (
         <Dashboard relayerAddress={currentAccount.address} />
       ) : (
-        <ConnectWallet loading={api === null} sourceChain={currentMarket?.source} onConnected={requestAccounts} />
+        <ConnectWallet
+          loading={isWalletInstalled && api === null}
+          isInstalled={isWalletInstalled}
+          sourceChain={currentMarket?.source}
+          onConnected={requestAccounts}
+        />
       )}
     </>
   );

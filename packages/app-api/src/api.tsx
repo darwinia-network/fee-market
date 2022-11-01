@@ -21,6 +21,7 @@ import { GraphqlProvider } from "./graphql";
 const DAPP_NAME = "darwinia/feemarket";
 
 export interface ApiCtx {
+  isWalletInstalled: boolean;
   signerApi: providers.Provider | ApiPromise | null;
   providerApi: providers.Provider | ApiPromise | null;
   accounts: Account[];
@@ -31,6 +32,7 @@ export interface ApiCtx {
 }
 
 const defaultValue: ApiCtx = {
+  isWalletInstalled: false,
   signerApi: null,
   providerApi: null,
   accounts: [],
@@ -44,6 +46,7 @@ export const ApiContext = createContext<ApiCtx>(defaultValue);
 
 export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const { currentMarket } = useMarket();
+  const [isWalletInstalled, setIsWalletInstalled] = useState(false);
   const [signerApi, setSignerApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [providerApi, setProviderApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -89,6 +92,8 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       }
 
       if (typeof window.ethereum !== "undefined") {
+        setIsWalletInstalled(true);
+
         const provider = new providers.Web3Provider(window.ethereum);
         setSignerApi(provider);
 
@@ -111,7 +116,10 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
           injecteds["talisman"] ||
           injecteds['"talisman"'] ||
           injecteds["subwallet-js"] ||
-          injecteds['"subwallet-js"']);
+          injecteds['"subwallet-js"'])
+          ? true
+          : false;
+      setIsWalletInstalled(haveWallet);
 
       const rpc = getPolkadotChainConfig(sourceChain).provider.rpc;
       const provider = new WsProvider(rpc);
@@ -140,6 +148,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         api.off("disconnected", () => undefined);
       }
 
+      setIsWalletInstalled(false);
       setSignerApi(null);
       setProviderApi(null);
       setAccounts([]);
@@ -170,6 +179,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     <GraphqlProvider>
       <ApiContext.Provider
         value={{
+          isWalletInstalled,
           signerApi,
           providerApi,
           accounts,
