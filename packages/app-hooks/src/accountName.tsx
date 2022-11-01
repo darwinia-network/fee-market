@@ -8,7 +8,7 @@ export const useAccountName = (address: string) => {
   const { providerApi: api, accounts } = useApi();
 
   const [displayName, setDisplayName] = useState(
-    accounts.find((item) => item.address.toLowerCase() === address.toLowerCase())?.meta.name ?? toShortAddress(address)
+    accounts.find((item) => item.address.toLowerCase() === address.toLowerCase())?.meta?.name ?? toShortAddress(address)
   );
 
   useEffect(() => {
