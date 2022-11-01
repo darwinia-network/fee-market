@@ -159,11 +159,11 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   useEffect(() => {
     let sub$$: Subscription;
 
-    if (isEthApi(providerApi)) {
-      sub$$ = from(providerApi.getNetwork()).subscribe(({ chainId }) => {
+    if (isEthApi(signerApi)) {
+      sub$$ = from(signerApi.getNetwork()).subscribe(({ chainId }) => {
         setCurrentChainId(chainId);
       });
-    } else if (isPolkadotApi(providerApi)) {
+    } else if (isPolkadotApi(signerApi)) {
       setCurrentChainId(null);
     }
 
@@ -173,7 +173,7 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         setCurrentChainId(null);
       }
     };
-  }, [providerApi]);
+  }, [signerApi]);
 
   return (
     <GraphqlProvider>
