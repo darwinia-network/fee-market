@@ -19,6 +19,7 @@ import {
 import { GraphqlProvider } from "./graphql";
 
 const DAPP_NAME = "darwinia/feemarket";
+const ACTIVE_ACCOUNT_KEY = "feemarket_active_account";
 
 export interface ApiCtx {
   isWalletInstalled: boolean;
@@ -50,10 +51,17 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [signerApi, setSignerApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [providerApi, setProviderApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [currentAccount, setCurrentAccount] = useState<Account | null>(null);
+  const [currentAccount, _setCurrentAccount] = useState<Account | null>(null);
   const [currentChainId, setCurrentChainId] = useState<number | null>(null);
 
   const sourceChain = currentMarket?.source;
+
+  const setCurrentAccount = useCallback((acc: Account | null) => {
+    if (acc?.originAddress) {
+      localStorage.setItem(ACTIVE_ACCOUNT_KEY, acc.originAddress);
+    }
+    _setCurrentAccount(acc);
+  }, []);
 
   const requestAccounts = useCallback(async () => {
     if (isEthApi(signerApi)) {
@@ -61,7 +69,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
         (address) => ({ address, originAddress: address } as Account)
       );
       setAccounts(allAccounts);
-      setCurrentAccount(allAccounts[0] || null);
     } else if (isPolkadotApi(signerApi)) {
       await web3Enable(DAPP_NAME);
 
@@ -76,7 +83,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       );
 
       setAccounts(allAccounts);
-      setCurrentAccount(allAccounts[0] || null);
     }
   }, [signerApi]);
 
@@ -104,7 +110,6 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
 
         window.ethereum.on("accountsChanged", (accs: string[]) => {
           setAccounts(accs.map((address) => ({ address, originAddress: address } as Account)));
-          setCurrentAccount((prev) => (accs.some((item) => item === prev?.address) ? prev : null));
         });
       }
     } else if (isPolkadotChain(sourceChain)) {
@@ -152,9 +157,19 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
       setSignerApi(null);
       setProviderApi(null);
       setAccounts([]);
-      setCurrentAccount(null);
     };
   }, [sourceChain]);
+
+  useEffect(() => {
+    if (accounts.length) {
+      const storageAddress = localStorage.getItem(ACTIVE_ACCOUNT_KEY);
+      setCurrentAccount(accounts.find((item) => item.originAddress === storageAddress) ?? accounts[0]);
+    }
+
+    return () => {
+      setCurrentAccount(null);
+    };
+  }, [accounts]);
 
   useEffect(() => {
     let sub$$: Subscription;
