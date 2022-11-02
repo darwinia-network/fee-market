@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 /**
  * @returns time in millionsecond
@@ -16,9 +16,11 @@ export const unifyTime = (time: number | string): number => {
 const TIME_FORMATE = "yyyy/MM/dd HH:mm:ss";
 
 /**
+ * time zone: utc+0
  * @param time in millionsecond
  * @returns formated string as "yyyy/MM/dd HH:mm:ss"
  */
 export const formatTime = (time: number): string => {
-  return `${format(time, TIME_FORMATE)}`;
+  // return `${format(time, TIME_FORMATE, { timeZone: 'UTC' })}`;
+  return formatInTimeZone(time, "UTC", TIME_FORMATE);
 };
