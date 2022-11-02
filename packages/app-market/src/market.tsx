@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { createContext, PropsWithChildren, useState, useContext, useCallback, useEffect } from "react";
-import { parseUrlChainName, formatUrlChainName, isEthChain, isPolkadotChain } from "@feemarket/utils";
+import { parseUrlChainName, formatUrlChainName } from "@feemarket/utils";
 import { UrlSearchParamsKey } from "@feemarket/types";
 import type { FeeMarketChain } from "@feemarket/config";
 
@@ -10,7 +10,6 @@ export interface Market {
 }
 
 interface MarketCtx {
-  walletChangeCount: number; // metamask <=> polkadot{.js}
   currentMarket: Market | null;
   setCurrentMarket: (market: Market) => void;
   refresh: () => void;
@@ -20,7 +19,6 @@ interface MarketCtx {
 }
 
 const defaultValue: MarketCtx = {
-  walletChangeCount: 0,
   currentMarket: null,
   setCurrentMarket: () => undefined,
   refresh: () => undefined,
@@ -33,21 +31,13 @@ const MarketContext = createContext<MarketCtx>(defaultValue);
 
 export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   const navigate = useNavigate();
-  const [walletChangeCount, setWalletChangeCount] = useState(0);
   const [currentMarket, _setCurrentMarket] = useState<Market | null>(null);
   const [refresh, setRefresh] = useState<() => void>(() => () => undefined);
   const [cleanUp, setCleanUp] = useState<() => void>(() => () => undefined);
 
   const setCurrentMarket = useCallback(
     (market: Market | null) => {
-      _setCurrentMarket((prev) => {
-        if (isEthChain(prev?.source) && !isEthChain(market?.source)) {
-          setWalletChangeCount((prev) => prev + 1);
-        } else if (isPolkadotChain(prev?.source) && !isPolkadotChain(market?.source)) {
-          setWalletChangeCount((prev) => prev + 1);
-        }
-        return market;
-      });
+      _setCurrentMarket(market);
 
       const urlSearchParams = new URLSearchParams(window.location.search);
 
@@ -85,7 +75,6 @@ export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   return (
     <MarketContext.Provider
       value={{
-        walletChangeCount,
         currentMarket,
         setCurrentMarket,
         refresh,
