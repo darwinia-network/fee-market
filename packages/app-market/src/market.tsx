@@ -10,7 +10,7 @@ export interface Market {
 }
 
 interface MarketCtx {
-  isWalletChanged: boolean; // metamask <=> polkadot{.js}
+  walletChangeCount: number; // metamask <=> polkadot{.js}
   currentMarket: Market | null;
   setCurrentMarket: (market: Market) => void;
   refresh: () => void;
@@ -20,7 +20,7 @@ interface MarketCtx {
 }
 
 const defaultValue: MarketCtx = {
-  isWalletChanged: false,
+  walletChangeCount: 0,
   currentMarket: null,
   setCurrentMarket: () => undefined,
   refresh: () => undefined,
@@ -33,7 +33,7 @@ const MarketContext = createContext<MarketCtx>(defaultValue);
 
 export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   const navigate = useNavigate();
-  const [isWalletChanged, setIsWalletChanged] = useState(false);
+  const [walletChangeCount, setWalletChangeCount] = useState(0);
   const [currentMarket, _setCurrentMarket] = useState<Market | null>(null);
   const [refresh, setRefresh] = useState<() => void>(() => () => undefined);
   const [cleanUp, setCleanUp] = useState<() => void>(() => () => undefined);
@@ -42,11 +42,9 @@ export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
     (market: Market | null) => {
       _setCurrentMarket((prev) => {
         if (isEthChain(prev?.source) && !isEthChain(market?.source)) {
-          setIsWalletChanged(true);
+          setWalletChangeCount((prev) => prev + 1);
         } else if (isPolkadotChain(prev?.source) && !isPolkadotChain(market?.source)) {
-          setIsWalletChanged(true);
-        } else {
-          setIsWalletChanged(false);
+          setWalletChangeCount((prev) => prev + 1);
         }
         return market;
       });
@@ -87,7 +85,7 @@ export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   return (
     <MarketContext.Provider
       value={{
-        isWalletChanged,
+        walletChangeCount,
         currentMarket,
         setCurrentMarket,
         refresh,

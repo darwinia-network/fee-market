@@ -46,7 +46,7 @@ const defaultValue: ApiCtx = {
 export const ApiContext = createContext<ApiCtx>(defaultValue);
 
 export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
-  const { currentMarket, isWalletChanged } = useMarket();
+  const { currentMarket, walletChangeCount } = useMarket();
   const [isWalletInstalled, setIsWalletInstalled] = useState(false);
   const [signerApi, setSignerApi] = useState<providers.Provider | ApiPromise | null>(null);
   const [providerApi, setProviderApi] = useState<providers.Provider | ApiPromise | null>(null);
@@ -160,10 +160,10 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
   }, [sourceChain]);
 
   useEffect(() => {
-    if (isWalletChanged) {
+    if (walletChangeCount) {
       setAccounts([]);
     }
-  }, [isWalletChanged]);
+  }, [walletChangeCount]);
 
   useEffect(() => {
     if (accounts.length) {
