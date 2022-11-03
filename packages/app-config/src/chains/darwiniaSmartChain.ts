@@ -8,7 +8,7 @@ const config: EthChainConfig = {
   displayName: "Darwinia Smart Chain",
   chainLogo,
   graphql: {
-    endpoint: "https://thegraph.darwinia.network/feemarket/subgraphs/name/feemarket-darwinia",
+    endpoint: "https://thegraph.darwinia.network/feemarket/subgraphs/name/feemarket-darwinia-v1",
   },
   nativeToken: {
     symbol: "RING",
