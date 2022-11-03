@@ -1,10 +1,10 @@
-import type { PolkadotChainConfig } from "@feemarket/app-types";
+import type { PolkadotChainConfig } from "./types";
 import chainLogo from "../images/network/crab.svg";
 
 const config: PolkadotChainConfig = {
   chainName: "Crab Parachain",
   displayName: "Crab Parachain",
-  chainLogo: chainLogo,
+  chainLogo,
   provider: {
     rpc: "wss://crab-parachain-rpc.darwinia.network/",
   },

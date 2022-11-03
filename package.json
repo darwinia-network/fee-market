@@ -4,14 +4,14 @@
   "scripts": {
     "build": "lerna run build",
     "watch:parallel": "lerna run watch --parallel",
-    "dev:app-base": "lerna run dev --scope=app-base",
-    "build:app-base": "lerna run build --scope=app-base",
-    "build:app-types": "lerna run build --scope @feemarket/app-types",
-    "build:app-config": "lerna run build --scope @feemarket/app-config",
-    "build:app-utils": "lerna run build --scope @feemarket/app-utils",
-    "build:app-provider": "lerna run build --scope @feemarket/app-provider",
-    "build:app-hooks": "lerna run build --scope @feemarket/app-hooks",
-    "build:app-components": "lerna run build --scope @feemarket/app-components",
+    "dev:app": "lerna run dev --scope=feemarket-app",
+    "build:app": "lerna run build --scope=feemarket-app",
+    "build:app-types": "lerna run build --scope @feemarket/types",
+    "build:app-config": "lerna run build --scope @feemarket/config",
+    "build:app-utils": "lerna run build --scope @feemarket/utils",
+    "build:app-market": "lerna run build --scope @feemarket/market",
+    "build:app-api": "lerna run build --scope @feemarket/api",
+    "build:app-hooks": "lerna run build --scope @feemarket/hooks",
     "clean": "lerna clean --yes",
     "boot": "yarn && lerna bootstrap",
     "lint": "eslint 'packages/**/*.{js,jsx,ts,tsx}' --fix",
@@ -40,8 +40,5 @@
     "stylelint": "^14.11.0",
     "stylelint-config-standard": "^28.0.0",
     "tailwindcss": "^3.1.8"
-  },
-  "dependencies": {
-    "@polkadot/api": "^9.4.1"
   }
 }

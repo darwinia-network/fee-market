@@ -1,5 +1,5 @@
 {
-  "name": "@feemarket/app-hooks",
+  "name": "@feemarket/hooks",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -22,7 +22,15 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@feemarket/app-provider": "^1.0.0",
+    "@apollo/client": "^3.7.1",
+    "@feemarket/api": "^1.0.0",
+    "@feemarket/config": "^1.0.0",
+    "@feemarket/market": "^1.0.0",
+    "@feemarket/types": "^1.0.0",
+    "@feemarket/utils": "^1.0.0",
+    "@polkadot/api": "^9.6.1",
+    "ethers": "^5.7.2",
+    "graphql": "^16.6.0",
     "react": "^18.2.0"
   }
 }

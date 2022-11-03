@@ -1,42 +1,38 @@
-import { useGrapgQuery } from "./graphQuery";
-import {
-  RELAYER_REWARD_SLASH_ETH,
-  RELAYER_REWARD_SLASH_POLKADOT,
-  QUOTE_HISTORY_ETH,
-  QUOTE_HISTORY_POLKADOT,
-  RELAYER_ORDERS_ETH,
-  RELAYER_ORDERS_POLKADOT,
-} from "@feemarket/app-config";
-import {
-  transformEthRelayerRewardSlash,
-  transformPolkadotRelayerRewardSlash,
-  transformEthRelayerQuotes,
-  transformPolkadotRelayerQuotes,
-  transformEthRelayerOrders,
-  transformPolkadotRelayerOrders,
-} from "@feemarket/app-utils";
-import type { Market } from "@feemarket/app-provider";
-import type {
-  SlashEntity,
-  RewardEntity,
-  QuoteEntity,
-  OrderEntity,
-  RelayerOrdersDataSource,
-} from "@feemarket/app-types";
 import { useCallback, useEffect, useMemo } from "react";
 import { BN } from "@polkadot/util";
+import {
+  RELAYER_REWARD_SLASH_ETH_DATA,
+  RELAYER_REWARD_SLASH_POLKADOT_DATA,
+  QUOTE_HISTORY_ETH_DATA,
+  QUOTE_HISTORY_POLKADOT_DATA,
+  RELAYER_ORDERS_ETH_DATA,
+  RELAYER_ORDERS_POLKADOT_DATA,
+} from "@feemarket/config";
+import {
+  transformRewardAndSlashEthData,
+  transformRewardAndSlashPolkadotData,
+  transformQuoteHistoryEthData,
+  transformQuoteHistoryPolkadotData,
+  transformRelayerRelatedOrdersEthData,
+  transformRelayerRelatedOrdersPolkadotData,
+} from "@feemarket/utils";
+import type { RelayerOrdersDataSource } from "@feemarket/utils";
+import { useMarket } from "@feemarket/market";
+import type { SlashEntity, RewardEntity, QuoteEntity, OrderEntity } from "@feemarket/config";
+import { useGrapgQuery } from "./graphQuery";
 
 interface Params {
   relayerAddress: string;
-  currentMarket: Market | null;
-  setRefresh: (fn: () => void) => void;
 }
 
-export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefresh }: Params) => {
+export const useRelayerDetailData = ({ relayerAddress }: Params) => {
+  const { currentMarket, setRefresh } = useMarket();
+  const destinationChain = currentMarket?.destination;
+
   const {
-    transformedData: ethRewardAndSlashData,
-    loading: ethRewardAndSlashLoading,
-    refetch: refetchEthRewardAndSlash,
+    transformedData: rewardAndSlashEthData,
+    loading: rewardAndSlashEthDataLoading,
+    refetch: updateRewardAndSlashEthData,
   } = useGrapgQuery<
     {
       relayer: {
@@ -47,19 +43,19 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     { relayerId: string },
     { rewards: [number, BN][]; slashs: [number, BN][] }
   >(
-    RELAYER_REWARD_SLASH_ETH,
+    RELAYER_REWARD_SLASH_ETH_DATA,
     {
       variables: {
-        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
+        relayerId: `${destinationChain}-${relayerAddress}`,
       },
     },
-    transformEthRelayerRewardSlash
+    transformRewardAndSlashEthData
   );
 
   const {
-    transformedData: polkadotRewardAndSlashData,
-    loading: polkadotRewardAndSlashLoading,
-    refetch: refetchPolkadotRewardAndSlash,
+    transformedData: rewardAndSlashPolkadotData,
+    loading: rewardAndSlashPolkadotDataLoading,
+    refetch: updateRewardAndSlashPolkadotData,
   } = useGrapgQuery<
     {
       relayer: {
@@ -70,41 +66,41 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     { relayerId: string },
     { rewards: [number, BN][]; slashs: [number, BN][] }
   >(
-    RELAYER_REWARD_SLASH_POLKADOT,
+    RELAYER_REWARD_SLASH_POLKADOT_DATA,
     {
       variables: {
-        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
+        relayerId: `${destinationChain}-${relayerAddress}`,
       },
     },
-    transformPolkadotRelayerRewardSlash
+    transformRewardAndSlashPolkadotData
   );
 
-  const rewardAndSlashLoading = useMemo(() => {
-    return ethRewardAndSlashLoading ?? polkadotRewardAndSlashLoading ?? false;
-  }, [ethRewardAndSlashLoading, polkadotRewardAndSlashLoading]);
+  const rewardAndSlashDataLoading = useMemo(() => {
+    return rewardAndSlashEthDataLoading ?? rewardAndSlashPolkadotDataLoading ?? false;
+  }, [rewardAndSlashEthDataLoading, rewardAndSlashPolkadotDataLoading]);
 
   const rewardAndSlashData = useMemo<{
     rewards: [number, BN][];
     slashs: [number, BN][];
   }>(() => {
-    if (ethRewardAndSlashData?.slashs.length || ethRewardAndSlashData?.rewards.length) {
-      return ethRewardAndSlashData;
+    if (rewardAndSlashEthData?.slashs.length || rewardAndSlashEthData?.rewards.length) {
+      return rewardAndSlashEthData;
     }
-    if (polkadotRewardAndSlashData?.slashs.length || polkadotRewardAndSlashData?.rewards.length) {
-      return polkadotRewardAndSlashData;
+    if (rewardAndSlashPolkadotData?.slashs.length || rewardAndSlashPolkadotData?.rewards.length) {
+      return rewardAndSlashPolkadotData;
     }
     return { rewards: [], slashs: [] };
-  }, [polkadotRewardAndSlashData]);
+  }, [rewardAndSlashPolkadotData]);
 
-  const refetchRewardAndSlash = useCallback(() => {
-    refetchEthRewardAndSlash();
-    refetchPolkadotRewardAndSlash();
-  }, [refetchEthRewardAndSlash, refetchPolkadotRewardAndSlash]);
+  const updateRewardAndSlashData = useCallback(() => {
+    updateRewardAndSlashEthData();
+    updateRewardAndSlashPolkadotData();
+  }, [updateRewardAndSlashEthData, updateRewardAndSlashPolkadotData]);
 
   const {
-    transformedData: ethQuoteHistoryData,
-    loading: ethQuoteHistoryLoading,
-    refetch: refetchEthQuoteHistory,
+    transformedData: quoteHistoryEthData,
+    loading: quoteHistoryEthDataLoading,
+    refetch: updateQuoteHistoryEthData,
   } = useGrapgQuery<
     {
       relayer: {
@@ -117,52 +113,52 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     { relayerId: string },
     [number, BN][]
   >(
-    QUOTE_HISTORY_ETH,
+    QUOTE_HISTORY_ETH_DATA,
     {
       variables: {
-        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
+        relayerId: `${destinationChain}-${relayerAddress}`,
       },
     },
-    transformEthRelayerQuotes
+    transformQuoteHistoryEthData
   );
 
   const {
-    transformedData: polkadotQuoteHistoryData,
-    loading: polkadotQuoteHistoryLoading,
-    refetch: refetchPolkadotQuoteHistory,
+    transformedData: quoteHistoryPolkadotData,
+    loading: quoteHistoryPolkadotDataLoading,
+    refetch: updateQuoteHistoryPolkadotData,
   } = useGrapgQuery<{ quoteHistory: Pick<QuoteEntity, "data"> | null }, { relayerId: string }, [number, BN][]>(
-    QUOTE_HISTORY_POLKADOT,
+    QUOTE_HISTORY_POLKADOT_DATA,
     {
       variables: {
-        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
+        relayerId: `${destinationChain}-${relayerAddress}`,
       },
     },
-    transformPolkadotRelayerQuotes
+    transformQuoteHistoryPolkadotData
   );
 
-  const quoteHistoryLoading = useMemo(() => {
-    return ethQuoteHistoryLoading ?? polkadotQuoteHistoryLoading ?? false;
-  }, [ethQuoteHistoryLoading, polkadotQuoteHistoryLoading]);
+  const quoteHistoryDataLoading = useMemo(() => {
+    return quoteHistoryEthDataLoading ?? quoteHistoryPolkadotDataLoading ?? false;
+  }, [quoteHistoryEthDataLoading, quoteHistoryPolkadotDataLoading]);
 
   const quoteHistoryData = useMemo(() => {
-    if (ethQuoteHistoryData?.length) {
-      return ethQuoteHistoryData;
+    if (quoteHistoryEthData?.length) {
+      return quoteHistoryEthData;
     }
-    if (polkadotQuoteHistoryData?.length) {
-      return polkadotQuoteHistoryData;
+    if (quoteHistoryPolkadotData?.length) {
+      return quoteHistoryPolkadotData;
     }
     return [];
-  }, [ethQuoteHistoryData, polkadotQuoteHistoryData]);
+  }, [quoteHistoryEthData, quoteHistoryPolkadotData]);
 
-  const refetchQuoteHistory = useCallback(() => {
-    refetchEthQuoteHistory();
-    refetchPolkadotQuoteHistory();
-  }, [refetchEthQuoteHistory, refetchPolkadotQuoteHistory]);
+  const updateQuoteHistoryData = useCallback(() => {
+    updateQuoteHistoryEthData();
+    updateQuoteHistoryPolkadotData();
+  }, [updateQuoteHistoryEthData, updateQuoteHistoryPolkadotData]);
 
   const {
-    transformedData: ethRelayerRelatedOrdersData,
-    loading: ethRelayerRelatedOrdersLoading,
-    refetch: refetchEthRelayerRelatedOrders,
+    transformedData: relayerRelatedOrdersEthData,
+    loading: relayerRelatedOrdersEthDataLoading,
+    refetch: updateRlayerRelatedOrdersEthData,
   } = useGrapgQuery<
     {
       relayer?: {
@@ -181,19 +177,19 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     { relayerId: string },
     RelayerOrdersDataSource[]
   >(
-    RELAYER_ORDERS_ETH,
+    RELAYER_ORDERS_ETH_DATA,
     {
       variables: {
-        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
+        relayerId: `${destinationChain}-${relayerAddress}`,
       },
     },
-    transformEthRelayerOrders
+    transformRelayerRelatedOrdersEthData
   );
 
   const {
-    transformedData: polkadotRelayerRelatedOrdersData,
-    loading: polkadotRelayerRelatedOrdersLoading,
-    refetch: refetchPolkadotRelayerRelatedOrders,
+    transformedData: relayerRelatedOrdersPolkadotData,
+    loading: relayerRelatedOrdersPolkadotDataLoading,
+    refetch: updateRlayerRelatedOrdersPolkadotData,
   } = useGrapgQuery<
     {
       relayer?: {
@@ -212,48 +208,48 @@ export const useRelayersDetailData = ({ relayerAddress, currentMarket, setRefres
     { relayerId: string },
     RelayerOrdersDataSource[]
   >(
-    RELAYER_ORDERS_POLKADOT,
+    RELAYER_ORDERS_POLKADOT_DATA,
     {
       variables: {
-        relayerId: currentMarket?.destination ? `${currentMarket.destination}-${relayerAddress}` : "",
+        relayerId: `${destinationChain}-${relayerAddress}`,
       },
     },
-    transformPolkadotRelayerOrders
+    transformRelayerRelatedOrdersPolkadotData
   );
 
-  const relayerRelatedOrdersLoading = useMemo(() => {
-    return ethRelayerRelatedOrdersLoading ?? polkadotRelayerRelatedOrdersLoading ?? false;
-  }, [ethRelayerRelatedOrdersLoading, polkadotRelayerRelatedOrdersLoading]);
+  const relayerRelatedOrdersDataLoading = useMemo(() => {
+    return relayerRelatedOrdersEthDataLoading ?? relayerRelatedOrdersPolkadotDataLoading ?? false;
+  }, [relayerRelatedOrdersEthDataLoading, relayerRelatedOrdersPolkadotDataLoading]);
 
   const relayerRelatedOrdersData = useMemo(() => {
-    if (ethRelayerRelatedOrdersData?.length) {
-      return ethRelayerRelatedOrdersData;
+    if (relayerRelatedOrdersEthData?.length) {
+      return relayerRelatedOrdersEthData;
     }
-    if (polkadotRelayerRelatedOrdersData?.length) {
-      return polkadotRelayerRelatedOrdersData;
+    if (relayerRelatedOrdersPolkadotData?.length) {
+      return relayerRelatedOrdersPolkadotData;
     }
     return [];
-  }, [ethRelayerRelatedOrdersData, polkadotRelayerRelatedOrdersData]);
+  }, [relayerRelatedOrdersEthData, relayerRelatedOrdersPolkadotData]);
 
-  const refetchRelayerRelatedOrders = useCallback(() => {
-    refetchEthRelayerRelatedOrders();
-    refetchPolkadotRelayerRelatedOrders();
-  }, [refetchEthRelayerRelatedOrders, refetchPolkadotRelayerRelatedOrders]);
+  const updateRlayerRelatedOrdersData = useCallback(() => {
+    updateRlayerRelatedOrdersEthData();
+    updateRlayerRelatedOrdersPolkadotData();
+  }, [updateRlayerRelatedOrdersEthData, updateRlayerRelatedOrdersPolkadotData]);
 
   useEffect(() => {
     setRefresh(() => () => {
-      refetchRewardAndSlash();
-      refetchQuoteHistory();
-      refetchRelayerRelatedOrders();
+      updateRewardAndSlashData();
+      updateQuoteHistoryData();
+      updateRlayerRelatedOrdersData();
     });
-  }, [setRefresh, refetchRewardAndSlash, refetchQuoteHistory, refetchRelayerRelatedOrders]);
+  }, [setRefresh, updateRewardAndSlashData, updateQuoteHistoryData, updateRlayerRelatedOrdersData]);
 
   return {
-    rewardAndSlashLoading,
+    rewardAndSlashDataLoading,
     rewardAndSlashData,
-    quoteHistoryLoading,
+    quoteHistoryDataLoading,
     quoteHistoryData,
-    relayerRelatedOrdersLoading,
+    relayerRelatedOrdersDataLoading,
     relayerRelatedOrdersData,
   };
 };

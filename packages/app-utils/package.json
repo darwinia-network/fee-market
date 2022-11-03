@@ -1,5 +1,5 @@
 {
-  "name": "@feemarket/app-utils",
+  "name": "@feemarket/utils",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -23,12 +23,14 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@apollo/client": "^3.6.9",
-    "@feemarket/app-config": "^1.0.0",
-    "@feemarket/app-types": "^1.0.0",
+    "@apollo/client": "^3.7.1",
+    "@feemarket/config": "^1.0.0",
+    "@feemarket/types": "^1.0.0",
+    "@polkadot/api": "^9.6.1",
+    "@polkadot/extension-dapp": "^0.44.6",
     "date-fns": "^2.29.3",
-    "ethers": "^5.7.1",
-    "graphql": "^16.6.0",
+    "date-fns-tz": "^1.3.7",
+    "ethers": "^5.7.2",
     "lodash": "^4.17.21"
   }
 }

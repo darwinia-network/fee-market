@@ -1,10 +1,10 @@
-import type { PolkadotChainConfig } from "@feemarket/app-types";
-import PangolinLogo from "../images/network/pangolin.svg";
+import type { PolkadotChainConfig } from "./types";
+import chainLogo from "../images/network/pangolin.svg";
 
 const config: PolkadotChainConfig = {
   chainName: "Pangolin",
   displayName: "Pangolin Chain",
-  chainLogo: PangolinLogo,
+  chainLogo,
   provider: {
     rpc: "wss://pangolin-rpc.darwinia.network",
   },

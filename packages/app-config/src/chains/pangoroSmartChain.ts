@@ -1,10 +1,9 @@
-import type { EthChainConfig } from "@feemarket/app-types";
-import { ChainID } from "@feemarket/app-types";
+import type { EthChainConfig } from "./types";
 import chainLogo from "../images/network/pangoro.svg";
 import contractInterface from "../abi/smartChain.json";
 
 const config: EthChainConfig = {
-  chainId: ChainID.PANGORO_SMART_CHAIN,
+  chainId: 45,
   chainName: "Pangoro Smart Chain",
   displayName: "Pangoro Smart Chain",
   chainLogo,

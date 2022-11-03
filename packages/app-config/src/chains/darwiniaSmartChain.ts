@@ -1,10 +1,9 @@
-import type { EthChainConfig } from "@feemarket/app-types";
-import { ChainID } from "@feemarket/app-types";
+import type { EthChainConfig } from "./types";
 import chainLogo from "../images/network/darwinia.svg";
 import contractInterface from "../abi/smartChain.json";
 
 const config: EthChainConfig = {
-  chainId: ChainID.DARWINIA_SMART_CHAIN,
+  chainId: 46,
   chainName: "Darwinia Smart Chain",
   displayName: "Darwinia Smart Chain",
   chainLogo,
