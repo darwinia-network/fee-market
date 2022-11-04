@@ -359,7 +359,8 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
           <div className={"text-12-bold"}>{t(localeKeys.youModifyQuoteTo)}</div>
           <Input
             value={quoteInput ?? ""}
-            error={quoteTips?.text ? <RenderInputTips text={quoteTips.text} error={quoteTips.error} /> : undefined}
+            error={quoteTips?.error ? <RenderInputTips text={quoteTips.text} error={quoteTips.error} /> : null}
+            bottomTip={quoteTips?.error ? null : <RenderInputTips text={quoteTips?.text ?? ""} error={false} />}
             leftIcon={null}
             className={"!text-14-bold"}
             onChange={handleQuoteChange}

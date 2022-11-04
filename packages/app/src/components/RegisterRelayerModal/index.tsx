@@ -389,10 +389,9 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
           <Input
             value={collateralInput || ""}
             error={
-              collteralTips?.text ? (
-                <RenderInputTips text={collteralTips.text} error={collteralTips.error} />
-              ) : undefined
+              collteralTips?.error ? <RenderInputTips text={collteralTips.text} error={collteralTips.error} /> : null
             }
+            bottomTip={collteralTips?.error ? null : <RenderInputTips text={collteralTips?.text ?? ""} error={false} />}
             leftIcon={null}
             className={"!text-14-bold"}
             onChange={handleCollateralChange}
@@ -409,7 +408,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
           <div className={"text-12-bold"}>{t(localeKeys.youQuote)}</div>
           <Input
             value={quoteInput || ""}
-            error={quoteTips?.text ? <RenderInputTips text={quoteTips.text} error={quoteTips.error} /> : undefined}
+            error={quoteTips?.error ? <RenderInputTips text={quoteTips.text} error={quoteTips.error} /> : null}
+            bottomTip={quoteTips?.error ? null : <RenderInputTips text={quoteTips?.text ?? ""} error={false} />}
             leftIcon={null}
             className={"!text-14-bold"}
             onChange={handleQuoteChange}

@@ -10,6 +10,7 @@ export interface InputProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLIn
   onClear?: () => void;
   rightSlot?: JSX.Element;
   error?: JSX.Element | null;
+  bottomTip?: JSX.Element | null;
 }
 
 const Input = ({
@@ -23,6 +24,7 @@ const Input = ({
   autoComplete = "off",
   type = "text",
   error,
+  bottomTip,
   ...rest
 }: InputProps) => {
   const hasCustomLeftIcon = typeof leftIcon !== "undefined";
@@ -46,7 +48,13 @@ const Input = ({
               <Icon icon={<img alt="image" src={searchIcon} />} />
             )}
             {/*Input field*/}
-            <input className={"dw-input"} type={type} autoComplete={autoComplete} {...rest} placeholder={placeholder} />
+            <input
+              className={`dw-input ${error ? "error" : ""}`}
+              type={type}
+              autoComplete={autoComplete}
+              {...rest}
+              placeholder={placeholder}
+            />
             {/*clear icon*/}
             {clearButton && (
               <div
@@ -64,11 +72,12 @@ const Input = ({
         {/*right slot*/}
         {rightSlot && (
           <div className={"dw-right"}>
-            <div className={`dw-right-slot ${error ? "dw-border-error" : ""}`}>{rightSlot}</div>
+            <div className={`dw-right-slot ${error ? "dw-border-error error" : ""}`}>{rightSlot}</div>
           </div>
         )}
       </div>
-      {error && <div className={"dw-error-message"}>{error}</div>}
+      {error && <div className={"dw-bottom-tip error"}>{error}</div>}
+      {bottomTip && <div className={"dw-bottom-tip"}>{bottomTip}</div>}
     </div>
   );
 };

@@ -19,32 +19,6 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
   return {
     liveNets: [
       {
-        id: "Crab",
-        name: t(localeKeys.crabChain),
-        logo: crabLogo,
-        destinations: [
-          {
-            id: "Darwinia",
-            name: t(localeKeys.darwiniaChain),
-          },
-          {
-            id: "Crab Parachain",
-            name: t(localeKeys.crabParachain),
-          },
-        ],
-      },
-      {
-        id: "Darwinia",
-        name: t(localeKeys.darwiniaChain),
-        logo: darwiniaLogo,
-        destinations: [
-          {
-            id: "Crab",
-            name: t(localeKeys.crabChain),
-          },
-        ],
-      },
-      {
         id: "Ethereum",
         name: t(localeKeys.ethereum),
         logo: ethereumLogo,
@@ -67,6 +41,32 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
         ],
       },
       {
+        id: "Darwinia",
+        name: t(localeKeys.darwiniaChain),
+        logo: darwiniaLogo,
+        destinations: [
+          {
+            id: "Crab",
+            name: t(localeKeys.crabChain),
+          },
+        ],
+      },
+      {
+        id: "Crab",
+        name: t(localeKeys.crabChain),
+        logo: crabLogo,
+        destinations: [
+          {
+            id: "Darwinia",
+            name: t(localeKeys.darwiniaChain),
+          },
+          {
+            id: "Crab Parachain",
+            name: t(localeKeys.crabParachain),
+          },
+        ],
+      },
+      {
         id: "Crab Parachain",
         name: t(localeKeys.crabParachain),
         logo: crabLogo,
@@ -79,32 +79,6 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
       },
     ],
     testNets: [
-      {
-        id: "Pangolin",
-        name: t(localeKeys.pangolinChain),
-        logo: pangolinLogo,
-        destinations: [
-          {
-            id: "Pangoro",
-            name: t(localeKeys.pangoroChain),
-          },
-          {
-            id: "Pangolin Parachain",
-            name: t(localeKeys.pangolinParachain),
-          },
-        ],
-      },
-      {
-        id: "Pangoro",
-        name: t(localeKeys.pangoroChain),
-        logo: pangoroLogo,
-        destinations: [
-          {
-            id: "Pangolin",
-            name: t(localeKeys.pangolinChain),
-          },
-        ],
-      },
       {
         id: "Goerli",
         name: t(localeKeys.goerli),
@@ -124,6 +98,32 @@ const getNetworkList = (t: TFunction<"translation">): NetworkOption => {
           {
             id: "Goerli",
             name: t(localeKeys.goerli),
+          },
+        ],
+      },
+      {
+        id: "Pangoro",
+        name: t(localeKeys.pangoroChain),
+        logo: pangoroLogo,
+        destinations: [
+          {
+            id: "Pangolin",
+            name: t(localeKeys.pangolinChain),
+          },
+        ],
+      },
+      {
+        id: "Pangolin",
+        name: t(localeKeys.pangolinChain),
+        logo: pangolinLogo,
+        destinations: [
+          {
+            id: "Pangoro",
+            name: t(localeKeys.pangoroChain),
+          },
+          {
+            id: "Pangolin Parachain",
+            name: t(localeKeys.pangolinParachain),
           },
         ],
       },

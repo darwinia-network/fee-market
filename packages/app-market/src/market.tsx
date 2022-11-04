@@ -68,7 +68,7 @@ export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
         _setCurrentMarket({ source, destination });
       }
     } else {
-      _setCurrentMarket({ source: "Crab", destination: "Darwinia" });
+      _setCurrentMarket({ source: "Ethereum", destination: "Darwinia Smart Chain" });
     }
   }, []);
 
