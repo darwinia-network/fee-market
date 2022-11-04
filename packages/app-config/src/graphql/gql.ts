@@ -294,8 +294,8 @@ export const RELAYER_ORDERS_POLKADOT_DATA = gql`
 `;
 
 export const FEE_HISTORY_ETH_DATA = gql`
-  query {
-    feeHistories(orderBy: blockNumber) {
+  query feeHistories($skip: Int!) {
+    feeHistories(orderBy: blockNumber, first: 100, skip: $skip) {
       amount
       blockTime
     }

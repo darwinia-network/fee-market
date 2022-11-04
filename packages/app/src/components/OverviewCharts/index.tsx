@@ -3,13 +3,18 @@ import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { OrdersCountChart } from "../Chart/OrdersCountChart";
 import { FeeHistoryChart } from "../Chart/FeeHistoryChart";
-import { getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain } from "@feemarket/utils";
+import {
+  getEthChainConfig,
+  getPolkadotChainConfig,
+  isEthChain,
+  isPolkadotChain,
+  formatBalance,
+} from "@feemarket/utils";
 import { BN } from "@polkadot/util";
-import { utils as ethersUtils } from "ethers";
 import { useMemo } from "react";
 
 const convertItem = (item: [number, BN], decimals = 9): [number, number] => {
-  return [item[0], Number(ethersUtils.formatUnits(item[1].toString(), decimals))];
+  return [item[0], Number(formatBalance(item[1], decimals))];
 };
 
 interface Props {
