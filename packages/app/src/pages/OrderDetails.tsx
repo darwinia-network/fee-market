@@ -12,7 +12,6 @@ import { ORDER_DETAIL_ETH_DATA, ORDER_DETAIL_POLKADOT_DATA } from "@feemarket/co
 import {
   OrderDetail,
   formatBalance,
-  isEthApi,
   isEthChain,
   isPolkadotChain,
   transformOrderDetailEthData,
@@ -23,6 +22,7 @@ import {
   formatOrderId,
   getEthChainConfig,
   getPolkadotChainConfig,
+  adaptSlotIndex,
 } from "@feemarket/utils";
 import { useGrapgQuery, useAccountName } from "@feemarket/hooks";
 import { formatDistance } from "date-fns";
@@ -30,15 +30,6 @@ import { capitalize } from "lodash";
 import { NavLink, useLocation } from "react-router-dom";
 
 const ETH_LANE = "eth";
-
-const adaptSlotIndex = (api: unknown, slot: number) => {
-  // for eth "slot === 1" means "Slot #1", but for polkadot "slot === 0" means "Slot #1"
-  // here we convert to polkadot format
-  if (isEthApi(api) && slot > 0) {
-    return slot - 1;
-  }
-  return slot;
-};
 
 const formatStatus = (status: OrderStatus): string => {
   switch (status) {
