@@ -28,10 +28,12 @@ import {
 import type { MarketEntity, OrderEntity, FeeEntity, FeeMarketChain } from "@feemarket/config";
 import type { PalletFeeMarketRelayer, OrderBook } from "@feemarket/types";
 import { useGrapgQuery } from "./graphQuery";
+import { useApolloClient } from "@apollo/client";
 
 export const useMarketOverviewData = () => {
   const { currentMarket, setRefresh } = useMarket();
   const { providerApi: api } = useApi();
+  const apolloClient = useApolloClient();
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
@@ -147,15 +149,51 @@ export const useMarketOverviewData = () => {
 
   // ============================= Begin: Overview page「Fee History」Chart ===================================
 
-  const {
-    transformedData: feeHistoryEthData,
-    loading: feeHistoryEthDataLoading,
-    refetch: updateFeeHistoryEthData,
-  } = useGrapgQuery<{ feeHistories: { amount: string; blockTime: string }[] }, unknown, [number, BN][]>(
-    FEE_HISTORY_ETH_DATA,
-    {},
-    transformFeeHistoryData
-  );
+  // const {
+  //   transformedData: feeHistoryEthData,
+  //   loading: feeHistoryEthDataLoading,
+  //   refetch: updateFeeHistoryEthData,
+  // } = useGrapgQuery<{ feeHistories: { amount: string; blockTime: string }[] }, { skip: number }, [number, BN][]>(
+  //   FEE_HISTORY_ETH_DATA,
+  //   {},
+  //   transformFeeHistoryData
+  // );
+
+  const [feeHistoryEthData, setFeeHistoryEthData] = useState<[number, BN][]>([]);
+  const [feeHistoryEthDataLoading, setFeeHistoryEthDataLoading] = useState(false);
+
+  const getPartOfFeeHistories = async (skip: number) => {
+    return await apolloClient.query<{ feeHistories: { amount: string; blockTime: string }[] }, { skip: number }>({
+      query: FEE_HISTORY_ETH_DATA,
+      variables: { skip },
+    });
+  };
+
+  const updateFeeHistoryEthData = useCallback(async () => {
+    setFeeHistoryEthDataLoading(true);
+
+    let skip = 0;
+    let data: { amount: string; blockTime: string }[] = [];
+    let tmp = await getPartOfFeeHistories(skip);
+
+    while (!tmp.error && tmp.data.feeHistories.length) {
+      skip += tmp.data.feeHistories.length;
+      data = data.concat(tmp.data.feeHistories);
+      tmp = await getPartOfFeeHistories(skip);
+    }
+
+    setFeeHistoryEthData(transformFeeHistoryData({ feeHistories: data }));
+    setFeeHistoryEthDataLoading(false);
+  }, []);
+
+  useEffect(() => {
+    updateFeeHistoryEthData();
+
+    return () => {
+      setFeeHistoryEthData([]);
+      setFeeHistoryEthDataLoading(false);
+    };
+  }, [updateFeeHistoryEthData]);
 
   const {
     transformedData: feeHistoryPolkadotData,

@@ -87,7 +87,7 @@ const NetworkSwitchDialog = ({
   };
 
   const setDefaultSelectedNetwork = (netType: keyof NetworkOption) => {
-    /* if the user has switched the previous selected network type, default the
+    /* if the user has switched to the previous selected network type, default the
      * selected network to his previous selection */
     if (transferSelection?.networkType == netType) {
       setNetworkType(transferSelection.networkType);

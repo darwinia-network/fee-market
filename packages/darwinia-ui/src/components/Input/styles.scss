@@ -51,6 +51,10 @@
           outline: none;
           appearance: none;
 
+          &.error {
+            color: var(--danger) !important;
+          }
+
           &:focus {
             outline: none;
           }
@@ -80,6 +84,10 @@
         &.dw-border-error {
           border-color: var(--danger);
         }
+
+        &.error {
+          color: var(--danger) !important;
+        }
       }
     }
   }
@@ -91,7 +99,11 @@
     height: var(--20px);
   }
 
-  .dw-error-message {
+  .dw-bottom-tip {
     @extend .dw-text-12-bold;
+
+    &.error {
+      color: var(--danger) !important;
+    }
   }
 }

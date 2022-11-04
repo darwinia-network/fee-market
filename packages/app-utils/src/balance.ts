@@ -70,7 +70,7 @@ export const formatBalance = (
   overrides?: { decimals?: number }
 ): string => {
   const defaultDecimals = 4;
-  const decimals = overrides?.decimals ?? precision === 9 ? 1 : precision === 18 ? 4 : defaultDecimals;
+  const decimals = overrides?.decimals ?? (precision === 9 ? 1 : precision === 18 ? 4 : defaultDecimals);
 
   const [integer, decimal] = ethersUtils.commify(ethersUtils.formatUnits(amount.toString(), precision)).split(".");
   const balance = Number(decimal) ? `${integer}.${decimal.slice(0, decimals)}` : integer;

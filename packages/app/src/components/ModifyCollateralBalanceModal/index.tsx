@@ -377,10 +377,9 @@ const ModifyCollateralBalanceModal = ({
           <Input
             value={collateralInput ?? ""}
             error={
-              collteralTips?.text ? (
-                <RenderInputTips text={collteralTips.text} error={collteralTips.error} />
-              ) : undefined
+              collteralTips?.error ? <RenderInputTips text={collteralTips.text} error={collteralTips.error} /> : null
             }
+            bottomTip={collteralTips?.error ? null : <RenderInputTips text={collteralTips?.text ?? ""} error={false} />}
             leftIcon={null}
             className={"!text-14-bold"}
             onChange={handleCollateralChange}

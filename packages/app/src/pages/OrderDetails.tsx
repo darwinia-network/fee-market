@@ -30,6 +30,7 @@ import { capitalize } from "lodash";
 import { NavLink, useLocation } from "react-router-dom";
 
 const ETH_LANE = "eth";
+const ETH_BALANCE_DECIMALS = 8;
 
 const formatStatus = (status: OrderStatus): string => {
   switch (status) {
@@ -279,7 +280,9 @@ const OrderDetails = () => {
       label: t(localeKeys.fee),
       details:
         orderDetailData?.fee && nativeToken
-          ? formatBalance(orderDetailData.fee, nativeToken.decimals, nativeToken.symbol)
+          ? formatBalance(orderDetailData.fee, nativeToken.decimals, nativeToken.symbol, {
+              decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
+            })
           : "-",
     },
     ...(orderDetailData?.createBlockNumber
@@ -336,7 +339,11 @@ const OrderDetails = () => {
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 {nativeToken && (
                   <div className={"text-12 lg:text-14"}>
-                    (+{formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol)})
+                    (+
+                    {formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol, {
+                      decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
+                    })}
+                    )
                   </div>
                 )}
               </div>
@@ -352,7 +359,11 @@ const OrderDetails = () => {
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 {nativeToken && (
                   <div className={"text-12 lg:text-14"}>
-                    (+{formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol)})
+                    (+
+                    {formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol, {
+                      decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
+                    })}
+                    )
                   </div>
                 )}
               </div>
@@ -368,7 +379,11 @@ const OrderDetails = () => {
                 <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
                 {nativeToken && (
                   <div className={"text-12 lg:text-14"}>
-                    (+{formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol)})
+                    (+
+                    {formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol, {
+                      decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
+                    })}
+                    )
                   </div>
                 )}
               </div>
@@ -379,7 +394,9 @@ const OrderDetails = () => {
               {
                 id: "6",
                 label: t(localeKeys.treasury),
-                details: `+${formatBalance(orderDetailData.treasuryAmount, nativeToken.decimals, nativeToken.symbol)}`,
+                details: `+${formatBalance(orderDetailData.treasuryAmount, nativeToken.decimals, nativeToken.symbol, {
+                  decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
+                })}`,
               },
             ]
           : []),
@@ -413,7 +430,11 @@ const OrderDetails = () => {
               <AccountName address={item.relayer.address} className={"text-primary text-12-bold lg:text-14-bold"} />
               {nativeToken && (
                 <div className={"text-12 lg:text-14"}>
-                  (-{formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol)})
+                  (-
+                  {formatBalance(item.amount, nativeToken.decimals, nativeToken.symbol, {
+                    decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
+                  })}
+                  )
                 </div>
               )}
             </div>
