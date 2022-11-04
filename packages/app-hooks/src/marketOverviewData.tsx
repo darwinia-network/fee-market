@@ -87,8 +87,13 @@ export const useMarketOverviewData = () => {
         : null;
     }
 
+    if (averageSpeed.value && isEthChain(sourceChain)) {
+      // convert to millionsecond
+      averageSpeed.value = Number(averageSpeed.value) * 1000;
+    }
+
     return { averageSpeed, totalOrders, totalReward };
-  }, [speedTotalOrdersAndReward, speedTotalOrdersAndRewardLoading]);
+  }, [sourceChain, speedTotalOrdersAndReward, speedTotalOrdersAndRewardLoading]);
 
   // ============================= Begin: Overview page「Orders Count」Chart ===================================
   const {

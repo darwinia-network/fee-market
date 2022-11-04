@@ -1,9 +1,12 @@
+import { useApi } from "@feemarket/api";
 import { useOrdersOverviewData } from "@feemarket/hooks";
+import { adaptSlotIndex } from "@feemarket/utils";
 import { Spinner } from "@darwinia/ui";
 import OrdersSummary from "../components/OrdersSummary";
 import OrdersTable from "../components/OrdersTable";
 
 const Orders = () => {
+  const { providerApi: api } = useApi();
   const { ordersSummaryData, ordersSummaryDataLoading, ordersOverviewData, ordersOverviewDataLoading } =
     useOrdersOverviewData();
 
@@ -28,7 +31,8 @@ const Orders = () => {
                 nonce: item.nonce,
                 sender: item.sender,
                 status: item.status,
-                slotIndex: item.slotIndex,
+                slotIndex:
+                  item.slotIndex || item.slotIndex === 0 ? adaptSlotIndex(api, item.slotIndex) : item.slotIndex,
                 deliveryRelayer: item.deliveryRelayers.length ? item.deliveryRelayers[0].address : null,
                 confirmationRelayer: item.confirmationRelayers.length ? item.confirmationRelayers[0].address : null,
                 createdAt: item.createBlockTime,
