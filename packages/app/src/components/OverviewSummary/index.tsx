@@ -35,9 +35,9 @@ const formatCurrentFee = (fee?: BN | BigNumber | null, decimals?: number | null,
   return "-";
 };
 
-const formatRewards = (rewards?: BN | null, decimals?: number | null): string => {
+const formatRewards = (rewards?: BN | null, decimals?: number | null, symbol?: string | null): string => {
   if (rewards && decimals) {
-    return formatBalance(rewards, decimals);
+    return formatBalance(rewards, decimals, symbol);
   }
   return "-";
 };
@@ -106,7 +106,10 @@ const OverviewSummary = ({
       title: t(localeKeys.currentMessageFee),
       data: formatCurrentFee(currentFee.value, nativeToken?.decimals, nativeToken?.symbol),
     },
-    { title: t(localeKeys.totalRewards), data: formatRewards(totalReward.value, nativeToken?.decimals) },
+    {
+      title: t(localeKeys.totalRewards),
+      data: formatRewards(totalReward.value, nativeToken?.decimals, nativeToken?.symbol),
+    },
     { title: t(localeKeys.totalOrders), data: formatOrders(totalOrders.value) },
   ];
   const overview = summaryData.map((item, index) => {
