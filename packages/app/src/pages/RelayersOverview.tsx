@@ -42,6 +42,7 @@ const RelayersOverview = () => {
   const { t } = useTranslation();
   const [activeTabId, setActiveTabId] = useState("1");
   const [keywords, setKeywords] = useState("");
+  const [sortEvent, setSortEvent] = useState<SortEvent<Relayer> | undefined>();
 
   const { currentMarket } = useMarket();
   const { relayersOverviewData } = useRelayersOverviewData();
@@ -101,18 +102,41 @@ const RelayersOverview = () => {
 
   const [dataSource, setDataSource] = useState<Relayer[]>([]);
 
+  const getSortedRelayers = (relayers: Relayer[]) => {
+    if (sortEvent) {
+      if (sortEvent.order === "ascend") {
+        return [...relayers].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key])));
+      } else if (sortEvent.order === "descend") {
+        return [...relayers].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key])));
+      }
+    }
+    return [...relayers];
+  };
+
   useEffect(() => {
     const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
     const end = start + tablePagination.pageSize;
 
     if (activeTabId === "1") {
-      setDataSource(relayersOverviewData.allRelayersDataSource.slice(start, end));
+      const sortedData: Relayer[] = getSortedRelayers(relayersOverviewData.allRelayersDataSource);
+
+      const filteredData =
+        keywords.trim() === ""
+          ? sortedData.slice(start, end)
+          : sortedData.filter((item) => item.relayer.toLowerCase() === keywords.toLowerCase());
+      setDataSource(filteredData);
     } else if (activeTabId === "2") {
-      setDataSource(relayersOverviewData.assignedRelayersDataSource.slice(start, end));
+      const sortedData: Relayer[] = getSortedRelayers(relayersOverviewData.assignedRelayersDataSource);
+
+      const filteredData =
+        keywords.trim() === ""
+          ? sortedData.slice(start, end)
+          : sortedData.filter((item) => item.relayer.toLowerCase() === keywords.toLowerCase());
+      setDataSource(filteredData);
     } else {
       setDataSource([]);
     }
-  }, [relayersOverviewData, activeTabId, tablePagination]);
+  }, [relayersOverviewData, activeTabId, tablePagination, keywords, sortEvent]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -175,14 +199,22 @@ const RelayersOverview = () => {
   ];
 
   const handleSort = useCallback((sortEvent: SortEvent<Relayer>) => {
-    if (sortEvent.order === "ascend") {
-      setDataSource((previous) => [...previous].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key]))));
-    } else if (sortEvent.order === "descend") {
-      setDataSource((previous) => [...previous].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key]))));
-    }
+    setTablePagination((old) => {
+      return {
+        ...old,
+        currentPage: 1,
+      };
+    });
+    setSortEvent(sortEvent);
   }, []);
 
   const onTabChange = (tab: Tab) => {
+    setTablePagination((old) => {
+      return {
+        ...old,
+        currentPage: 1,
+      };
+    });
     setActiveTabId(tab.id);
   };
 
@@ -223,9 +255,7 @@ const RelayersOverview = () => {
         headerSlot={getTableTabs()}
         onSort={handleSort}
         minWidth={"1120px"}
-        dataSource={dataSource.filter((item) =>
-          keywords ? keywords.toLowerCase() === item.relayer.toLowerCase() : true
-        )}
+        dataSource={dataSource}
         columns={columns}
         pagination={tablePagination}
       />
