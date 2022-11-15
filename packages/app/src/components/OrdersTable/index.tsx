@@ -19,6 +19,7 @@ import { SlotIndex, OrderStatus } from "@feemarket/config";
 import { UrlSearchParamsKey } from "@feemarket/types";
 import { useMarket } from "@feemarket/market";
 import { useAccountName } from "@feemarket/hooks";
+import JazzIcon from "../JazzIcon";
 
 enum EnumAll {
   ALL = -2,
@@ -536,8 +537,12 @@ const RelayerAccount = ({ address }: { address: string }) => {
   const { displayName } = useAccountName(address);
 
   return (
-    <div className={"flex items-center gap-[0.3125rem] clickable"}>
-      <Identicon value={address} size={22} theme={isPolkadotChain(currentMarket?.source) ? "polkadot" : "ethereum"} />
+    <div className={"flex items-center gap-[0.625rem] clickable"}>
+      {isPolkadotChain(currentMarket?.source) ? (
+        <Identicon className={"rounded-full overflow-hidden"} value={address} size={22} theme="jdenticon" />
+      ) : (
+        <JazzIcon size={22} address={address} />
+      )}
       <div className={"flex-1 text-14-bold truncate"}>{displayName}</div>
     </div>
   );

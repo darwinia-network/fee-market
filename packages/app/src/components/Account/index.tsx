@@ -10,6 +10,7 @@ import { useAccountName } from "@feemarket/hooks";
 import { isEthChain, isPolkadotChain } from "@feemarket/utils";
 import type { FeeMarketChain } from "@feemarket/config";
 import { Identicon } from "@polkadot/react-identicon";
+import JazzIcon from "../JazzIcon";
 
 interface Props {
   advanced?: boolean;
@@ -72,7 +73,17 @@ const Account = ({
       className={`flex card gap-[0.9375rem] ${advanced ? "flex-col lg:flex-row lg:items-center" : "lg:items-center"}`}
     >
       <div className={"flex flex-1 lg:items-center gap-[0.9375rem] overflow-hidden"}>
-        <Identicon value={relayerAddress} size={40} theme={isPolkadotChain(sourceChain) ? "polkadot" : "ethereum"} />
+        {isPolkadotChain(sourceChain) ? (
+          <Identicon
+            className={"rounded-full overflow-hidden bg-white"}
+            value={relayerAddress}
+            size={40}
+            theme={"jdenticon"}
+          />
+        ) : (
+          <JazzIcon size={40} address={relayerAddress} />
+        )}
+
         <div
           className={`overflow-hidden flex ${advanced ? "" : "lg:items-center"} flex-1 flex-col ${
             advanced ? "" : "lg:flex-row lg:gap-[0.9375rem]"

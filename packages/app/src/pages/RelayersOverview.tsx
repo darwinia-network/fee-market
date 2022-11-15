@@ -19,6 +19,7 @@ import {
   formatUrlChainName,
 } from "@feemarket/utils";
 import { BigNumber } from "ethers";
+import JazzIcon from "../components/JazzIcon";
 
 const renderBalance = (amount: BN | BigNumber, decimals?: number | null) => {
   if (decimals) {
@@ -257,7 +258,7 @@ const RelayersOverview = () => {
         minWidth={"1120px"}
         dataSource={dataSource}
         columns={columns}
-        pagination={tablePagination}
+        pagination={keywords.trim().length > 0 ? undefined : tablePagination}
       />
     </div>
   );
@@ -277,8 +278,12 @@ const RelayerAccount = ({ address }: { address: string }) => {
   }
 
   return (
-    <div className={"flex items-center gap-[0.3125rem] clickable"}>
-      <Identicon value={address} size={22} theme={isPolkadotChain(currentMarket?.source) ? "polkadot" : "ethereum"} />
+    <div className={"flex items-center gap-[0.625rem] clickable"}>
+      {isPolkadotChain(currentMarket?.source) ? (
+        <Identicon className={"rounded-full overflow-hidden"} value={address} size={22} theme="jdenticon" />
+      ) : (
+        <JazzIcon size={22} address={address} />
+      )}
       <Link to={to} className={"text-primary text-14-bold truncate"}>
         {displayName}
       </Link>
