@@ -280,7 +280,7 @@ const RelayerAccount = ({ address }: { address: string }) => {
   return (
     <div className={"flex items-center gap-[0.625rem] clickable"}>
       {isPolkadotChain(currentMarket?.source) ? (
-        <Identicon className={"rounded-full overflow-hidden"} value={address} size={22} theme="jdenticon" />
+        <Identicon className={"rounded-full overflow-hidden bg-white"} value={address} size={22} theme="jdenticon" />
       ) : (
         <JazzIcon size={22} address={address} />
       )}

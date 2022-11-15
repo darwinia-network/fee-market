@@ -17,7 +17,7 @@ const AccountMini = ({ address }: Props) => {
   return (
     <div className={"flex items-center bg-divider rounded-[0.3125rem] px-[0.625rem] py-[0.4375rem] gap-[0.625rem]"}>
       {isPolkadotChain(sourceChain) ? (
-        <Identicon className={"rounded-full overflow-hidden"} value={address} size={26} theme="jdenticon" />
+        <Identicon className={"rounded-full overflow-hidden bg-white"} value={address} size={26} theme="jdenticon" />
       ) : (
         <JazzIcon size={26} address={address} />
       )}

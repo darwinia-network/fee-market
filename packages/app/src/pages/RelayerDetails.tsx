@@ -66,7 +66,7 @@ const RelayerDetails = () => {
     <Spinner isLoading={quoteHistoryDataLoading || rewardAndSlashDataLoading || relayerRelatedOrdersDataLoading}>
       <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
         {/*Basic Info*/}
-        {relayerAddress && <Account relayerAddress={relayerAddress} />}
+        {relayerAddress && <Account sourceChain={currentMarket?.source} relayerAddress={relayerAddress} />}
 
         {/*Charts*/}
         <RelayerDetailsChart
