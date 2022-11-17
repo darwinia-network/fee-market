@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { EMPTY, from, switchMap, forkJoin, of, Observable, zip } from "rxjs";
 import { Contract, BigNumber } from "ethers";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
@@ -28,10 +28,10 @@ import {
 import type { MarketEntity, OrderEntity, FeeEntity, FeeMarketChain } from "@feemarket/config";
 import type { PalletFeeMarketRelayer, OrderBook } from "@feemarket/types";
 import { useGrapgQuery } from "./graphQuery";
-import { useApolloClient } from "@apollo/client";
+import { ApolloQueryResult, OperationVariables, useApolloClient, useQuery } from "@apollo/client";
 
 export const useMarketOverviewData = () => {
-  const { currentMarket, setRefresh } = useMarket();
+  const { currentMarket } = useMarket();
   const { providerApi: api } = useApi();
   const apolloClient = useApolloClient();
 
@@ -51,7 +51,29 @@ export const useMarketOverviewData = () => {
     loading: false,
   });
 
+  const ordersCountEthDataRef = useRef<[number, number][]>([]);
+  const ordersCountEthDataLoadingRef = useRef(false);
+  const orderCountEthReFetchRef =
+    useRef<
+      (
+        variables?: Partial<OperationVariables>
+      ) => Promise<ApolloQueryResult<{ orders: Pick<OrderEntity, "createBlockTime">[] | null }>>
+    >();
+
+  const ordersCountPolkadotDataRef = useRef<[number, number][]>([]);
+  const ordersCountPolkadotDataLoadingRef = useRef(false);
+  const orderCountPolkadotReFetchRef =
+    useRef<
+      (
+        variables?: Partial<OperationVariables>
+      ) => Promise<ApolloQueryResult<{ orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null }>>
+    >();
+
+  // const [ordersCountPolkadotDataLoading, setOrdersCountPolkadotDataLoading] = useState(false);
+
   // speed, total orders, total reward
+  /*It'll reload automatically when this component is re-rendered, so far
+  the updateSpeedTotalOrdersAndReward method is useless */
   const {
     data: speedTotalOrdersAndReward,
     refetch: updateSpeedTotalOrdersAndReward,
@@ -98,52 +120,58 @@ export const useMarketOverviewData = () => {
   }, [sourceChain, speedTotalOrdersAndReward, speedTotalOrdersAndRewardLoading]);
 
   // ============================= Begin: Overview page「Orders Count」Chart ===================================
-  const {
-    transformedData: ordersCountEthData,
-    loading: ordersCountEthDataLoading,
-    refetch: updateOrdersCountEthData,
-  } = useGrapgQuery<{ orders: Pick<OrderEntity, "createBlockTime">[] | null }, unknown, [number, number][]>(
-    ORDERS_COUNT_ETH_DATA,
-    {},
-    transformOrdersCountData
-  );
 
-  const {
-    transformedData: ordersCountPolkadotData,
-    loading: ordersCountPolkadotDataLoading,
-    refetch: updateOrdersCountPolkadotData,
-  } = useGrapgQuery<
-    { orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null },
-    { destination: FeeMarketChain | undefined },
-    [number, number][]
-  >(
-    ORDERS_COUNT_POLKADOT_DATA,
-    {
+  try {
+    const response = useQuery<{ orders: Pick<OrderEntity, "createBlockTime">[] | null }>(ORDERS_COUNT_ETH_DATA, {
+      onError: () => {
+        //ignore
+      },
+    });
+    ordersCountEthDataLoadingRef.current = response.loading;
+    orderCountEthReFetchRef.current = response.refetch;
+    if (response.data) {
+      ordersCountEthDataRef.current = transformOrdersCountData(response.data);
+    }
+  } catch (e) {
+    ordersCountEthDataLoadingRef.current = false;
+  }
+
+  try {
+    const response = useQuery<
+      { orders: { nodes: Pick<OrderEntity, "createBlockTime">[] } | null },
+      { destination: FeeMarketChain | undefined }
+    >(ORDERS_COUNT_POLKADOT_DATA, {
       variables: {
         destination: destinationChain,
       },
-    },
-    transformOrdersCountData
-  );
+      onError: () => {
+        //ignore
+      },
+    });
+    ordersCountPolkadotDataLoadingRef.current = response.loading;
+    orderCountPolkadotReFetchRef.current = response.refetch;
+    if (response.data) {
+      ordersCountPolkadotDataRef.current = transformOrdersCountData(response.data);
+    }
+  } catch (e) {
+    ordersCountPolkadotDataLoadingRef.current = false;
+  }
 
   const ordersCountDataLoading = useMemo(() => {
-    return ordersCountEthDataLoading ?? ordersCountPolkadotDataLoading ?? false;
-  }, [ordersCountEthDataLoading, ordersCountPolkadotDataLoading]);
+    return ordersCountEthDataLoadingRef.current ?? ordersCountPolkadotDataLoadingRef.current ?? false;
+  }, [ordersCountEthDataLoadingRef.current, ordersCountPolkadotDataLoadingRef.current]);
 
   const ordersCountData = useMemo(() => {
-    if (ordersCountEthData?.length) {
-      return ordersCountEthData;
+    if (isEthChain(sourceChain)) {
+      return ordersCountEthDataRef.current ?? [];
     }
-    if (ordersCountPolkadotData?.length) {
-      return ordersCountPolkadotData;
-    }
-    return [];
-  }, [ordersCountEthData, ordersCountPolkadotData]);
 
-  const updateOrdersCountData = useCallback(() => {
-    updateOrdersCountEthData();
-    updateOrdersCountPolkadotData();
-  }, [updateOrdersCountEthData, updateOrdersCountPolkadotData]);
+    if (isPolkadotChain(sourceChain)) {
+      return ordersCountPolkadotDataRef.current ?? [];
+    }
+
+    return [];
+  }, [ordersCountEthDataRef.current, ordersCountPolkadotDataRef.current]);
 
   // ============================= End: Overview page「Orders Count」Chart ===================================
 
@@ -170,6 +198,9 @@ export const useMarketOverviewData = () => {
   };
 
   const updateFeeHistoryEthData = useCallback(async () => {
+    if (!isEthChain(sourceChain)) {
+      return;
+    }
     setFeeHistoryEthDataLoading(true);
 
     let skip = 0;
@@ -184,7 +215,7 @@ export const useMarketOverviewData = () => {
 
     setFeeHistoryEthData(transformFeeHistoryData({ feeHistories: data }));
     setFeeHistoryEthDataLoading(false);
-  }, []);
+  }, [sourceChain]);
 
   useEffect(() => {
     updateFeeHistoryEthData();
@@ -228,12 +259,16 @@ export const useMarketOverviewData = () => {
   }, [feeHistoryEthData, feeHistoryPolkadotData]);
 
   const updateFeeHistoryData = useCallback(() => {
+    // The method updateFeeHistoryEthData has isEthChain validation inside it
     updateFeeHistoryEthData();
-    updateFeeHistoryPolkadotData();
-  }, [updateFeeHistoryEthData, updateFeeHistoryPolkadotData]);
+    if (isPolkadotChain(sourceChain)) {
+      updateFeeHistoryPolkadotData();
+    }
+  }, [updateFeeHistoryEthData, updateFeeHistoryPolkadotData, sourceChain]);
 
   // ============================= Begin: Overview page「Fee History」Chart ===================================
 
+  /*This method will be called automatically whenever the the sourceChain or destinationChain is changed*/
   const updateTotalRelayers = useCallback(() => {
     if (isEthApi(api) && isEthChain(sourceChain)) {
       const chainConfig = getEthChainConfig(sourceChain);
@@ -383,21 +418,18 @@ export const useMarketOverviewData = () => {
   }, [updateCurrentFee]);
 
   useEffect(() => {
-    setRefresh(() => () => {
-      updateSpeedTotalOrdersAndReward();
-      updateTotalRelayers();
-      updateCurrentFee();
-      updateOrdersCountData();
-      updateFeeHistoryData();
-    });
-  }, [
-    setRefresh,
-    updateSpeedTotalOrdersAndReward,
-    updateTotalRelayers,
-    updateCurrentFee,
-    updateOrdersCountData,
-    updateFeeHistoryData,
-  ]);
+    if (!currentMarket) {
+      return;
+    }
+
+    updateFeeHistoryData();
+    if (orderCountEthReFetchRef.current && isEthChain(sourceChain)) {
+      orderCountEthReFetchRef.current();
+    }
+    if (orderCountPolkadotReFetchRef.current && isPolkadotChain(sourceChain)) {
+      orderCountPolkadotReFetchRef.current();
+    }
+  }, [currentMarket]);
 
   return {
     averageSpeed,
