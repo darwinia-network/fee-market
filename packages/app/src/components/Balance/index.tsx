@@ -52,12 +52,6 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     return null;
   }, [sourceChain]);
 
-  // due to the issue of runtime, these chains temporarily hide collateral operational portal
-  // wait for the runtime to fix the issue and update
-  const hideCollateralOperational = useMemo(() => {
-    return sourceChain === "Crab" || sourceChain === "Crab Parachain" || sourceChain === "Darwinia";
-  }, [sourceChain]);
-
   const onShowModifyQuoteModal = () => {
     setModifyQuoteModalVisible(true);
   };
@@ -179,7 +173,7 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 {formatBalance(collateralAmount, nativeToken.decimals, nativeToken.symbol)}
               </div>
             )}
-            {!hideCollateralOperational && matchNetwork && (registered || isEthChain(sourceChain)) ? (
+            {matchNetwork && (registered || isEthChain(sourceChain)) ? (
               <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
