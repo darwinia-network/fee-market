@@ -3,13 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import { useRelayersOverviewData, useAccountName } from "@feemarket/hooks";
+import { useRelayersOverviewData, useAccountName, useMarket } from "../hooks";
 import { BN, bnToBn } from "@polkadot/util";
 import { Identicon } from "@polkadot/react-identicon";
-import type {} from "@feemarket/types";
-import { UrlSearchParamsKey } from "@feemarket/types";
+import { UrlSearchParamsKey } from "../types";
 import {
   formatBalance,
   isPolkadotChain,
@@ -17,7 +14,7 @@ import {
   getPolkadotChainConfig,
   isEthChain,
   formatUrlChainName,
-} from "@feemarket/utils";
+} from "../utils";
 import { BigNumber } from "ethers";
 import JazzIcon from "../components/JazzIcon";
 
@@ -103,16 +100,19 @@ const RelayersOverview = () => {
 
   const [dataSource, setDataSource] = useState<Relayer[]>([]);
 
-  const getSortedRelayers = (relayers: Relayer[]) => {
-    if (sortEvent) {
-      if (sortEvent.order === "ascend") {
-        return [...relayers].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key])));
-      } else if (sortEvent.order === "descend") {
-        return [...relayers].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key])));
+  const getSortedRelayers = useCallback(
+    (relayers: Relayer[]) => {
+      if (sortEvent) {
+        if (sortEvent.order === "ascend") {
+          return [...relayers].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key])));
+        } else if (sortEvent.order === "descend") {
+          return [...relayers].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key])));
+        }
       }
-    }
-    return [...relayers];
-  };
+      return [...relayers];
+    },
+    [sortEvent]
+  );
 
   useEffect(() => {
     const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
@@ -137,7 +137,7 @@ const RelayersOverview = () => {
     } else {
       setDataSource([]);
     }
-  }, [relayersOverviewData, activeTabId, tablePagination, keywords, sortEvent]);
+  }, [relayersOverviewData, activeTabId, tablePagination, keywords, sortEvent, getSortedRelayers]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

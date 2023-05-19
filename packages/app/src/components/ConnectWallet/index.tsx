@@ -1,27 +1,11 @@
 import { useTranslation } from "react-i18next";
-import metamaskLogo from "../../assets/images/metamask-logo.svg";
-import polkadotLogo from "../../assets/images/polkadot-logo.svg";
 import { Button, Spinner } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
+import { useWallet } from "../../hooks/wallet";
 
-import { isPolkadotChain } from "@feemarket/utils";
-import type { FeeMarketChain } from "@feemarket/config";
-
-const ConnectWallet = ({
-  loading,
-  isInstalled,
-  sourceChain,
-  onConnected,
-}: {
-  sourceChain: FeeMarketChain | undefined;
-  loading?: boolean;
-  isInstalled: boolean;
-  onConnected: () => void;
-}) => {
+const ConnectWallet = ({ loading, isInstalled }: { loading?: boolean; isInstalled: boolean }) => {
   const { t } = useTranslation();
-  const onConnectWallet = () => {
-    onConnected();
-  };
+  const { logo, connect } = useWallet();
 
   return (
     <Spinner isLoading={loading ?? false}>
@@ -33,11 +17,11 @@ const ConnectWallet = ({
         {isInstalled ? (
           <>
             <div className={"w-[5.3125rem] h-[5.3125rem]"}>
-              <img className={"w-full"} src={isPolkadotChain(sourceChain) ? polkadotLogo : metamaskLogo} alt="image" />
+              <img className={"w-full"} src={logo} alt="..." />
             </div>
             <div>
-              <Button className={"px-[0.9375rem]"} onClick={onConnectWallet}>
-                {isPolkadotChain(sourceChain) ? t(localeKeys.connectWallet) : t(localeKeys.connectMetamask)}
+              <Button className={"px-[0.9375rem]"} onClick={connect}>
+                {t(localeKeys.connectWallet)}
               </Button>
             </div>
             <div className={"text-center"}>{t(localeKeys.loginInfo)}</div>

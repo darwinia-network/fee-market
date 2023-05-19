@@ -2,19 +2,13 @@ import RelayerDetailsChart from "../components/RelayerDetailsChart";
 import RelayerDetailsTable from "../components/RelayerDetailsTable";
 import Account from "../components/Account";
 import { Spinner } from "@darwinia/ui";
-import type { FeeMarketChain } from "@feemarket/config";
-import {
-  parseUrlChainName,
-  getEthChainConfig,
-  getPolkadotChainConfig,
-  isEthChain,
-  isPolkadotChain,
-} from "@feemarket/utils";
-import { useMarket } from "@feemarket/market";
-import { useRelayerDetailData } from "@feemarket/hooks";
+import type { FeeMarketChain } from "../types";
+import { parseUrlChainName, getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain } from "../utils";
+import { useRelayerDetailData, useMarket } from "../hooks";
 import { useLocation } from "react-router-dom";
-import { UrlSearchParamsKey } from "@feemarket/types";
+import { UrlSearchParamsKey } from "../types";
 import { useEffect, useState, useMemo } from "react";
+import { RelayerProvider } from "../providers";
 
 const RelayerDetails = () => {
   const { currentMarket, setCurrentMarket } = useMarket();
@@ -60,13 +54,17 @@ const RelayerDetails = () => {
         destination,
       });
     }
-  }, [search]);
+  }, [search, setCurrentMarket]);
 
   return (
     <Spinner isLoading={quoteHistoryDataLoading || rewardAndSlashDataLoading || relayerRelatedOrdersDataLoading}>
       <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
         {/*Basic Info*/}
-        {relayerAddress && <Account sourceChain={currentMarket?.source} relayerAddress={relayerAddress} />}
+        {relayerAddress && (
+          <RelayerProvider relayerAddress={relayerAddress}>
+            <Account />
+          </RelayerProvider>
+        )}
 
         {/*Charts*/}
         <RelayerDetailsChart

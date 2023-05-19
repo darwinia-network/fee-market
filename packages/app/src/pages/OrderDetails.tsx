@@ -4,11 +4,10 @@ import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../locale/localeKeys";
 import { Tooltip, Spinner } from "@darwinia/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import { UrlSearchParamsKey } from "@feemarket/types";
-import { SlotIndex, OrderStatus, OrderEntity, SlashEntity, RelayerEntity, RewardEntity } from "@feemarket/config";
-import { ORDER_DETAIL_ETH_DATA, ORDER_DETAIL_POLKADOT_DATA } from "@feemarket/config";
+import { useMarket } from "../hooks";
+import { UrlSearchParamsKey } from "../types";
+import { SlotIndex, OrderStatus, OrderEntity, SlashEntity, RelayerEntity, RewardEntity } from "../config";
+import { ORDER_DETAIL_ETH_DATA, ORDER_DETAIL_POLKADOT_DATA } from "../config";
 import {
   OrderDetail,
   formatBalance,
@@ -23,8 +22,8 @@ import {
   getEthChainConfig,
   getPolkadotChainConfig,
   adaptSlotIndex,
-} from "@feemarket/utils";
-import { useGrapgQuery, useAccountName } from "@feemarket/hooks";
+} from "../utils";
+import { useGrapgQuery, useAccountName } from "../hooks";
 import { formatDistance } from "date-fns";
 import { capitalize } from "lodash";
 import { NavLink, useLocation } from "react-router-dom";
@@ -73,7 +72,6 @@ const OrderDetails = () => {
     nonce: null,
   });
   const { currentMarket, setRefresh } = useMarket();
-  const { providerApi: api } = useApi();
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
@@ -207,22 +205,23 @@ const OrderDetails = () => {
           {
             id: "1",
             relayer: orderDetailData.assignedRelayersAddress[0],
-            percentage: adaptSlotIndex(api, orderDetailData.slotIndex) === SlotIndex.SLOT_1 ? 50 : undefined,
+            percentage: adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.SLOT_1 ? 50 : undefined,
           },
           {
             id: "2",
             relayer: orderDetailData.assignedRelayersAddress[1],
-            percentage: adaptSlotIndex(api, orderDetailData.slotIndex) === SlotIndex.SLOT_2 ? 50 : undefined,
+            percentage: adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.SLOT_2 ? 50 : undefined,
           },
           {
             id: "3",
             relayer: orderDetailData.assignedRelayersAddress[2],
-            percentage: adaptSlotIndex(api, orderDetailData.slotIndex) === SlotIndex.SLOT_3 ? 50 : undefined,
+            percentage: adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.SLOT_3 ? 50 : undefined,
           },
           {
             id: "4",
             isOutOfSlot: true,
-            percentage: adaptSlotIndex(api, orderDetailData.slotIndex) === SlotIndex.OUT_OF_SLOT ? 50 : undefined,
+            percentage:
+              adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.OUT_OF_SLOT ? 50 : undefined,
           },
         ]
       : [];

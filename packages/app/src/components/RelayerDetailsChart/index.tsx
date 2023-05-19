@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { utils as ethersUtils } from "ethers";
-import type { Market } from "@feemarket/market";
+import type { Market } from "../../types";
 import { BN } from "@polkadot/util";
 import { RewardAndSlashChart } from "../Chart/RewardAndSlashChart";
 import { QuoteHistoryChart } from "../Chart/QuoteHistoryChart";
 import { useMemo } from "react";
-import { isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "@feemarket/utils";
+import { isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
 
 const convertItem = (item: [number, BN], decimals = 9): [number, number] => {
   return [item[0], Number(ethersUtils.formatUnits(item[1].toString(), decimals))];

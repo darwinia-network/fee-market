@@ -1,23 +1,25 @@
 import ConnectWallet from "../components/ConnectWallet";
 import Dashboard from "../components/RelayerDashboard";
-
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
+import { RelayerProvider } from "../providers";
+import { useMarket, useApi } from "../hooks";
+import { isPolkadotChain } from "../utils";
 
 const RelayerDashboard = () => {
   const { currentMarket } = useMarket();
-  const { signerApi: api, currentAccount, isWalletInstalled, requestAccounts } = useApi();
+  const { signerApi: api, currentAccount, isWalletInstalled } = useApi();
+
+  const sourceChain = currentMarket?.source;
 
   return (
     <>
       {currentAccount ? (
-        <Dashboard relayerAddress={currentAccount.address} />
+        <RelayerProvider relayerAddress={currentAccount.address}>
+          <Dashboard />
+        </RelayerProvider>
       ) : (
         <ConnectWallet
-          loading={isWalletInstalled && api === null}
+          loading={isWalletInstalled && isPolkadotChain(sourceChain) && api === null}
           isInstalled={isWalletInstalled}
-          sourceChain={currentMarket?.source}
-          onConnected={requestAccounts}
         />
       )}
     </>

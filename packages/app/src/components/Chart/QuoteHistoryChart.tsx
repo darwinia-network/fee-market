@@ -25,7 +25,7 @@ export const QuoteHistoryChart = ({ title, data }: { title: string; data: [numbe
         ],
       });
     }
-  }, [title, data.length]);
+  }, [title, data]);
 
   return <div ref={ref} className="h-[21rem] w-full rounded-[0.625rem]" />;
 };

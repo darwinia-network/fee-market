@@ -14,11 +14,10 @@ import {
   formatUrlChainName,
   formatOrderId,
   isEthChain,
-} from "@feemarket/utils";
-import { SlotIndex, OrderStatus } from "@feemarket/config";
-import { UrlSearchParamsKey } from "@feemarket/types";
-import { useMarket } from "@feemarket/market";
-import { useAccountName } from "@feemarket/hooks";
+} from "../../utils";
+import { SlotIndex, OrderStatus } from "../../config";
+import { UrlSearchParamsKey } from "../../types";
+import { useAccountName, useMarket } from "../../hooks";
 import JazzIcon from "../JazzIcon";
 
 enum EnumAll {
@@ -359,7 +358,7 @@ const OrdersTable = ({ loading, data }: Props) => {
     });
 
     setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
-  }, [data.length, duration, blockRange, status, slotIndex]);
+  }, [data, duration, blockRange, status, slotIndex]);
 
   // handle order search
   useEffect(() => {
@@ -372,7 +371,7 @@ const OrdersTable = ({ loading, data }: Props) => {
     }
 
     setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
-  }, [data.length, keyword]);
+  }, [data, keyword]);
 
   // handle page change
   useEffect(() => {

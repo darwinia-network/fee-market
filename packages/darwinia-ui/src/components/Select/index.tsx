@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { Placeholder } from "../../types";
 import "./styles.scss";
 import caretDown from "../../assets/images/caret-down.svg";
@@ -47,22 +47,38 @@ const Select = ({
   /* this is the list of items that are shown in the selection drop down */
   const [selectOptionsJSX, setSelectOptionsJSX] = useState<JSX.Element[]>([]);
 
+  const deselectAnOption = useCallback(
+    (option: OptionProps) => {
+      const index = selectedValuesRef.current.findIndex((value) => value === option.value);
+      selectedValuesRef.current.splice(index, 1);
+
+      selectedItemsJSX.current.splice(index, 1);
+      // this will trigger the component re-render
+      setSelectedValues([...selectedValuesRef.current]);
+      onChange([...selectedValuesRef.current]);
+    },
+    [onChange]
+  );
+
   /*this is the wrapper that will wrap every selected item and append them in the select field*/
-  const wrapSelectedItem = (option: OptionProps) => {
-    return (
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-          setDropdownVisibility(false);
-          deselectAnOption(option);
-        }}
-        key={option.value}
-        className={"dw-single-selection"}
-      >
-        {option.label}
-      </div>
-    );
-  };
+  const wrapSelectedItem = useCallback(
+    (option: OptionProps) => {
+      return (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setDropdownVisibility(false);
+            deselectAnOption(option);
+          }}
+          key={option.value}
+          className={"dw-single-selection"}
+        >
+          {option.label}
+        </div>
+      );
+    },
+    [deselectAnOption]
+  );
 
   useEffect(() => {
     if (!value) {
@@ -88,48 +104,41 @@ const Select = ({
 
     selectedValuesRef.current = selectedValuesArray;
     setSelectedValues(selectedValuesRef.current);
-  }, []);
+  }, [isMultiple, optionsList, value, wrapSelectedItem]);
 
-  const deselectAnOption = (option: OptionProps) => {
-    const index = selectedValuesRef.current.findIndex((value) => value === option.value);
-    selectedValuesRef.current.splice(index, 1);
+  const onOptionClick = useCallback(
+    (option: OptionProps) => {
+      if (isMultiple) {
+        // deselect an item if it was already selected
 
-    selectedItemsJSX.current.splice(index, 1);
-    // this will trigger the component re-render
-    setSelectedValues([...selectedValuesRef.current]);
-    onChange([...selectedValuesRef.current]);
-  };
+        const isItemAlreadySelected = selectedValuesRef.current.includes(option.value);
 
-  const onOptionClick = (option: OptionProps) => {
-    if (isMultiple) {
-      // deselect an item if it was already selected
+        if (isItemAlreadySelected) {
+          //deselect it
+          const index = selectedValuesRef.current.findIndex((value) => value === option.value);
+          selectedValuesRef.current.splice(index, 1);
 
-      const isItemAlreadySelected = selectedValuesRef.current.includes(option.value);
+          selectedItemsJSX.current.splice(index, 1);
+        } else {
+          //select it
+          selectedValuesRef.current = [...selectedValuesRef.current, option.value];
+          selectedItemsJSX.current = [...selectedItemsJSX.current, wrapSelectedItem(option)];
+        }
 
-      if (isItemAlreadySelected) {
-        //deselect it
-        const index = selectedValuesRef.current.findIndex((value) => value === option.value);
-        selectedValuesRef.current.splice(index, 1);
-
-        selectedItemsJSX.current.splice(index, 1);
+        // this will trigger the component re-render
+        setSelectedValues([...selectedValuesRef.current]);
+        onChange([...selectedValuesRef.current]);
       } else {
-        //select it
-        selectedValuesRef.current = [...selectedValuesRef.current, option.value];
-        selectedItemsJSX.current = [...selectedItemsJSX.current, wrapSelectedItem(option)];
+        /* don't wrap single selections JSX */
+        selectedItemsJSX.current = [option.label];
+        selectedValuesRef.current = [option.value];
+        setSelectedValues([...selectedValuesRef.current]);
+        setDropdownVisibility(false);
+        onChange(option.value);
       }
-
-      // this will trigger the component re-render
-      setSelectedValues([...selectedValuesRef.current]);
-      onChange([...selectedValuesRef.current]);
-    } else {
-      /* don't wrap single selections JSX */
-      selectedItemsJSX.current = [option.label];
-      selectedValuesRef.current = [option.value];
-      setSelectedValues([...selectedValuesRef.current]);
-      setDropdownVisibility(false);
-      onChange(option.value);
-    }
-  };
+    },
+    [isMultiple, onChange, wrapSelectedItem]
+  );
 
   /* This will show be called every time the user selects the option and add the
    * selected highlight class if necessary (in case of multiple selections) */
@@ -157,7 +166,7 @@ const Select = ({
       );
     });
     setSelectOptionsJSX(someOptions);
-  }, [optionsList, selectedValues]);
+  }, [optionsList, selectedValues, isMultiple, onOptionClick, size]);
 
   const onDropdownClicked = () => {
     // e.stopPropagation();

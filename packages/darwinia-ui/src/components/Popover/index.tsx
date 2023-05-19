@@ -55,14 +55,17 @@ const Popover = ({
     ],
   });
 
-  const reportPopoverEvent = (isVisible: boolean, isCausedByTrigger = true) => {
-    if (onPopoverTrigger) {
-      onPopoverTrigger({
-        isVisible,
-        isCausedByTrigger,
-      });
-    }
-  };
+  const reportPopoverEvent = React.useCallback(
+    (isVisible: boolean, isCausedByTrigger = true) => {
+      if (onPopoverTrigger) {
+        onPopoverTrigger({
+          isVisible,
+          isCausedByTrigger,
+        });
+      }
+    },
+    [onPopoverTrigger]
+  );
 
   useEffect(() => {
     if (popoverTriggerRef) {
@@ -118,7 +121,7 @@ const Popover = ({
         setPopoverVisible(false);
       });
     }
-  }, [popoverTriggerRef, popoverRef]);
+  }, [popoverTriggerRef, popoverRef, extendTriggerToPopover, isPopoverVisible, reportPopoverEvent, triggerEvent]);
 
   const portalItem = createPortal(
     <div

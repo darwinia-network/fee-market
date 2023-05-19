@@ -1,30 +1,24 @@
-import type { Market } from "@feemarket/market";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { OrdersCountChart } from "../Chart/OrdersCountChart";
 import { FeeHistoryChart } from "../Chart/FeeHistoryChart";
-import {
-  getEthChainConfig,
-  getPolkadotChainConfig,
-  isEthChain,
-  isPolkadotChain,
-  formatBalance,
-} from "@feemarket/utils";
+import { getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain, formatBalance } from "../../utils";
 import { BN } from "@polkadot/util";
 import { useMemo } from "react";
+import { useMarket } from "../../hooks";
 
 const convertItem = (item: [number, BN], decimals = 9): [number, number] => {
   return [item[0], Number(formatBalance(item[1], decimals))];
 };
 
 interface Props {
-  currentMarket: Market | null;
-  ordersCountData: [number, number][];
-  feeHistoryEthData: [number, BN][];
+  ordersCount: { data: [number, number][]; loading: boolean };
+  feeHistory: { data: [number, BN][]; loading: boolean };
 }
 
-const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryEthData }: Props) => {
+const OverviewCharts = ({ ordersCount, feeHistory }: Props) => {
   const { t } = useTranslation();
+  const { currentMarket } = useMarket();
 
   const sourceChain = currentMarket?.source;
   // const destinationChain = currentMarket?.destination;
@@ -40,10 +34,11 @@ const OverviewCharts = ({ currentMarket, ordersCountData, feeHistoryEthData }: P
 
   return (
     <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>
-      <OrdersCountChart title={t(localeKeys.ordersCount)} data={ordersCountData} />
+      <OrdersCountChart title={t(localeKeys.ordersCount)} data={ordersCount.data} loading={ordersCount.loading} />
       <FeeHistoryChart
         title={t(localeKeys.feeHistory, { currency: nativeToken?.symbol || "-" })}
-        data={feeHistoryEthData.map((item) => convertItem(item, nativeToken?.decimals))}
+        data={feeHistory.data.map((item) => convertItem(item, nativeToken?.decimals))}
+        loading={feeHistory.loading}
       />
     </div>
   );

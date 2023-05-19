@@ -1,95 +1,35 @@
-import { Input, ModalEnhanced, notification } from "@darwinia/ui";
-import { useTranslation, TFunction } from "react-i18next";
+import { Input, ModalEnhanced } from "@darwinia/ui";
+import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState, useMemo, useCallback } from "react";
-import { BigNumber, utils as ethersUtils, Contract } from "ethers";
-import {
-  isEthApi,
-  isPolkadotApi,
-  isEthChain,
-  isPolkadotChain,
-  signAndSendTx,
-  triggerContract,
-  formatBalance,
-  getQuotePrev,
-  getFeeMarketApiSection,
-  CallbackType,
-  getEthChainConfig,
-  getPolkadotChainConfig,
-} from "@feemarket/utils";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
+import { BigNumber, utils as ethersUtils } from "ethers";
+import { isEthChain, isPolkadotChain, formatBalance, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
 import type { BN } from "@polkadot/util";
-import type { u128 } from "@polkadot/types";
+import { useRelayer, useApi, useMarket } from "../../hooks";
+import { parseUnits } from "viem";
 
 interface InputTips {
   text: string;
   error?: boolean;
 }
 
-const notifyTx = (
-  t: TFunction,
-  {
-    type,
-    msg,
-    hash,
-    explorer,
-  }: {
-    type: "error" | "success";
-    msg?: string;
-    hash?: string;
-    explorer?: string;
-  }
-) => {
-  notification[type]({
-    message: (
-      <div className="flex flex-col gap-1.5">
-        <h5 className="capitalize text-14-bold">
-          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
-        </h5>
-        {hash && explorer ? (
-          <a
-            className="text-12 underline text-primary break-all hover:opacity-80"
-            rel="noopener noreferrer"
-            target={"_blank"}
-            href={`${explorer}tx/${hash}`}
-          >
-            {hash}
-          </a>
-        ) : (
-          <p className="text-12 break-all">{msg}</p>
-        )}
-      </div>
-    ),
-  });
-};
-
-interface Props {
-  isVisible: boolean;
-  currentQuote: BigNumber | BN;
-  relayerAddress: string;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
-
-const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
+const ModifyQuoteModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
   const { currentMarket } = useMarket();
   const { signerApi: api } = useApi();
+  const { relayerAddress, minQuote, currentQuoteAmount, updateQuote, getRelayerInfo } = useRelayer();
 
   const [busy, setBusy] = useState(false);
   const [fee] = useState<BigNumber | BN | null>(null);
 
-  const [minQuote, setMinQuote] = useState<BN | BigNumber | null>(null);
   const [quoteTips, setQuoteTips] = useState<InputTips | null>(null);
   const [quoteInput, setQuoteInput] = useState<string | undefined>();
 
   const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
 
   const loadingModal = useMemo(() => {
-    return !relayerAddress || !currentMarket || !api || !minQuote;
-  }, [relayerAddress, currentMarket, api, minQuote]);
+    return !relayerAddress || !currentMarket || (isPolkadotChain(sourceChain) && !api) || !minQuote;
+  }, [relayerAddress, currentMarket, api, minQuote, sourceChain]);
 
   const disableConfirm = useMemo(() => {
     return !quoteInput || quoteTips?.error;
@@ -124,109 +64,27 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
         }
       }
     },
-    [t, nativeToken, minQuote]
+    [nativeToken, minQuote]
   );
 
   const handleConfirm = useCallback(async () => {
-    if (quoteTips?.error === false && quoteInput && nativeToken && relayerAddress) {
-      const inputAmount = ethersUtils.parseUnits(quoteInput, nativeToken.decimals);
+    if (quoteTips?.error === false && quoteInput && nativeToken) {
+      const inputAmount = parseUnits(`${Number(quoteInput)}`, nativeToken.decimals);
 
-      if (isEthChain(sourceChain) && isEthApi(api)) {
-        setBusy(true);
-
-        const chainConfig = getEthChainConfig(sourceChain);
-        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
-
-        const { prevOld, prevNew } = await getQuotePrev(contract, relayerAddress, inputAmount);
-
-        const callback: CallbackType = {
-          errorCallback: ({ error }) => {
-            if (error instanceof Error) {
-              notifyTx(t, {
-                type: "error",
-                msg: error.message,
-              });
-            } else {
-              notifyTx(t, {
-                type: "error",
-                msg: t("Transaction sending failed"),
-              });
-            }
-            setBusy(false);
-            console.error("update quote:", error);
-          },
-          responseCallback: ({ response }) => {
-            console.log("update quote response:", response);
-          },
-          successCallback: ({ receipt }) => {
-            notifyTx(t, {
-              type: "success",
-              explorer: chainConfig.explorer.url,
-              hash: receipt.transactionHash,
-            });
-            onClose();
-            onSuccess();
-            setBusy(false);
-            console.log("update quote receipt:", receipt);
-          },
-        };
-
-        triggerContract(contract, "move", [prevOld, prevNew, inputAmount], callback);
-      } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
-        const chainConfig = getPolkadotChainConfig(sourceChain);
-        const apiSection = getFeeMarketApiSection(api, destinationChain);
-
-        if (apiSection) {
-          setBusy(true);
-          const extrinsic = api.tx[apiSection].updateRelayFee(inputAmount.toString());
-
-          signAndSendTx({
-            extrinsic,
-            requireAddress: relayerAddress,
-            txSuccessCb: (result) => {
-              notifyTx(t, {
-                type: "success",
-                explorer: chainConfig.explorer.url,
-                hash: result.txHash.toHex(),
-              });
-              onClose();
-              onSuccess();
-              setBusy(false);
-            },
-            txFailedCb: (error) => {
-              if (error) {
-                if (error instanceof Error) {
-                  notifyTx(t, { type: "error", msg: error.message });
-                } else {
-                  notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
-                }
-              } else {
-                notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
-              }
-              setBusy(false);
-              console.error(error);
-            },
-          });
+      setBusy(true);
+      updateQuote(
+        inputAmount,
+        () => {
+          setBusy(false);
+        },
+        () => {
+          getRelayerInfo();
+          setBusy(false);
+          onClose();
         }
-      }
+      );
     }
-  }, [quoteTips, quoteInput, nativeToken, relayerAddress, sourceChain, destinationChain, onSuccess]);
-
-  // Get minQuote
-  useEffect(() => {
-    if (isEthChain(sourceChain) && isEthApi(api)) {
-      setMinQuote(BigNumber.from(0));
-    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
-      const apiSection = getFeeMarketApiSection(api, destinationChain);
-      if (apiSection) {
-        setMinQuote(api.consts[apiSection].minimumRelayFee as u128);
-      }
-    }
-
-    return () => {
-      setMinQuote(null);
-    };
-  }, [sourceChain, destinationChain, api]);
+  }, [quoteTips, quoteInput, nativeToken, onClose, updateQuote, getRelayerInfo]);
 
   // Quote input tips
   useEffect(() => {
@@ -343,7 +201,7 @@ const ModifyQuoteModal = ({ isVisible, currentQuote, relayerAddress, onClose, on
           <div className={"flex bg-divider rounded-[0.3125rem] h-[2.5rem] items-center justify-end px-[0.625rem]"}>
             {nativeToken && (
               <div className={"flex-1 text-14-bold"}>
-                {formatBalance(currentQuote, nativeToken.decimals, undefined)}
+                {formatBalance(currentQuoteAmount, nativeToken.decimals, undefined)}
               </div>
             )}
             {nativeToken?.symbol ? (

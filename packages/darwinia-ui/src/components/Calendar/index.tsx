@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import moment from "moment";
 import {
   getDate,
@@ -77,30 +77,9 @@ const Calendar = ({
         setEndDate(passedInEndDate);
       }
     }
-  }, [isVisible]);
+  }, [isVisible, passedInEndDate, passedInStartDate]);
 
-  useEffect(() => {
-    reportDatePicking();
-  }, [startDate, endDate]);
-
-  useEffect(() => {
-    const months = getCalendar(initialDate, monthsToShow);
-    setMonthDates(months);
-  }, [initialDate]);
-
-  const goToNextMonth = () => {
-    const currentSelectedMoment = moment(initialDate).clone();
-    const next = currentSelectedMoment.add(1, "month");
-    setInitialDate(next.toDate());
-  };
-
-  const goToPreviousMonth = () => {
-    const currentSelectedMoment = moment(initialDate).clone();
-    const previous = currentSelectedMoment.subtract(1, "month");
-    setInitialDate(previous.toDate());
-  };
-
-  const reportDatePicking = () => {
+  const reportDatePicking = useCallback(() => {
     if (!startDate || !endDate) {
       return;
     }
@@ -113,6 +92,27 @@ const Calendar = ({
       startDateString,
       endDateString,
     });
+  }, [endDate, format, onDateChange, startDate]);
+
+  useEffect(() => {
+    reportDatePicking();
+  }, [startDate, endDate, reportDatePicking]);
+
+  useEffect(() => {
+    const months = getCalendar(initialDate, monthsToShow);
+    setMonthDates(months);
+  }, [initialDate, monthsToShow]);
+
+  const goToNextMonth = () => {
+    const currentSelectedMoment = moment(initialDate).clone();
+    const next = currentSelectedMoment.add(1, "month");
+    setInitialDate(next.toDate());
+  };
+
+  const goToPreviousMonth = () => {
+    const currentSelectedMoment = moment(initialDate).clone();
+    const previous = currentSelectedMoment.subtract(1, "month");
+    setInitialDate(previous.toDate());
   };
 
   const onChooseDate = (date: Date) => {

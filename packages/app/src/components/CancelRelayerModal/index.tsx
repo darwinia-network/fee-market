@@ -1,161 +1,39 @@
-import { ModalEnhanced, notification } from "@darwinia/ui";
-import { useTranslation, TFunction } from "react-i18next";
+import { ModalEnhanced } from "@darwinia/ui";
+import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { useCallback, useMemo, useState } from "react";
 import AccountMini from "../AccountMini";
-import { Contract } from "ethers";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import { ETH_CHAIN_CONF, POLKADOT_CHAIN_CONF } from "@feemarket/config";
-import {
-  isEthApi,
-  isPolkadotApi,
-  isEthChain,
-  isPolkadotChain,
-  signAndSendTx,
-  triggerContract,
-  getQuotePrev,
-  getFeeMarketApiSection,
-  CallbackType,
-} from "@feemarket/utils";
+import { useRelayer, useBalance, useMarket, useApi } from "../../hooks";
+import { isPolkadotChain } from "../../utils";
 
-const notifyTx = (
-  t: TFunction,
-  {
-    type,
-    msg,
-    hash,
-    explorer,
-  }: {
-    type: "error" | "success";
-    msg?: string;
-    hash?: string;
-    explorer?: string;
-  }
-) => {
-  notification[type]({
-    message: (
-      <div className="flex flex-col gap-1.5">
-        <h5 className="capitalize text-14-bold">
-          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
-        </h5>
-        {hash && explorer ? (
-          <a
-            className="text-12 underline text-primary break-all hover:opacity-80"
-            rel="noopener noreferrer"
-            target={"_blank"}
-            href={`${explorer}tx/${hash}`}
-          >
-            {hash}
-          </a>
-        ) : (
-          <p className="text-12 break-all">{msg}</p>
-        )}
-      </div>
-    ),
-  });
-};
-
-interface Props {
-  isVisible: boolean;
-  relayerAddress: string;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
-
-const CancelRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
+const CancelRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
   const { currentMarket } = useMarket();
   const { signerApi: api } = useApi();
+  const { relayerAddress, cancel } = useRelayer();
+  const { refresh: refreshBalance } = useBalance(relayerAddress);
   const [busy, setBusy] = useState(false);
 
   const sourceChain = currentMarket?.source;
   const destinationChain = currentMarket?.destination;
 
   const loadingModal = useMemo(() => {
-    return !relayerAddress || !currentMarket || !api;
-  }, [relayerAddress, currentMarket, api]);
+    return !relayerAddress || !currentMarket || (isPolkadotChain(sourceChain) && !api);
+  }, [relayerAddress, currentMarket, api, sourceChain]);
 
   const handleConfirm = useCallback(async () => {
-    if (isEthChain(sourceChain) && isEthApi(api)) {
-      setBusy(true);
-
-      const chainConfig = ETH_CHAIN_CONF[sourceChain];
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
-
-      const { prevOld } = await getQuotePrev(contract, relayerAddress);
-
-      const callback: CallbackType = {
-        errorCallback: ({ error }) => {
-          if (error instanceof Error) {
-            notifyTx(t, {
-              type: "error",
-              msg: error.message,
-            });
-          } else {
-            notifyTx(t, {
-              type: "error",
-              msg: t("Transaction sending failed"),
-            });
-          }
-          setBusy(false);
-          console.error("cancel relayer:", error);
-        },
-        responseCallback: ({ response }) => {
-          console.log("cancel relayer response:", response);
-        },
-        successCallback: ({ receipt }) => {
-          notifyTx(t, {
-            type: "success",
-            explorer: chainConfig.explorer.url,
-            hash: receipt.transactionHash,
-          });
-          onClose();
-          onSuccess();
-          setBusy(false);
-          console.log("cancel relayer receipt:", receipt);
-        },
-      };
-
-      triggerContract(contract, "leave", [prevOld], callback);
-    } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
-      const chainConfig = POLKADOT_CHAIN_CONF[sourceChain];
-      const apiSection = getFeeMarketApiSection(api, destinationChain);
-
-      if (apiSection) {
-        setBusy(true);
-        const extrinsic = api.tx[apiSection].cancelEnrollment();
-
-        signAndSendTx({
-          extrinsic,
-          requireAddress: relayerAddress,
-          txSuccessCb: (result) => {
-            notifyTx(t, {
-              type: "success",
-              explorer: chainConfig.explorer.url,
-              hash: result.txHash.toHex(),
-            });
-            onClose();
-            onSuccess();
-            setBusy(false);
-          },
-          txFailedCb: (error) => {
-            if (error) {
-              if (error instanceof Error) {
-                notifyTx(t, { type: "error", msg: error.message });
-              } else {
-                notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
-              }
-            } else {
-              notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
-            }
-            setBusy(false);
-            console.error(error);
-          },
-        });
+    setBusy(true);
+    cancel(
+      () => {
+        setBusy(false);
+      },
+      () => {
+        refreshBalance();
+        setBusy(false);
+        onClose();
       }
-    }
-  }, [sourceChain, destinationChain, api, relayerAddress, onSuccess]);
+    );
+  }, [cancel, onClose, refreshBalance]);
 
   return (
     <ModalEnhanced

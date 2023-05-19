@@ -1,7 +1,7 @@
 import { DetailedHTMLProps, HTMLAttributes } from "react";
 import caretDownIcon from "../../assets/images/caret-down.svg";
 import { NavLink, useLocation } from "react-router-dom";
-import { UrlSearchParamsKey } from "@feemarket/types";
+import { UrlSearchParamsKey } from "../../types";
 
 interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   hasSubMenu?: boolean;

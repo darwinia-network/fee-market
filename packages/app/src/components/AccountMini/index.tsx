@@ -1,7 +1,6 @@
 import { Identicon } from "@polkadot/react-identicon";
-import { useMarket } from "@feemarket/market";
-import { isPolkadotChain } from "@feemarket/utils";
-import { useAccountName } from "@feemarket/hooks";
+import { isPolkadotChain } from "../../utils";
+import { useAccountName, useMarket } from "../../hooks";
 import JazzIcon from "../JazzIcon";
 
 interface Props {

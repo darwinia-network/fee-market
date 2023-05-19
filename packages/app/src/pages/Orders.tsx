@@ -1,14 +1,15 @@
-import { useApi } from "@feemarket/api";
-import { useOrdersOverviewData } from "@feemarket/hooks";
-import { adaptSlotIndex } from "@feemarket/utils";
+import { adaptSlotIndex } from "../utils";
 import { Spinner } from "@darwinia/ui";
 import OrdersSummary from "../components/OrdersSummary";
 import OrdersTable from "../components/OrdersTable";
+import { useMarket, useOrdersOverviewData } from "../hooks";
 
 const Orders = () => {
-  const { providerApi: api } = useApi();
+  const { currentMarket } = useMarket();
   const { ordersSummaryData, ordersSummaryDataLoading, ordersOverviewData, ordersOverviewDataLoading } =
     useOrdersOverviewData();
+
+  const sourceChain = currentMarket?.source;
 
   return (
     <Spinner isLoading={ordersSummaryDataLoading || ordersOverviewDataLoading || false}>
@@ -32,7 +33,7 @@ const Orders = () => {
                 sender: item.sender,
                 status: item.status,
                 slotIndex:
-                  item.slotIndex || item.slotIndex === 0 ? adaptSlotIndex(api, item.slotIndex) : item.slotIndex,
+                  item.slotIndex || item.slotIndex === 0 ? adaptSlotIndex(sourceChain, item.slotIndex) : item.slotIndex,
                 deliveryRelayer: item.deliveryRelayers.length ? item.deliveryRelayers[0].address : null,
                 confirmationRelayer: item.confirmationRelayers.length ? item.confirmationRelayers[0].address : null,
                 createdAt: item.createBlockTime,

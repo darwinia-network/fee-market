@@ -1,115 +1,27 @@
 import { Button, Radio } from "@darwinia/ui";
-import { useEffect, useRef, useState } from "react";
-import useNetworkList from "../../data/useNetworkList";
-import { Destination, Network, NetworkOption } from "../../data/types";
+import { useRef } from "react";
 import { Scrollbars } from "react-custom-scrollbars";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import switchIcon from "../../assets/images/switch-icon.svg";
-
-export interface TransferSelection {
-  networkType: keyof NetworkOption;
-  selectedNetwork: Network;
-  selectedDestination: Destination;
-}
-interface NetworkSwitchDialogProps {
-  transferSelection?: TransferSelection;
-  defaultNetworkType: keyof NetworkOption;
-  onNetworkSelectionCompleted: (transferSelection: TransferSelection) => void;
-}
+import { FeeMarketChain, Market, NetworkType } from "../../types";
+import { getChainConfig, getMarkets } from "../../utils";
 
 const NetworkSwitchDialog = ({
-  onNetworkSelectionCompleted,
-  transferSelection,
-  defaultNetworkType,
-}: NetworkSwitchDialogProps) => {
+  networkType,
+  choiceMarket,
+  onToggleNetworkType,
+  onChooseMarket,
+  onSelect,
+}: {
+  networkType: NetworkType;
+  choiceMarket: { source: FeeMarketChain; destination: FeeMarketChain };
+  onToggleNetworkType: () => void;
+  onChooseMarket: (market: Partial<Market>) => void;
+  onSelect: () => void;
+}) => {
   const { t } = useTranslation();
-  const { networkList } = useNetworkList();
-  const [selectedNetwork, setSelectedNetwork] = useState("");
-  const selectedNetworkObj = useRef<Network | undefined>(undefined);
-  const selectedDestinationObj = useRef<Destination | undefined>(undefined);
-  const [selectedDestination, setSelectedDestination] = useState("");
-  const [networkType, setNetworkType] = useState<keyof NetworkOption>(defaultNetworkType);
-  const onNetworkSelectionChanged = (value: string) => {
-    setSelectedNetwork(value);
-    /*select the first destination of this network by default */
-    const network = networkList[networkType].find((network) => network.id === value);
-    if (network) {
-      selectedNetworkObj.current = network;
-    }
-    if (network && network.destinations.length > 0) {
-      const defaultDestination = network.destinations[0].id;
-      onDestinationChanged(defaultDestination);
-    }
-  };
-  const onDestinationChanged = (value: string) => {
-    setSelectedDestination(value);
-    /* Find the destination in the already selected network */
-    if (selectedNetworkObj.current) {
-      const destination = selectedNetworkObj.current?.destinations.find((destination) => destination.id === value);
-      if (destination) {
-        selectedDestinationObj.current = destination;
-      }
-    }
-  };
-
-  const onSwitchNetworkType = () => {
-    /* setDefaultSelectedNetwork method will be called automatically by the useEffect */
-    switch (networkType) {
-      case "liveNets": {
-        setNetworkType("testNets");
-        break;
-      }
-      case "testNets": {
-        setNetworkType("liveNets");
-        break;
-      }
-    }
-  };
-
-  useEffect(() => {
-    setDefaultSelectedNetwork(networkType);
-  }, [networkType]);
-
-  useEffect(() => {
-    setNetworkType(defaultNetworkType);
-  }, [defaultNetworkType]);
-
-  const onFinishNetworkSelection = () => {
-    if (!selectedNetworkObj.current || !selectedDestinationObj.current) {
-      return;
-    }
-    onNetworkSelectionCompleted({
-      networkType,
-      selectedNetwork: selectedNetworkObj.current,
-      selectedDestination: selectedDestinationObj.current,
-    });
-  };
-
-  const setDefaultSelectedNetwork = (netType: keyof NetworkOption) => {
-    /* if the user has switched to the previous selected network type, default the
-     * selected network to his previous selection */
-    if (transferSelection?.networkType == netType) {
-      setNetworkType(transferSelection.networkType);
-      onNetworkSelectionChanged(transferSelection.selectedNetwork.id);
-      onDestinationChanged(transferSelection.selectedDestination.id);
-    } else {
-      /* select the first network by default when the network is changed */
-      const networks = networkList[netType];
-      if (networks.length > 0) {
-        const defaultNetwork = networks[0];
-        onNetworkSelectionChanged(defaultNetwork.id);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (transferSelection) {
-      setNetworkType(transferSelection.networkType);
-      onNetworkSelectionChanged(transferSelection.selectedNetwork.id);
-      onDestinationChanged(transferSelection.selectedDestination.id);
-    }
-  }, [transferSelection]);
+  const markets = getMarkets(networkType);
 
   return (
     <div
@@ -118,7 +30,7 @@ const NetworkSwitchDialog = ({
       }
     >
       <div className={"text-14-bold shrink-0"}>
-        {networkType === "liveNets" ? t(localeKeys.liveNets) : t(localeKeys.testNets)}
+        {networkType === "live" ? t(localeKeys.liveNets) : t(localeKeys.testNets)}
       </div>
       <div className={"flex-1 flex bg-blackSecondary"}>
         <Scrollbars className={"flex-1"}>
@@ -126,19 +38,22 @@ const NetworkSwitchDialog = ({
           <div className={"flex flex-col gap-[0.625rem]"}>
             <Radio.Group
               onChange={(value) => {
-                onNetworkSelectionChanged(value);
-              }}
-              value={selectedNetwork}
-            >
-              {networkList[networkType].map((network) => {
-                return createNetworkOption({
-                  key: network.id,
-                  onDestinationChanged,
-                  isNetworkSelected: selectedNetwork === network.id,
-                  selectedDestination,
-                  network,
+                const opt = markets.find((m) => m.source === value);
+                onChooseMarket({
+                  source: value as FeeMarketChain,
+                  destination: opt?.destinations.at(0),
                 });
-              })}
+              }}
+              value={choiceMarket.source}
+            >
+              {markets.map(({ source, destinations }) =>
+                createMarketOption({
+                  source,
+                  destinations,
+                  choiceMarket,
+                  onDestinationChange: (destination) => onChooseMarket({ destination }),
+                })
+              )}
             </Radio.Group>
           </div>
         </Scrollbars>
@@ -148,21 +63,14 @@ const NetworkSwitchDialog = ({
           className={
             "flex lg:hover:opacity-80 lg:active:opacity-50 active:opacity-50 select-none cursor-pointer gap-[0.625rem]"
           }
-          onClick={() => {
-            onSwitchNetworkType();
-          }}
+          onClick={onToggleNetworkType}
         >
           <img src={switchIcon} alt="image" />
-          {networkType === "testNets" ? t(localeKeys.switchToLiveNets) : t(localeKeys.switchToTestNets)}
+          {networkType === "test" ? t(localeKeys.switchToLiveNets) : t(localeKeys.switchToTestNets)}
         </div>
       </div>
       <div>
-        <Button
-          className={"w-full"}
-          onClick={() => {
-            onFinishNetworkSelection();
-          }}
-        >
+        <Button className={"w-full"} onClick={onSelect}>
           {t(localeKeys.select)}
         </Button>
       </div>
@@ -170,50 +78,52 @@ const NetworkSwitchDialog = ({
   );
 };
 
-const createNetworkOption = ({
-  key,
-  network,
-  isNetworkSelected,
-  selectedDestination,
-  onDestinationChanged,
+const createMarketOption = ({
+  source,
+  destinations,
+  choiceMarket,
+  onDestinationChange,
 }: {
-  key: string;
-  network: Network;
-  isNetworkSelected: boolean;
-  selectedDestination: string;
-  onDestinationChanged: (value: string) => void;
+  source: FeeMarketChain;
+  destinations: FeeMarketChain[];
+  choiceMarket: Market;
+  onDestinationChange: (value: FeeMarketChain) => void;
 }) => {
-  const networkBorderColor = isNetworkSelected ? "border-primary" : "border-[transparent]";
-  return (
+  const chainConfig = getChainConfig(source);
+
+  return chainConfig ? (
     <Radio.ButtonExtension
-      key={key}
-      className={`rounded-[0.3125rem] bg-black px-[1.25rem] py-[0.625rem] border ${networkBorderColor}`}
-      value={network.id}
+      key={chainConfig.chainName}
+      className={`rounded-[0.3125rem] bg-black px-[1.25rem] py-[0.625rem] border ${
+        choiceMarket.source === source ? "border-primary" : "border-[transparent]"
+      }`}
+      value={chainConfig.chainName}
     >
       <Radio.Button size={"large"}>
         <div className={"flex gap-[0.9375rem] items-center"}>
-          <img className={"w-[2.5rem] h-[2.5rem]"} src={network.logo} alt="image" />
-          <div>{network.name}</div>
+          <img className={"w-[2.5rem] h-[2.5rem]"} src={chainConfig.chainLogo} alt="image" />
+          <div>{chainConfig.displayName}</div>
         </div>
       </Radio.Button>
-      {/*destinations list*/}
       <DestinationList
-        network={network}
-        selectedDestination={selectedDestination}
-        onDestinationChanged={onDestinationChanged}
-        showList={isNetworkSelected}
+        destinations={destinations}
+        choiceMarket={choiceMarket}
+        onSelect={onDestinationChange}
+        expand={choiceMarket.source === source}
       />
     </Radio.ButtonExtension>
+  ) : (
+    <div />
   );
 };
 
 interface DestinationListProps {
-  network: Network;
-  selectedDestination: string;
-  onDestinationChanged: (value: string) => void;
-  showList: boolean;
+  choiceMarket: Market;
+  onSelect: (value: FeeMarketChain) => void;
+  expand: boolean;
+  destinations: FeeMarketChain[];
 }
-const DestinationList = ({ network, selectedDestination, onDestinationChanged, showList }: DestinationListProps) => {
+const DestinationList = ({ onSelect, expand, destinations, choiceMarket }: DestinationListProps) => {
   const { t } = useTranslation();
   const destinationListRef = useRef<HTMLDivElement>(null);
   const listHeight = useRef(0);
@@ -223,7 +133,7 @@ const DestinationList = ({ network, selectedDestination, onDestinationChanged, s
   return (
     <div
       style={{
-        maxHeight: showList ? `${listHeight.current}px` : "0px",
+        maxHeight: expand ? `${listHeight.current}px` : "0px",
         transitionProperty: "max-height",
         transitionDuration: "300ms",
       }}
@@ -233,16 +143,24 @@ const DestinationList = ({ network, selectedDestination, onDestinationChanged, s
         <div className={"border-b border-divider pt-[0.9375rem]"} />
         <Radio.Group
           onChange={(value) => {
-            onDestinationChanged(value);
+            onSelect(value as FeeMarketChain);
           }}
-          value={selectedDestination}
+          value={choiceMarket.destination}
         >
-          {network.destinations.map((destination) => {
-            return (
-              <Radio.Button className={"mt-[0.9375rem]"} key={destination.id} value={destination.id} size={"small"}>
+          {destinations.map((destination) => {
+            const chainConfig = getChainConfig(destination);
+            return chainConfig ? (
+              <Radio.Button
+                className={"mt-[0.9375rem]"}
+                key={chainConfig.chainName}
+                value={chainConfig.chainName}
+                size={"small"}
+              >
                 <span className="opacity-70">{t(localeKeys.to)} </span>
-                <span>{destination.name}</span>
+                <span>{chainConfig.displayName}</span>
               </Radio.Button>
+            ) : (
+              <div />
             );
           })}
         </Radio.Group>

@@ -8,12 +8,21 @@ import { getCommonOpts, mainColor } from "./config";
  * not disable accessibility, background and some buttons FOUC
  */
 
-export const FeeHistoryChart = ({ title, data }: { title: string; data: [number, number][]; loading?: boolean }) => {
+export const FeeHistoryChart = ({
+  title,
+  data,
+  loading,
+}: {
+  title: string;
+  data: [number, number][];
+  loading?: boolean;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
+  const chart = useRef<Highcharts.StockChart | null>(null);
 
   useEffect(() => {
-    if (ref.current) {
-      Highcharts.stockChart(ref.current, {
+    if (ref.current && !chart.current) {
+      chart.current = Highcharts.stockChart(ref.current, {
         ...getCommonOpts(title),
         series: [
           {
@@ -21,11 +30,23 @@ export const FeeHistoryChart = ({ title, data }: { title: string; data: [number,
             name: "Fee",
             color: mainColor,
             data: [...data],
+            id: "fee_history",
           },
         ],
       });
     }
-  }, [title, data.length]);
+  }, [title, data]);
+
+  useEffect(() => {
+    if (chart.current) {
+      if (loading) {
+        chart.current.showLoading("Loading...");
+      } else {
+        chart.current.update({ series: [{ type: "line", id: "fee_history", data }] });
+        chart.current.hideLoading();
+      }
+    }
+  }, [loading, data]);
 
   return <div ref={ref} className="h-[21rem] w-full rounded-[0.625rem]" />;
 };

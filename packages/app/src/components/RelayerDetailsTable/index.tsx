@@ -3,7 +3,7 @@ import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useMarket } from "@feemarket/market";
+import { useMarket } from "../../hooks";
 import {
   formatBalance,
   unifyTime,
@@ -11,8 +11,8 @@ import {
   formatTime,
   formatOrderId,
   formatUrlChainName,
-} from "@feemarket/utils";
-import { UrlSearchParamsKey } from "@feemarket/types";
+} from "../../utils";
+import { UrlSearchParamsKey } from "../../types";
 
 const formatDateTime = (time: string) => `${formatTime(unifyTime(time))}`;
 

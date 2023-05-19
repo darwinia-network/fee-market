@@ -40,7 +40,7 @@ export const RewardAndSlashChart = ({
         ],
       });
     }
-  }, [title, rewardData.length, slashData.length]);
+  }, [title, rewardData, slashData]);
 
   return <div ref={ref} className="h-[21rem] w-full rounded-[0.625rem]" />;
 };
