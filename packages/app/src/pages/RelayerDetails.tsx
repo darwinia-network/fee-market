@@ -1,41 +1,20 @@
 import RelayerDetailsChart from "../components/RelayerDetailsChart";
-import RelayerDetailsTable from "../components/RelayerDetailsTable";
+import RelatedOrders from "../components/RelatedOrders";
 import Account from "../components/Account";
-import { Spinner } from "@darwinia/ui";
 import type { FeeMarketChain } from "../types";
-import { parseUrlChainName, getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain } from "../utils";
-import { useRelayerDetailData, useMarket } from "../hooks";
+import { parseUrlChainName } from "../utils";
+import { useMarket } from "../hooks";
 import { useLocation } from "react-router-dom";
 import { UrlSearchParamsKey } from "../types";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { RelayerProvider } from "../providers";
+import { Spinner } from "@darwinia/ui";
+import ErrorCatcher from "./ErrorCatcher";
 
 const RelayerDetails = () => {
-  const { currentMarket, setCurrentMarket } = useMarket();
+  const { setCurrentMarket } = useMarket();
   const { search } = useLocation();
-  const [relayerAddress, setRelayerAddress] = useState("");
-  const {
-    quoteHistoryDataLoading,
-    rewardAndSlashDataLoading,
-    relayerRelatedOrdersDataLoading,
-    rewardAndSlashData,
-    quoteHistoryData,
-    relayerRelatedOrdersData,
-  } = useRelayerDetailData({
-    relayerAddress: relayerAddress.startsWith("0x") ? relayerAddress.toLowerCase() : relayerAddress,
-  });
-
-  const sourceChain = currentMarket?.source;
-  // const destinationChain = currentMarket?.destination;
-
-  const nativeToken = useMemo(() => {
-    if (isEthChain(sourceChain)) {
-      return getEthChainConfig(sourceChain).nativeToken;
-    } else if (isPolkadotChain(sourceChain)) {
-      return getPolkadotChainConfig(sourceChain).nativeToken;
-    }
-    return null;
-  }, [sourceChain]);
+  const [relayerAddress, setRelayerAddress] = useState<string | null>(null);
 
   useEffect(() => {
     const urlSearchParams = new URLSearchParams(search);
@@ -53,36 +32,29 @@ const RelayerDetails = () => {
         source,
         destination,
       });
+    } else {
+      setRelayerAddress("");
     }
   }, [search, setCurrentMarket]);
 
-  return (
-    <Spinner isLoading={quoteHistoryDataLoading || rewardAndSlashDataLoading || relayerRelatedOrdersDataLoading}>
-      <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
-        {/*Basic Info*/}
-        {relayerAddress && (
-          <RelayerProvider relayerAddress={relayerAddress}>
-            <Account />
-          </RelayerProvider>
-        )}
-
-        {/*Charts*/}
-        <RelayerDetailsChart
-          currentMarket={currentMarket}
-          rewardsData={rewardAndSlashData?.rewards || []}
-          slashesData={rewardAndSlashData?.slashs || []}
-          quoteHistoryData={quoteHistoryData || []}
-        />
-
-        {/*Relayer Orders table*/}
-        <RelayerDetailsTable
-          relatedOrdersData={relayerRelatedOrdersData}
-          tokenSymbol={nativeToken?.symbol}
-          tokenDecimals={nativeToken?.decimals}
-        />
-      </div>
-    </Spinner>
-  );
+  if (relayerAddress === null) {
+    return (
+      <Spinner isLoading>
+        <div className="h-[60vh]" />
+      </Spinner>
+    );
+  } else if (relayerAddress) {
+    return (
+      <RelayerProvider relayerAddress={relayerAddress}>
+        <div className={"flex flex-col lg:gap-[1.875rem] gap-[0.9375rem]"}>
+          <Account />
+          <RelayerDetailsChart />
+          <RelatedOrders />
+        </div>
+      </RelayerProvider>
+    );
+  }
+  return <ErrorCatcher message="Relayer Not Found" className="w-full" />;
 };
 
 export default RelayerDetails;

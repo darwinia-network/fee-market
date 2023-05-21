@@ -18,11 +18,8 @@ const AccountName = ({ address }: { address: string }) => {
 };
 
 const AccountBalance = ({ address }: { address: string }) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
   const { balance } = useBalance(address);
-
-  const sourceChain = currentMarket?.source;
-  // const destinationChain = currentMarket?.destination;
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {

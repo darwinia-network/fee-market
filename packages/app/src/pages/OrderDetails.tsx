@@ -3,18 +3,13 @@ import i18n from "i18next";
 import { TFunction, useTranslation } from "react-i18next";
 import localeKeys from "../locale/localeKeys";
 import { Tooltip, Spinner } from "@darwinia/ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useMarket } from "../hooks";
-import { UrlSearchParamsKey } from "../types";
-import { SlotIndex, OrderStatus, OrderEntity, SlashEntity, RelayerEntity, RewardEntity } from "../config";
-import { ORDER_DETAIL_ETH_DATA, ORDER_DETAIL_POLKADOT_DATA } from "../config";
+import { useEffect, useMemo, useState } from "react";
+import { useMarket, useOrderDetail } from "../hooks";
+import { SlotIndex, OrderStatus, UrlSearchParamsKey } from "../types";
 import {
-  OrderDetail,
   formatBalance,
   isEthChain,
   isPolkadotChain,
-  transformOrderDetailEthData,
-  transformOrderDetailPolkadotData,
   unifyTime,
   formatTime,
   formatUrlChainName,
@@ -23,12 +18,11 @@ import {
   getPolkadotChainConfig,
   adaptSlotIndex,
 } from "../utils";
-import { useGrapgQuery, useAccountName } from "../hooks";
+import { useAccountName } from "../hooks";
 import { formatDistance } from "date-fns";
 import { capitalize } from "lodash";
 import { NavLink, useLocation } from "react-router-dom";
 
-const ETH_LANE = "eth";
 const ETH_BALANCE_DECIMALS = 8;
 
 const formatStatus = (status: OrderStatus): string => {
@@ -67,14 +61,12 @@ interface Slot {
 const OrderDetails = () => {
   const { t } = useTranslation();
   const { search } = useLocation();
-  const [laneAndNonce, setLaneAndNonce] = useState<{ lane: string | null; nonce: string | null }>({
+  const [laneNonce, setLaneNonce] = useState<{ lane: string | null; nonce: string | null }>({
     lane: null,
     nonce: null,
   });
-  const { currentMarket, setRefresh } = useMarket();
-
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
+  const { sourceChain } = useMarket();
+  const { orderDetail } = useOrderDetail(laneNonce.lane, laneNonce.nonce);
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {
@@ -89,139 +81,32 @@ const OrderDetails = () => {
     const urlSearchParams = new URLSearchParams(search);
     const lane = urlSearchParams.get(UrlSearchParamsKey.LANE);
     const nonce = urlSearchParams.get(UrlSearchParamsKey.NONCE);
-    setLaneAndNonce({ lane, nonce });
+    setLaneNonce({ lane, nonce });
   }, [search]);
 
-  const {
-    transformedData: orderDetailEthData,
-    loading: orderDetailEthDataLoading,
-    refetch: updateOrderDetailEthData,
-  } = useGrapgQuery<
-    {
-      order:
-        | (Pick<
-            OrderEntity,
-            | "lane"
-            | "nonce"
-            | "fee"
-            | "sender"
-            | "sourceTxHash"
-            | "slotIndex"
-            | "status"
-            | "createBlockTime"
-            | "finishBlockTime"
-            | "createBlockNumber"
-            | "finishBlockNumber"
-            | "treasuryAmount"
-            | "assignedRelayersAddress"
-          > & {
-            slashes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "txHash"> & {
-              relayer: Pick<RelayerEntity, "address">;
-            })[];
-            rewards: (Pick<RewardEntity, "amount" | "relayerRole" | "blockNumber" | "txHash"> & {
-              relayer: Pick<RelayerEntity, "address">;
-            })[];
-          })
-        | null;
-    },
-    { orderId: string },
-    OrderDetail | null
-  >(
-    ORDER_DETAIL_ETH_DATA,
-    {
-      variables: { orderId: `${ETH_LANE}-${laneAndNonce.nonce}` },
-    },
-    transformOrderDetailEthData
-  );
-
-  const {
-    loading: orderDetailPolkadotDataLoading,
-    transformedData: orderDetailPolkadotData,
-    refetch: updateOrderDetailPolkadotData,
-  } = useGrapgQuery<
-    {
-      order:
-        | (Pick<
-            OrderEntity,
-            | "lane"
-            | "nonce"
-            | "fee"
-            | "sender"
-            | "sourceTxHash"
-            | "slotIndex"
-            | "status"
-            | "createBlockTime"
-            | "finishBlockTime"
-            | "createBlockNumber"
-            | "finishBlockNumber"
-            | "treasuryAmount"
-            | "assignedRelayersAddress"
-          > & {
-            slashes: {
-              nodes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex"> & {
-                relayer: Pick<RelayerEntity, "address">;
-              })[];
-            } | null;
-            rewards: {
-              nodes: (Pick<RewardEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex"> & {
-                relayer: Pick<RelayerEntity, "address">;
-              })[];
-            } | null;
-          })
-        | null;
-    },
-    { orderId: string },
-    OrderDetail | null
-  >(
-    ORDER_DETAIL_POLKADOT_DATA,
-    {
-      variables: { orderId: `${destinationChain}-${laneAndNonce.lane}-${laneAndNonce.nonce}` },
-    },
-    transformOrderDetailPolkadotData
-  );
-
-  const orderDetailData = useMemo(() => {
-    return orderDetailEthData ?? orderDetailPolkadotData ?? null;
-  }, [orderDetailEthData, orderDetailPolkadotData]);
-
-  const orderDetailDataLoading = useMemo(() => {
-    return orderDetailEthDataLoading ?? orderDetailPolkadotDataLoading ?? false;
-  }, [orderDetailEthDataLoading, orderDetailPolkadotDataLoading]);
-
-  const updateOrderDetailData = useCallback(() => {
-    updateOrderDetailEthData();
-    updateOrderDetailPolkadotData();
-  }, [updateOrderDetailEthData, updateOrderDetailPolkadotData]);
-
-  useEffect(() => {
-    setRefresh(() => () => {
-      updateOrderDetailData();
-    });
-  }, [setRefresh, updateOrderDetailData]);
-
   const slots: Slot[] =
-    orderDetailData?.slotIndex || orderDetailData?.slotIndex === 0
+    orderDetail.value?.slotIndex || orderDetail.value?.slotIndex === 0
       ? [
           {
             id: "1",
-            relayer: orderDetailData.assignedRelayersAddress[0],
-            percentage: adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.SLOT_1 ? 50 : undefined,
+            relayer: orderDetail.value.assignedRelayersAddress[0],
+            percentage: adaptSlotIndex(sourceChain, orderDetail.value.slotIndex) === SlotIndex.SLOT_1 ? 50 : undefined,
           },
           {
             id: "2",
-            relayer: orderDetailData.assignedRelayersAddress[1],
-            percentage: adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.SLOT_2 ? 50 : undefined,
+            relayer: orderDetail.value.assignedRelayersAddress[1],
+            percentage: adaptSlotIndex(sourceChain, orderDetail.value.slotIndex) === SlotIndex.SLOT_2 ? 50 : undefined,
           },
           {
             id: "3",
-            relayer: orderDetailData.assignedRelayersAddress[2],
-            percentage: adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.SLOT_3 ? 50 : undefined,
+            relayer: orderDetail.value.assignedRelayersAddress[2],
+            percentage: adaptSlotIndex(sourceChain, orderDetail.value.slotIndex) === SlotIndex.SLOT_3 ? 50 : undefined,
           },
           {
             id: "4",
             isOutOfSlot: true,
             percentage:
-              adaptSlotIndex(sourceChain, orderDetailData.slotIndex) === SlotIndex.OUT_OF_SLOT ? 50 : undefined,
+              adaptSlotIndex(sourceChain, orderDetail.value.slotIndex) === SlotIndex.OUT_OF_SLOT ? 50 : undefined,
           },
         ]
       : [];
@@ -230,39 +115,39 @@ const OrderDetails = () => {
     {
       id: "1",
       label: t(localeKeys.nonce),
-      details: orderDetailData?.nonce ? `${formatOrderId(orderDetailData.nonce)}` : "-",
+      details: orderDetail.value?.nonce ? `${formatOrderId(orderDetail.value.nonce)}` : "-",
     },
     {
       id: "2",
       label: t(localeKeys.laneId),
-      details: orderDetailData?.lane ? `${orderDetailData.lane}` : "-",
+      details: orderDetail.value?.lane ? `${orderDetail.value.lane}` : "-",
     },
     {
       id: "3",
       label: t(localeKeys.timestamp),
-      details: orderDetailData?.createBlockTime
+      details: orderDetail.value?.createBlockTime
         ? `${capitalize(
-            formatDistance(unifyTime(orderDetailData.createBlockTime), Date.now(), { addSuffix: true })
-          )} (${formatTime(unifyTime(orderDetailData.createBlockTime))} +UTC)`
+            formatDistance(unifyTime(orderDetail.value.createBlockTime), Date.now(), { addSuffix: true })
+          )} (${formatTime(unifyTime(orderDetail.value.createBlockTime))} +UTC)`
         : "-",
     },
-    ...(orderDetailData?.sourceTxHash
+    ...(orderDetail.value?.sourceTxHash
       ? [
           {
             id: "4",
             label: t(localeKeys.sourceTxID),
-            details: <RenderTxHash hash={orderDetailData.sourceTxHash} />,
+            details: <RenderTxHash hash={orderDetail.value.sourceTxHash} />,
           },
         ]
       : []),
-    ...(orderDetailData?.sender
+    ...(orderDetail.value?.sender
       ? [
           {
             id: "5",
             label: t(localeKeys.sender),
             details: (
               <AccountAddress
-                address={orderDetailData.sender}
+                address={orderDetail.value.sender}
                 className={"text-primary text-12-bold lg:text-14-bold break-words"}
               />
             ),
@@ -272,33 +157,33 @@ const OrderDetails = () => {
     {
       id: "6",
       label: t(localeKeys.status),
-      details: <RenderOrderStatus status={orderDetailData?.status} />,
+      details: <RenderOrderStatus status={orderDetail.value?.status} />,
     },
     {
       id: "7",
       label: t(localeKeys.fee),
       details:
-        orderDetailData?.fee && nativeToken
-          ? formatBalance(orderDetailData.fee, nativeToken.decimals, nativeToken.symbol, {
+        orderDetail.value?.fee && nativeToken
+          ? formatBalance(orderDetail.value.fee, nativeToken.decimals, nativeToken.symbol, {
               decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
             })
           : "-",
     },
-    ...(orderDetailData?.createBlockNumber
+    ...(orderDetail.value?.createBlockNumber
       ? [
           {
             id: "8",
             label: t(localeKeys.createdAt),
-            details: <RenderBlock block={orderDetailData.createBlockNumber} />,
+            details: <RenderBlock block={orderDetail.value.createBlockNumber} />,
           },
         ]
       : []),
-    ...(orderDetailData?.finishBlockNumber
+    ...(orderDetail.value?.finishBlockNumber
       ? [
           {
             id: "9",
             label: t(localeKeys.confirmAt),
-            details: <RenderBlock block={orderDetailData.finishBlockNumber} />,
+            details: <RenderBlock block={orderDetail.value.finishBlockNumber} />,
           },
         ]
       : []),
@@ -309,18 +194,18 @@ const OrderDetails = () => {
     },
   ];
 
-  const rewards: Info[] = orderDetailData?.rewards?.length
+  const rewards: Info[] = orderDetail.value?.rewards?.length
     ? [
         {
           id: "1",
           label: t(localeKeys.transaction),
           details: (
             <>
-              {orderDetailData.rewards[0].txHash?.length ? (
-                <RenderTxHash hash={orderDetailData.rewards[0].txHash} />
-              ) : orderDetailData.rewards[0].extrinsicIndex || orderDetailData.rewards[0].extrinsicIndex === 0 ? (
+              {orderDetail.value.rewards[0].txHash?.length ? (
+                <RenderTxHash hash={orderDetail.value.rewards[0].txHash} />
+              ) : orderDetail.value.rewards[0].extrinsicIndex || orderDetail.value.rewards[0].extrinsicIndex === 0 ? (
                 <RenderTxHash
-                  hash={`${orderDetailData.rewards[0].blockNumber}-${orderDetailData.rewards[0].extrinsicIndex}`}
+                  hash={`${orderDetail.value.rewards[0].blockNumber}-${orderDetail.value.rewards[0].extrinsicIndex}`}
                 />
               ) : (
                 "-"
@@ -328,7 +213,7 @@ const OrderDetails = () => {
             </>
           ),
         },
-        ...(orderDetailData.rewards
+        ...(orderDetail.value.rewards
           .filter((item) => item.relayerRole === "Assigned")
           .map((item, index) => ({
             id: `2-${index}`,
@@ -348,7 +233,7 @@ const OrderDetails = () => {
               </div>
             ),
           })) || []),
-        ...(orderDetailData.rewards
+        ...(orderDetail.value.rewards
           .filter((item) => item.relayerRole === "Delivery")
           .map((item, index) => ({
             id: `3-${index}`,
@@ -368,7 +253,7 @@ const OrderDetails = () => {
               </div>
             ),
           })) || []),
-        ...(orderDetailData.rewards
+        ...(orderDetail.value.rewards
           .filter((item) => item.relayerRole === "Confirmation")
           .map((item, index) => ({
             id: `4-${index}`,
@@ -388,12 +273,12 @@ const OrderDetails = () => {
               </div>
             ),
           })) || []),
-        ...(orderDetailData.treasuryAmount && nativeToken
+        ...(orderDetail.value.treasuryAmount && nativeToken
           ? [
               {
                 id: "6",
                 label: t(localeKeys.treasury),
-                details: `+${formatBalance(orderDetailData.treasuryAmount, nativeToken.decimals, nativeToken.symbol, {
+                details: `+${formatBalance(orderDetail.value.treasuryAmount, nativeToken.decimals, nativeToken.symbol, {
                   decimals: isEthChain(sourceChain) ? ETH_BALANCE_DECIMALS : undefined,
                 })}`,
               },
@@ -402,18 +287,18 @@ const OrderDetails = () => {
       ]
     : [];
 
-  const slash: Info[] = orderDetailData?.slashes?.length
+  const slash: Info[] = orderDetail.value?.slashes?.length
     ? [
         {
           id: "1",
           label: t(localeKeys.transaction),
           details: (
             <>
-              {orderDetailData.slashes[0].txHash?.length ? (
-                <RenderTxHash hash={orderDetailData.slashes[0].txHash} />
-              ) : orderDetailData.slashes[0].extrinsicIndex || orderDetailData.slashes[0].extrinsicIndex === 0 ? (
+              {orderDetail.value.slashes[0].txHash?.length ? (
+                <RenderTxHash hash={orderDetail.value.slashes[0].txHash} />
+              ) : orderDetail.value.slashes[0].extrinsicIndex || orderDetail.value.slashes[0].extrinsicIndex === 0 ? (
                 <RenderTxHash
-                  hash={`${orderDetailData.slashes[0].blockNumber}-${orderDetailData.slashes[0].extrinsicIndex}`}
+                  hash={`${orderDetail.value.slashes[0].blockNumber}-${orderDetail.value.slashes[0].extrinsicIndex}`}
                 />
               ) : (
                 "-"
@@ -421,7 +306,7 @@ const OrderDetails = () => {
             </>
           ),
         },
-        ...(orderDetailData.slashes.map((item, index) => ({
+        ...(orderDetail.value.slashes.map((item, index) => ({
           id: `2-${index}`,
           label: t(localeKeys.assignedRelayer),
           details: (
@@ -443,7 +328,7 @@ const OrderDetails = () => {
     : [];
 
   return (
-    <Spinner isLoading={orderDetailDataLoading}>
+    <Spinner isLoading={orderDetail.loading} maskClassName="justify-start">
       <div className={"flex flex-col gap-[0.9375rem] lg:gap-[1.875rem]"}>
         <OrderDetailsScaffold title={t(localeKeys.details)} data={details} />
         <OrderDetailsScaffold title={t(localeKeys.reward)} data={rewards} />
@@ -558,9 +443,8 @@ const getSlotsDiagram = (slots: Slot[], t: TFunction<"translation">) => {
 };
 
 const RenderTxHash = ({ hash }: { hash: string }) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
 
-  const sourceChain = currentMarket?.source;
   const sub = "tx/";
   const chainConfig = isEthChain(sourceChain)
     ? getEthChainConfig(sourceChain)
@@ -581,9 +465,8 @@ const RenderTxHash = ({ hash }: { hash: string }) => {
 };
 
 const RenderBlock = ({ block }: { block: number }) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
 
-  const sourceChain = currentMarket?.source;
   const sub = "block/";
   const chainConfig = isEthChain(sourceChain)
     ? getEthChainConfig(sourceChain)
@@ -602,9 +485,8 @@ const RenderBlock = ({ block }: { block: number }) => {
 };
 
 const AccountAddress = ({ address, className }: { address: string; className?: string }) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
 
-  const sourceChain = currentMarket?.source;
   const sub = isEthChain(sourceChain) ? "address/" : isPolkadotChain(sourceChain) ? "account/" : null;
   const chainConfig = isEthChain(sourceChain)
     ? getEthChainConfig(sourceChain)

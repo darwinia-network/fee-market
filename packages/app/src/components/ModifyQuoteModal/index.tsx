@@ -15,7 +15,7 @@ interface InputTips {
 
 const ModifyQuoteModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { currentMarket, sourceChain } = useMarket();
   const { signerApi: api } = useApi();
   const { relayerAddress, minQuote, currentQuoteAmount, updateQuote, getRelayerInfo } = useRelayer();
 
@@ -25,11 +25,9 @@ const ModifyQuoteModal = ({ isVisible, onClose }: { isVisible: boolean; onClose:
   const [quoteTips, setQuoteTips] = useState<InputTips | null>(null);
   const [quoteInput, setQuoteInput] = useState<string | undefined>();
 
-  const sourceChain = currentMarket?.source;
-
   const loadingModal = useMemo(() => {
-    return !relayerAddress || !currentMarket || (isPolkadotChain(sourceChain) && !api) || !minQuote;
-  }, [relayerAddress, currentMarket, api, minQuote, sourceChain]);
+    return !relayerAddress || !currentMarket || !api || minQuote === null;
+  }, [relayerAddress, currentMarket, api, minQuote]);
 
   const disableConfirm = useMemo(() => {
     return !quoteInput || quoteTips?.error;
@@ -88,7 +86,7 @@ const ModifyQuoteModal = ({ isVisible, onClose }: { isVisible: boolean; onClose:
 
   // Quote input tips
   useEffect(() => {
-    if (nativeToken && minQuote) {
+    if (nativeToken && minQuote !== null) {
       const min = BigNumber.from(minQuote.toString());
       setQuoteTips({
         error: false,

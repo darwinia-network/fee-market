@@ -2,7 +2,6 @@ export * from "./address";
 export * from "./api";
 export * from "./balance";
 export * from "./chain";
-export * from "./contract";
 export * from "./entity";
 export * from "./market";
 export * from "./others";

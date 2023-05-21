@@ -5,22 +5,17 @@ import { useMarket, useApi } from "../hooks";
 import { isPolkadotChain } from "../utils";
 
 const RelayerDashboard = () => {
-  const { currentMarket } = useMarket();
-  const { signerApi: api, currentAccount, isWalletInstalled } = useApi();
-
-  const sourceChain = currentMarket?.source;
+  const { sourceChain } = useMarket();
+  const { signerApi: api, currentAccount, hasWallet } = useApi();
 
   return (
     <>
       {currentAccount ? (
-        <RelayerProvider relayerAddress={currentAccount.address}>
+        <RelayerProvider relayerAddress={currentAccount.address} advanced>
           <Dashboard />
         </RelayerProvider>
       ) : (
-        <ConnectWallet
-          loading={isWalletInstalled && isPolkadotChain(sourceChain) && api === null}
-          isInstalled={isWalletInstalled}
-        />
+        <ConnectWallet loading={hasWallet && isPolkadotChain(sourceChain) && api === null} isInstalled={hasWallet} />
       )}
     </>
   );

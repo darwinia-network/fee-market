@@ -2,8 +2,9 @@ import { BigNumber } from "ethers";
 import { from, EMPTY } from "rxjs";
 import { useCallback, useEffect, useState } from "react";
 import { BN } from "@polkadot/util";
-import { BalanceResult, getPolkadotBalance, isPolkadotApi, isEthApi, getEthBalance } from "../utils";
+import { getPolkadotBalance, isPolkadotApi, getEthBalance, isEthProviderApi } from "../utils";
 import { useApi } from "./api";
+import type { BalanceResult } from "../types";
 
 export const useBalance = (address: string) => {
   const { providerApi: api } = useApi();
@@ -14,7 +15,7 @@ export const useBalance = (address: string) => {
   });
 
   const getBalance = useCallback(() => {
-    if (isEthApi(api)) {
+    if (isEthProviderApi(api)) {
       setBalance((prev) => ({ ...prev, loading: true }));
 
       return from(getEthBalance(api, address)).subscribe({

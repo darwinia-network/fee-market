@@ -16,6 +16,7 @@ const config: EthChainConfig = {
   },
   explorer: {
     url: "https://darwinia.subscan.io/",
+    name: "Subscan",
   },
   provider: {
     rpc: "https://rpc.darwinia.network/",

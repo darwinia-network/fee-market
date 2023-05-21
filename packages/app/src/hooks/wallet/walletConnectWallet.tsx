@@ -1,16 +1,17 @@
 import logo from "../../assets/images/wallet-connect-logo.svg";
 import { useCallback, useEffect } from "react";
 import { useWeb3Modal } from "@web3modal/react";
-import { useAccount } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { useApi } from "../api";
 import { useMarket } from "../market";
-import { isEthChain } from "../../utils";
+import { getEthChainConfig, isEthApi, isEthChain } from "../../utils";
 
 export const useWalletConnectWallet = () => {
-  const { currentMarket } = useMarket();
-  const { setAccounts } = useApi();
-  const { open } = useWeb3Modal();
+  const { sourceChain } = useMarket();
+  const { signerApi, setAccounts } = useApi();
+  const { open, setDefaultChain } = useWeb3Modal();
   const { address } = useAccount();
+  const { connectors } = useConnect();
 
   const connect = useCallback(async () => {
     await open();
@@ -21,10 +22,17 @@ export const useWalletConnectWallet = () => {
   }, []);
 
   useEffect(() => {
-    if (address && isEthChain(currentMarket?.source)) {
-      setAccounts([{ address, originAddress: address, meta: {} }]);
+    if (isEthApi(signerApi)) {
+      setAccounts(address ? [{ address, originAddress: address, meta: {} }] : []);
     }
-  }, [address, currentMarket?.source, setAccounts]);
+  }, [address, signerApi, setAccounts]);
+
+  useEffect(() => {
+    if (isEthChain(sourceChain) && connectors.length) {
+      const { chainId } = getEthChainConfig(sourceChain);
+      setDefaultChain(connectors[0].chains.find(({ id }) => id === chainId));
+    }
+  }, [connectors, sourceChain, setDefaultChain]);
 
   return { logo, connect, disconnect };
 };

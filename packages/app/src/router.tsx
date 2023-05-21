@@ -4,14 +4,13 @@ import { Suspense } from "react";
 import Root from "./Root";
 import ErrorCatcher from "./pages/ErrorCatcher";
 import NotFoundRoot from "./pages/NotFoundRoot";
-import PageLoading from "./pages/PageLoading";
 
 const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
   /* rollup is strict to dynamic imports
    refer https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations */
   const Component = lazy(() => import(`./pages/${componentFileName}.tsx`));
   return (
-    <Suspense fallback={<PageLoading />}>
+    <Suspense fallback={<div className="flex items-center justify-center mt-8">Loading...</div>}>
       <Component />
     </Suspense>
   );

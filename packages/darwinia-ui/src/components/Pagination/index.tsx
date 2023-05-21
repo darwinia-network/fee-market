@@ -19,8 +19,7 @@ interface PaginationState {
   totalPages: number;
 }
 
-const Pagination = (paginationProps: PaginationProps) => {
-  const { currentPage = 1, pageSize = 10, siblingCount = 1, totalPages, onChange } = paginationProps;
+const Pagination = ({ currentPage, pageSize, siblingCount, totalPages, onChange }: PaginationProps) => {
   const [paginationState, setPaginationState] = useState<PaginationState>({
     currentPage,
     pageSize,
@@ -73,7 +72,6 @@ const Pagination = (paginationProps: PaginationProps) => {
   };
 
   useEffect(() => {
-    const { currentPage, pageSize, siblingCount, totalPages } = paginationProps;
     setPaginationState((oldState) => {
       return {
         ...oldState,
@@ -83,7 +81,7 @@ const Pagination = (paginationProps: PaginationProps) => {
         totalPages,
       };
     });
-  }, [paginationProps]);
+  }, [currentPage, pageSize, siblingCount, totalPages]);
 
   if (paginationList.length < 2) {
     // there is only one page, no need to render pagination

@@ -1,16 +1,19 @@
 import { Column, PaginationProps, Table } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useMarket } from "../../hooks";
+import { useMarket, useRelatedOrders } from "../../hooks";
 import {
   formatBalance,
   unifyTime,
-  RelayerOrdersDataSource,
   formatTime,
   formatOrderId,
   formatUrlChainName,
+  isEthChain,
+  isPolkadotChain,
+  getEthChainConfig,
+  getPolkadotChainConfig,
 } from "../../utils";
 import { UrlSearchParamsKey } from "../../types";
 
@@ -26,19 +29,20 @@ interface Order {
   time: string;
 }
 
-interface Props {
-  relatedOrdersData?: RelayerOrdersDataSource[];
-  tokenSymbol?: string | null;
-  tokenDecimals?: number | null;
-}
-
-const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: Props) => {
+const RelatedOrders = () => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { sourceChain, destinationChain } = useMarket();
+  const { relatedOrders } = useRelatedOrders();
   const [dataSource, setDataSource] = useState<Order[]>([]);
 
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
+  const nativeToken = useMemo(() => {
+    if (isEthChain(sourceChain)) {
+      return getEthChainConfig(sourceChain).nativeToken;
+    } else if (isPolkadotChain(sourceChain)) {
+      return getPolkadotChainConfig(sourceChain).nativeToken;
+    }
+    return null;
+  }, [sourceChain]);
 
   const columns: Column<Order>[] = [
     {
@@ -95,21 +99,11 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     },
   ];
 
-  const onPageChange = useCallback((pageNumber: number) => {
-    setTablePagination((oldValues) => {
-      return {
-        ...oldValues,
-        currentPage: pageNumber,
-      };
-    });
-  }, []);
-
   //TODO make sure the pageSize and totalPages are changed accordingly, refer the onPageChange method
-  const [tablePagination, setTablePagination] = useState<PaginationProps>({
+  const [tablePagination, setTablePagination] = useState<Omit<PaginationProps, "onChange">>({
     currentPage: 1,
     pageSize: 10,
-    totalPages: relatedOrdersData?.length || 0,
-    onChange: onPageChange,
+    totalPages: relatedOrders.data?.length || 0,
   });
 
   useEffect(() => {
@@ -117,19 +111,19 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
     const end = start + tablePagination.pageSize;
 
     setDataSource(
-      relatedOrdersData?.slice(start, end)?.map((item, index) => {
+      relatedOrders.data?.slice(start, end)?.map((item, index) => {
         return {
           id: `${index}`,
           lane: item.lane,
           nonce: item.nonce,
           relayerRoles: item.relayerRoles,
-          slash: tokenDecimals ? formatBalance(item.slash, tokenDecimals, tokenSymbol) : "",
-          reward: tokenDecimals ? formatBalance(item.reward, tokenDecimals, tokenSymbol) : "",
+          slash: nativeToken?.decimals ? formatBalance(item.slash, nativeToken.decimals, nativeToken.symbol) : "",
+          reward: nativeToken?.decimals ? formatBalance(item.reward, nativeToken.decimals, nativeToken.symbol) : "",
           time: item.createBlockTime,
         };
       }) || []
     );
-  }, [relatedOrdersData, tokenSymbol, tokenDecimals, tablePagination]);
+  }, [relatedOrders.data, nativeToken, tablePagination]);
 
   const getTableTitle = () => {
     return <div className={"pb-[0.9375rem]"}>{t(localeKeys.relatedOrders)}</div>;
@@ -142,6 +136,8 @@ const RelayerDetailsTable = ({ relatedOrdersData, tokenSymbol, tokenDecimals }: 
       dataSource={dataSource}
       columns={columns}
       pagination={tablePagination}
+      onPageChange={(currentPage) => setTablePagination((prev) => ({ ...prev, currentPage }))}
+      isLoading={relatedOrders.loading}
     />
   );
 };
@@ -168,4 +164,4 @@ const getRelayerRolesColumn = (row: Order) => {
   );
 };
 
-export default RelayerDetailsTable;
+export default RelatedOrders;

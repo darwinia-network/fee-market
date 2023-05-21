@@ -16,7 +16,7 @@ interface InputTips {
 
 const ModifyCollateralBalanceModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { currentMarket, sourceChain } = useMarket();
   const { signerApi: api } = useApi();
   const { relayerAddress, minCollateral, collateralAmount, updateCollateral, getRelayerInfo } = useRelayer();
   const { balance: relayerBalance, refresh: refreshBalance } = useBalance(relayerAddress);
@@ -27,11 +27,9 @@ const ModifyCollateralBalanceModal = ({ isVisible, onClose }: { isVisible: boole
   const [collteralTips, setCollateralTips] = useState<InputTips | null>(null);
   const [collateralInput, setCollateralInput] = useState<string | undefined>();
 
-  const sourceChain = currentMarket?.source;
-
   const loadingModal = useMemo(() => {
-    return !currentMarket || !relayerBalance || !minCollateral || (isPolkadotChain(sourceChain) && !api);
-  }, [currentMarket, api, relayerBalance, minCollateral, sourceChain]);
+    return !currentMarket || !relayerBalance || !minCollateral || !api;
+  }, [currentMarket, api, relayerBalance, minCollateral]);
 
   const disableConfirm = useMemo(() => {
     return !collateralInput || collteralTips?.error;

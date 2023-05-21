@@ -17,6 +17,7 @@ const config: PolkadotChainConfig = {
   },
   explorer: {
     url: "https://darwinia.subscan.io/",
+    name: "Subscan",
   },
 };
 

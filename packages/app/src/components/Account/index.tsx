@@ -13,15 +13,13 @@ import { useRelayer, useMarket, useAccountName } from "../../hooks";
 
 const Account = ({ advanced = false }: { advanced?: boolean }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
   const { relayerAddress, isRegistered } = useRelayer();
   const { displayName } = useAccountName(relayerAddress);
 
-  const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
+  const [isActiveAccountModalVisible, setCurrentAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
   const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(false);
-
-  const sourceChain = currentMarket?.source;
 
   const getMoreActionsDropdown = () => {
     return (
@@ -81,7 +79,7 @@ const Account = ({ advanced = false }: { advanced?: boolean }) => {
             className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
             btnType={"secondary"}
             disabled={isEthChain(sourceChain)}
-            onClick={() => setActiveAccountModalVisible(true)}
+            onClick={() => setCurrentAccountModalVisible(true)}
           >
             {t(localeKeys.switchAccount)}
           </Button>

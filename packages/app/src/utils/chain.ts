@@ -25,3 +25,5 @@ export const getPolkadotChainConfig = (chainName: FeeMarketPolkadotChain) => {
 
 export const getChainConfig = (chainName: FeeMarketChain) =>
   ALL_CHAINS.find((chain) => chain.chainName === chainName) || null;
+
+export const getEthChainsConfig = () => Object.values(ETH_CHAIN_CONF);

@@ -11,13 +11,11 @@ import { useRelayer, useMarket } from "../../hooks";
 
 const Balance = ({ matchNetwork }: { matchNetwork?: boolean }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
   const { isRegistered, collateralAmount, currentLockedAmount, currentQuoteAmount } = useRelayer();
 
   const [isModifyQuoteModalVisible, setModifyQuoteModalVisible] = useState(false);
   const [isModifyCollateralBalanceModalVisible, setModifyCollateralBalanceModalVisible] = useState(false);
-
-  const sourceChain = currentMarket?.source;
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {

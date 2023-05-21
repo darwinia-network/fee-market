@@ -1,7 +1,7 @@
 import { PropsWithChildren, createContext } from "react";
 import { Subscription, EMPTY } from "rxjs";
-import { useEthRelayer } from "./ethRelayer";
-import { usePolkadotRelayer } from "./polkadotRelayer";
+import { useEth } from "./eth";
+import { usePolkadot } from "./polkadot";
 import { useMarket } from "../../hooks/market";
 import { isPolkadotChain } from "../../utils";
 
@@ -49,14 +49,14 @@ export const RelayerProvider = ({
   relayerAddress,
   advanced,
 }: PropsWithChildren<{ relayerAddress: string; advanced?: boolean }>) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
 
-  const eth = useEthRelayer(relayerAddress, !!advanced);
-  const polkadot = usePolkadotRelayer(relayerAddress, !!advanced);
+  const eth = useEth(relayerAddress, !!advanced);
+  const polkadot = usePolkadot(relayerAddress, !!advanced);
 
   return (
     <RelayerContext.Provider
-      value={isPolkadotChain(currentMarket?.source) ? { ...polkadot, relayerAddress } : { ...eth, relayerAddress }}
+      value={isPolkadotChain(sourceChain) ? { ...polkadot, relayerAddress } : { ...eth, relayerAddress }}
     >
       {children}
     </RelayerContext.Provider>

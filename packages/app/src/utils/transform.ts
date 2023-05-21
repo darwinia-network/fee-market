@@ -8,7 +8,9 @@ import type {
   RewardEntity,
   QuoteEntity,
   RelayerEntity,
-} from "../config";
+  OrdersData,
+  OrderDetail,
+} from "../types";
 import { unifyTime } from "./time";
 import { isSubQueryEntities, isTheGraphEntities } from "./entity";
 
@@ -329,22 +331,6 @@ export const transformFeeHistoryData = (data: {
   return Object.keys(datesValues).map((date) => [new Date(date).getTime(), datesValues[date]]);
 };
 
-export type OrdersData = Pick<
-  OrderEntity,
-  | "lane"
-  | "nonce"
-  | "sender"
-  | "createBlockTime"
-  | "finishBlockTime"
-  | "createBlockNumber"
-  | "finishBlockNumber"
-  | "status"
-  | "slotIndex"
-> & {
-  deliveryRelayers: { address: string }[];
-  confirmationRelayers: { address: string }[];
-};
-
 export const transformOrdersOverviewEthData = (data: {
   orders: (Pick<
     OrderEntity,
@@ -397,30 +383,6 @@ export const transformOrdersOverviewPolkadotData = (data: {
         item.confirmationRelayers?.nodes.map((item) => ({ address: item.confirmationRelayer.address })) || [],
     })) || []
   );
-};
-
-export type OrderDetail = Pick<
-  OrderEntity,
-  | "lane"
-  | "nonce"
-  | "fee"
-  | "sender"
-  | "sourceTxHash"
-  | "slotIndex"
-  | "status"
-  | "createBlockTime"
-  | "finishBlockTime"
-  | "createBlockNumber"
-  | "finishBlockNumber"
-  | "treasuryAmount"
-  | "assignedRelayersAddress"
-> & {
-  slashes: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex" | "txHash"> & {
-    relayer: Pick<RelayerEntity, "address">;
-  })[];
-  rewards: (Pick<SlashEntity, "amount" | "relayerRole" | "blockNumber" | "extrinsicIndex" | "txHash"> & {
-    relayer: Pick<RelayerEntity, "address">;
-  })[];
 };
 
 export const transformOrderDetailEthData = (data: {

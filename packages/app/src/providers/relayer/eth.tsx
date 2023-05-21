@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { readContracts, readContract, writeContract, waitForTransaction } from "@wagmi/core";
+import { readContract, writeContract, waitForTransaction } from "@wagmi/core";
 import { useMarket } from "../../hooks/market";
-import { getEthChainConfig, isEthChain } from "../../utils";
-import { from, EMPTY, Subscription, zip, of } from "rxjs";
+import { getEthChainConfig, isEthChain, isEthProviderApi, isEthSignerApi } from "../../utils";
+import { from, EMPTY, Subscription, zip, of, forkJoin } from "rxjs";
 import { useTranslation } from "react-i18next";
 import { notifyTx } from "./common";
-import { OrderBook } from "../../types";
+import { ABI, OrderBook } from "../../types";
+import { useApi } from "../api";
 
-const getQuotePrev = async (contractAddress: `0x${string}`, contractInterface: [], relayer: string, quote = 0n) => {
+const getQuotePrev = async (contractAddress: `0x${string}`, contractInterface: ABI, relayer: string, quote = 0n) => {
   let prevOld: string | null = null;
   let prevNew: string | null = null;
 
@@ -15,14 +16,14 @@ const getQuotePrev = async (contractAddress: `0x${string}`, contractInterface: [
     const relayerCount = (await readContract({
       address: contractAddress,
       abi: contractInterface,
-      functionName: "relayerCount" as never,
+      functionName: "relayerCount",
     })) as bigint;
     const book = (await readContract({
       address: contractAddress,
       abi: contractInterface,
-      functionName: "getOrderBook" as never,
+      functionName: "getOrderBook",
       args: [relayerCount, true],
-    })) as OrderBook<bigint>;
+    })) as OrderBook;
 
     const sentinelHead = "0x0000000000000000000000000000000000000001";
 
@@ -56,8 +57,9 @@ const getQuotePrev = async (contractAddress: `0x${string}`, contractInterface: [
   return { prevOld, prevNew };
 };
 
-export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
-  const { currentMarket } = useMarket();
+export const useEth = (relayerAddress: string, advanced: boolean) => {
+  const { sourceChain } = useMarket();
+  const { providerApi, signerApi } = useApi();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
@@ -69,29 +71,26 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
   const [minQuote, setMinQuote] = useState<bigint | null>(null);
   const [minCollateral, setMinCollateral] = useState<bigint | null>(null);
 
-  const sourceChain = currentMarket?.source;
-
   const getRelayerInfo = useCallback(() => {
-    if (advanced && isRegistered && isEthChain(sourceChain)) {
+    if (advanced && isRegistered && isEthChain(sourceChain) && isEthProviderApi(providerApi)) {
       setLoading(true);
       const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
 
-      return from(
-        readContracts({
-          contracts: ["balanceOf", "lockedOf", "feeOf"].map((functionName) => ({
-            address: contractAddress,
-            abi: contractInterface as [],
-            functionName,
-            args: [relayerAddress],
-          })),
-        })
+      const common = {
+        address: contractAddress,
+        abi: contractInterface,
+        args: [relayerAddress],
+      };
+
+      return forkJoin(
+        ["balanceOf", "lockedOf", "feeOf"].map(
+          (functionName) => readContract({ ...common, functionName: functionName }) as Promise<bigint>
+        )
       ).subscribe({
         next: ([collateral, locked, quote]) => {
-          if (collateral.status === "success" && locked.status === "success" && quote.status === "success") {
-            setCollateralAmount(collateral.result as bigint);
-            setCurrentLockedAmount(locked.result as bigint);
-            setCurrentQuoteAmount(quote.result as bigint);
-          }
+          setCollateralAmount(collateral);
+          setCurrentLockedAmount(locked);
+          setCurrentQuoteAmount(quote);
           setLoading(false);
         },
         error: (error) => {
@@ -102,7 +101,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
     }
 
     return EMPTY.subscribe();
-  }, [relayerAddress, sourceChain, advanced, isRegistered]);
+  }, [relayerAddress, sourceChain, advanced, isRegistered, providerApi]);
 
   const register = useCallback(
     async (
@@ -111,11 +110,11 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
       onFailed: (error: Error) => void = () => undefined,
       onSuccess: () => void = () => undefined
     ) => {
-      if (isEthChain(sourceChain)) {
+      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
         const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
 
         try {
-          const { prevNew } = await getQuotePrev(contractAddress, contractInterface as [], relayerAddress, quoteAmount);
+          const { prevNew } = await getQuotePrev(contractAddress, contractInterface, relayerAddress, quoteAmount);
           const { hash } = await writeContract({
             address: contractAddress,
             abi: contractInterface as [],
@@ -147,12 +146,12 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
         }
       }
     },
-    [relayerAddress, sourceChain, t]
+    [relayerAddress, sourceChain, t, signerApi]
   );
 
   const cancel = useCallback(
     async (onFailed: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
-      if (isEthChain(sourceChain)) {
+      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
         const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
 
         try {
@@ -164,10 +163,9 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
           );
           const { hash } = await writeContract({
             address: contractAddress,
-            abi: contractInterface as [],
-            functionName: "leave" as never,
+            abi: contractInterface,
+            functionName: "leave",
             args: [prevOld],
-            value: 0n,
           });
           const receipt = await waitForTransaction({ hash });
           if (receipt.status === "success") {
@@ -193,7 +191,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
         }
       }
     },
-    [relayerAddress, sourceChain, currentQuoteAmount, t]
+    [relayerAddress, sourceChain, currentQuoteAmount, t, signerApi]
   );
 
   const updateQuote = useCallback(
@@ -202,7 +200,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
       onFailed: (error: Error) => void = () => undefined,
       onSuccess: () => void = () => undefined
     ) => {
-      if (isEthChain(sourceChain)) {
+      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
         const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
         try {
           const { prevOld, prevNew } = await getQuotePrev(
@@ -241,7 +239,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
         }
       }
     },
-    [relayerAddress, sourceChain, t]
+    [relayerAddress, sourceChain, t, signerApi]
   );
 
   const updateCollateral = useCallback(
@@ -250,7 +248,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
       onFailed: (error: Error) => void = () => undefined,
       onSuccess: () => void = () => undefined
     ) => {
-      if (isEthChain(sourceChain)) {
+      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
         const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
         try {
           let hash: `0x${string}` = "0x";
@@ -268,10 +266,9 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
             hash = (
               await writeContract({
                 address: contractAddress,
-                abi: contractInterface as [],
-                functionName: "withdraw" as never,
+                abi: contractInterface,
+                functionName: "withdraw",
                 args: [collateralAmount - amount],
-                value: 0n,
               })
             ).hash;
           }
@@ -300,7 +297,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
         }
       }
     },
-    [sourceChain, collateralAmount, t]
+    [sourceChain, collateralAmount, t, signerApi]
   );
 
   useEffect(() => {
@@ -318,13 +315,13 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
   useEffect(() => {
     let sub$$: Subscription;
 
-    if (advanced && isEthChain(sourceChain)) {
+    if (advanced && isEthChain(sourceChain) && isEthProviderApi(providerApi)) {
       const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
       sub$$ = from(
         readContract({
           address: contractAddress,
-          abi: contractInterface as [],
-          functionName: "isRelayer" as never,
+          abi: contractInterface,
+          functionName: "isRelayer",
           args: [relayerAddress],
         })
       ).subscribe({
@@ -342,13 +339,13 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
       sub$$?.unsubscribe();
       setRegistered(false);
     };
-  }, [sourceChain, relayerAddress, advanced]);
+  }, [sourceChain, relayerAddress, advanced, providerApi]);
 
   // Get minQuote and minCollateral
   useEffect(() => {
     let sub$$: Subscription;
 
-    if (advanced && isEthChain(sourceChain)) {
+    if (advanced && isEthChain(sourceChain) && isEthProviderApi(providerApi)) {
       const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
 
       sub$$ = zip(
@@ -356,8 +353,8 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
         from(
           readContract({
             address: contractAddress,
-            abi: contractInterface as [],
-            functionName: "COLLATERAL_PER_ORDER" as never,
+            abi: contractInterface,
+            functionName: "COLLATERAL_PER_ORDER",
           }) as Promise<bigint>
         )
       ).subscribe({
@@ -376,7 +373,7 @@ export const useEthRelayer = (relayerAddress: string, advanced: boolean) => {
       setMinQuote(null);
       setMinCollateral(null);
     };
-  }, [sourceChain, advanced]);
+  }, [sourceChain, advanced, providerApi]);
 
   return {
     loading,

@@ -1,36 +1,21 @@
 import Account from "../Account";
 import Balance from "../Balance";
 import RelayerDetailsChart from "../RelayerDetailsChart";
-import RelayerDetailsTable from "../RelayerDetailsTable";
+import RelatedOrders from "../RelatedOrders";
 import { Button, SlideDownUp } from "@darwinia/ui";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useEffect, useState, useMemo } from "react";
-import { useRelayerDetailData, useApi, useMarket } from "../../hooks";
-import { isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
-import { useRelayer } from "../../hooks";
+import { useEffect, useState } from "react";
+import { useApi, useMarket } from "../../hooks";
+import { isEthChain, getEthChainConfig, isEthSignerApi, isPolkadotChain } from "../../utils";
 import { switchNetwork } from "@wagmi/core";
+import { Subscription, from } from "rxjs";
 
 const RelayerDashboard = () => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
-  const { relayerAddress } = useRelayer();
-  const { currentChainId } = useApi();
-  const { rewardAndSlashData, quoteHistoryData, relayerRelatedOrdersData } = useRelayerDetailData({
-    relayerAddress: relayerAddress.startsWith("0x") ? relayerAddress.toLowerCase() : relayerAddress,
-  });
-  const [isNotificationVisible, setNotificationVisibility] = useState(false);
-
-  const sourceChain = currentMarket?.source;
-
-  const nativeToken = useMemo(() => {
-    if (isEthChain(sourceChain)) {
-      return getEthChainConfig(sourceChain).nativeToken;
-    } else if (isPolkadotChain(sourceChain)) {
-      return getPolkadotChainConfig(sourceChain).nativeToken;
-    }
-    return null;
-  }, [sourceChain]);
+  const { sourceChain } = useMarket();
+  const { signerApi: api } = useApi();
+  const [matchNetwork, setMatchNetwork] = useState(false);
 
   const handleSwitchNetwork = async () => {
     if (sourceChain && isEthChain(sourceChain)) {
@@ -40,18 +25,29 @@ const RelayerDashboard = () => {
   };
 
   useEffect(() => {
-    if (sourceChain && isEthChain(sourceChain) && getEthChainConfig(sourceChain).chainId !== currentChainId) {
-      setNotificationVisibility(true);
-    } else {
-      setNotificationVisibility(false);
+    let sub$$: Subscription | null = null;
+
+    if (isPolkadotChain(sourceChain)) {
+      setMatchNetwork(true);
+    } else if (isEthChain(sourceChain) && isEthSignerApi(api)) {
+      sub$$ = from(api.getChainId()).subscribe((chainId) => {
+        if (chainId === getEthChainConfig(sourceChain).chainId) {
+          setMatchNetwork(true);
+        }
+      });
     }
-  }, [sourceChain, currentChainId]);
+
+    return () => {
+      sub$$?.unsubscribe();
+      setMatchNetwork(false);
+    };
+  }, [api, sourceChain]);
 
   return (
     /*Don't use flex gap to avoid a "junky gap animation" when the notification slides down */
     <div className={"flex flex-col"}>
       {/*Notification*/}
-      <SlideDownUp isVisible={isNotificationVisible}>
+      <SlideDownUp isVisible={!matchNetwork}>
         <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
           <div
             className={
@@ -71,28 +67,16 @@ const RelayerDashboard = () => {
         </div>
       </SlideDownUp>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Account advanced={!isNotificationVisible} />
+        <Account advanced={matchNetwork} />
       </div>
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <Balance matchNetwork={!isNotificationVisible} />
+        <Balance matchNetwork={matchNetwork} />
       </div>
-      {/*Charts*/}
       <div className={"mb-[0.9375rem] lg:mb-[1.875rem]"}>
-        <RelayerDetailsChart
-          currentMarket={currentMarket}
-          rewardsData={rewardAndSlashData?.rewards || []}
-          slashesData={rewardAndSlashData?.slashs || []}
-          quoteHistoryData={quoteHistoryData || []}
-        />
+        <RelayerDetailsChart />
       </div>
-
-      {/*Relayer Orders table*/}
       <div>
-        <RelayerDetailsTable
-          relatedOrdersData={relayerRelatedOrdersData}
-          tokenSymbol={nativeToken?.symbol}
-          tokenDecimals={nativeToken?.decimals}
-        />
+        <RelatedOrders />
       </div>
     </div>
   );

@@ -1,60 +1,56 @@
-import { BigNumber, Contract } from "ethers";
-import { useCallback, useEffect, useState } from "react";
-import { EMPTY, from, switchMap, forkJoin, map, zip, of, Observable } from "rxjs";
+import { BigNumber } from "ethers";
+import { useEffect, useState } from "react";
+import { from, switchMap, forkJoin, map, zip, of, Observable, Subscription } from "rxjs";
 import { useApolloClient } from "@apollo/client";
 import { bnToBn, BN, BN_ZERO } from "@polkadot/util";
 import type { Vec, Option } from "@polkadot/types";
 import type { AccountId32 } from "@polkadot/types/interfaces";
 import { useMarket } from "./market";
-import type { PalletFeeMarketRelayer, OrderBook } from "../types";
-import type { RelayerEntity } from "../config";
-import { getFeeMarketApiSection, isEthApi, isEthChain, isPolkadotApi, isPolkadotChain } from "../utils";
+import type { PalletFeeMarketRelayer, OrderBook, RelayerEntity } from "../types";
+import { getFeeMarketApiSection, isEthChain, isEthProviderApi, isPolkadotApi, isPolkadotChain } from "../utils";
 import { RELAYER_OVERVIEW_DATA } from "../config";
 import { isVec, isOption, getEthChainConfig } from "../utils";
 import { useApi } from "./api";
+import { getContract } from "@wagmi/core";
 
-interface DataSource {
+interface RelayerOverview {
   id: string;
   relayer: string;
-  count: number;
+  orders: number;
   collateral: BN | BigNumber;
   quote: BN | BigNumber;
   reward: BN | BigNumber;
   slash: BN | BigNumber;
 }
 
-export const useRelayersOverviewData = () => {
-  const { currentMarket, setRefresh } = useMarket();
+interface State {
+  all: RelayerOverview[];
+  assigned: RelayerOverview[];
+  loading: boolean;
+}
+
+export const useRelayersOverview = () => {
+  const { sourceChain, destinationChain } = useMarket();
   const { providerApi: api } = useApi();
   const apolloClient = useApolloClient();
-  const [relayersOverviewData, setRelayersOverviewData] = useState<{
-    allRelayersDataSource: DataSource[];
-    assignedRelayersDataSource: DataSource[];
-    loading: boolean;
-  }>({
-    allRelayersDataSource: [],
-    assignedRelayersDataSource: [],
-    loading: false,
-  });
+  const [relayersOverview, setRelayersOverview] = useState<State>({ all: [], assigned: [], loading: false });
 
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
+  useEffect(() => {
+    let sub$$: Subscription | null = null;
 
-  const getRelayersOverviewData = useCallback(() => {
-    if (isEthApi(api) && isEthChain(sourceChain)) {
-      const chainConfig = getEthChainConfig(sourceChain);
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+    if (isEthChain(sourceChain) && isEthProviderApi(api)) {
+      const { contractAddress, contractInterface, isSmartChain, chainId } = getEthChainConfig(sourceChain);
+      const contract = getContract({ address: contractAddress, abi: contractInterface, chainId });
 
-      const allRelayersObs = from(contract.relayerCount() as Promise<BigNumber>).pipe(
-        switchMap((relayerCount) => from(contract.getOrderBook(relayerCount, true) as Promise<OrderBook>))
+      const allObs = from(contract.read.relayerCount([]) as Promise<bigint>).pipe(
+        switchMap((relayerCount) => from(contract.read.getOrderBook([relayerCount, true]) as Promise<OrderBook>))
       );
-      const assignedRelayersObs = chainConfig.isSmartChain
-        ? from(contract.getTopRelayers() as Promise<string[]>)
-        : forkJoin([contract.getTopRelayer() as Promise<string>]);
+      const assignedObs = isSmartChain
+        ? from(contract.read.getTopRelayers([]) as Promise<string[]>)
+        : forkJoin([contract.read.getTopRelayer([]) as Promise<string>]);
 
-      setRelayersOverviewData((prev) => ({ ...prev, loading: true }));
-
-      return zip(allRelayersObs, assignedRelayersObs)
+      setRelayersOverview((prev) => ({ ...prev, loading: true }));
+      sub$$ = zip(allObs, assignedObs)
         .pipe(
           switchMap(([allRelayers, assignedRelayers]) =>
             zip(
@@ -68,6 +64,7 @@ export const useRelayersOverviewData = () => {
                   >({
                     query: RELAYER_OVERVIEW_DATA,
                     variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
+                    notifyOnNetworkStatusChange: true,
                   })
                 )
               ),
@@ -79,6 +76,7 @@ export const useRelayersOverviewData = () => {
                   >({
                     query: RELAYER_OVERVIEW_DATA,
                     variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
+                    notifyOnNetworkStatusChange: true,
                   })
                 )
               )
@@ -87,33 +85,27 @@ export const useRelayersOverviewData = () => {
         )
         .subscribe({
           next: ([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
-            setRelayersOverviewData({
-              allRelayersDataSource: allRelayersData.map(({ data }, index) => {
-                const relayer = allRelayers[1][index];
-                const collateral = allRelayers[3][index];
-                const quote = allRelayers[2][index];
+            setRelayersOverview({
+              all: allRelayersData.map(({ data }, index) => {
                 return {
-                  id: `${index}`,
-                  relayer,
-                  count: data.relayer?.totalOrders || 0,
-                  collateral,
-                  quote,
+                  id: allRelayers[1][index],
+                  relayer: allRelayers[1][index],
+                  orders: data.relayer?.totalOrders || 0,
+                  collateral: BigNumber.from(allRelayers[3][index]),
+                  quote: BigNumber.from(allRelayers[2][index]),
                   reward: bnToBn(data.relayer?.totalRewards),
                   slash: bnToBn(data.relayer?.totalSlashes),
                 };
               }),
-              assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
+              assigned: assignedRelayersData.map(({ data }, index) => {
                 const relayer = assignedRelayers[index];
                 const idx = allRelayers[1].findIndex((item) => item.toLowerCase() === relayer.toLowerCase());
-                const collateral = idx >= 0 ? allRelayers[3][idx] : BN_ZERO;
-                const quote = idx >= 0 ? allRelayers[2][idx] : BN_ZERO;
-
                 return {
-                  id: `${index}`,
+                  id: relayer,
                   relayer,
-                  count: data.relayer?.totalOrders || 0,
-                  collateral,
-                  quote,
+                  orders: data.relayer?.totalOrders || 0,
+                  collateral: idx >= 0 ? bnToBn(allRelayers[3][idx]) : BN_ZERO,
+                  quote: idx >= 0 ? bnToBn(allRelayers[2][idx]) : BN_ZERO,
                   reward: bnToBn(data.relayer?.totalRewards),
                   slash: bnToBn(data.relayer?.totalSlashes),
                 };
@@ -122,18 +114,14 @@ export const useRelayersOverviewData = () => {
             });
           },
           error: (error) => {
-            console.error("get relayer overview data:", error);
-            setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
-          },
-          complete: () => {
-            setRelayersOverviewData((prev) => ({ ...prev, loading: false }));
+            setRelayersOverview({ all: [], assigned: [], loading: false });
+            console.error(error);
           },
         });
-    } else if (isPolkadotApi(api) && isPolkadotChain(destinationChain)) {
+    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
       const apiSection = getFeeMarketApiSection(api, destinationChain);
-
       if (apiSection) {
-        const allRelayersObs = from(api.query[apiSection].relayers<Vec<AccountId32> | Option<Vec<AccountId32>>>()).pipe(
+        const allObs = from(api.query[apiSection].relayers<Vec<AccountId32> | Option<Vec<AccountId32>>>()).pipe(
           switchMap((res) => {
             if (isVec<AccountId32>(res)) {
               return of(res);
@@ -167,13 +155,12 @@ export const useRelayersOverviewData = () => {
               ) as Observable<PalletFeeMarketRelayer[]>
           )
         );
-        const assignedRelayersObs = from(
-          api.query[apiSection].assignedRelayers<Option<Vec<PalletFeeMarketRelayer>>>()
-        ).pipe(map((res) => (res.isSome ? res.unwrap().toArray() : [])));
+        const assigneObs = from(api.query[apiSection].assignedRelayers<Option<Vec<PalletFeeMarketRelayer>>>()).pipe(
+          map((res) => (res.isSome ? res.unwrap().toArray() : []))
+        );
 
-        setRelayersOverviewData((prev) => ({ ...prev, loading: true }));
-
-        return zip(allRelayersObs, assignedRelayersObs)
+        setRelayersOverview((prev) => ({ ...prev, loading: true }));
+        sub$$ = zip(allObs, assigneObs)
           .pipe(
             switchMap(([allRelayers, assignedRelayers]) =>
               zip(
@@ -187,6 +174,7 @@ export const useRelayersOverviewData = () => {
                     >({
                       query: RELAYER_OVERVIEW_DATA,
                       variables: { relayerId: `${destinationChain}-${relayer.id.toString()}` },
+                      notifyOnNetworkStatusChange: true,
                     })
                   )
                 ),
@@ -199,6 +187,7 @@ export const useRelayersOverviewData = () => {
                         >({
                           query: RELAYER_OVERVIEW_DATA,
                           variables: { relayerId: `${destinationChain}-${relayer.id.toString()}` },
+                          notifyOnNetworkStatusChange: true,
                         })
                       )
                     )
@@ -208,25 +197,25 @@ export const useRelayersOverviewData = () => {
           )
           .subscribe({
             next: ([allRelayers, assignedRelayers, allRelayersData, assignedRelayersData]) => {
-              setRelayersOverviewData({
-                allRelayersDataSource: allRelayersData.map(({ data }, index) => {
+              setRelayersOverview({
+                all: allRelayersData.map(({ data }, index) => {
                   const relayer = allRelayers[index];
                   return {
-                    id: `${index}`,
+                    id: relayer.id.toString(),
                     relayer: relayer.id.toString(),
-                    count: data.relayer?.totalOrders || 0,
+                    orders: data.relayer?.totalOrders || 0,
                     collateral: relayer.collateral,
                     quote: relayer.fee,
                     reward: bnToBn(data.relayer?.totalRewards),
                     slash: bnToBn(data.relayer?.totalSlashes),
                   };
                 }),
-                assignedRelayersDataSource: assignedRelayersData.map(({ data }, index) => {
+                assigned: assignedRelayersData.map(({ data }, index) => {
                   const relayer = assignedRelayers[index];
                   return {
-                    id: `${index}`,
+                    id: relayer.id.toString(),
                     relayer: relayer.id.toString(),
-                    count: data.relayer?.totalOrders || 0,
+                    orders: data.relayer?.totalOrders || 0,
                     collateral: relayer.collateral,
                     quote: relayer.fee,
                     reward: bnToBn(data.relayer?.totalRewards),
@@ -237,33 +226,18 @@ export const useRelayersOverviewData = () => {
               });
             },
             error: (error) => {
-              console.error("get relayer overview data:", error);
-              setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
-            },
-            complete: () => {
-              setRelayersOverviewData((prev) => ({ ...prev, loading: false }));
+              setRelayersOverview({ all: [], assigned: [], loading: false });
+              console.error(error);
             },
           });
       }
     }
 
-    setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
-    return EMPTY.subscribe();
+    return () => {
+      sub$$?.unsubscribe();
+      setRelayersOverview({ all: [], assigned: [], loading: false });
+    };
   }, [api, sourceChain, destinationChain, apolloClient]);
 
-  useEffect(() => {
-    const sub$$ = getRelayersOverviewData();
-    return () => {
-      sub$$.unsubscribe();
-      setRelayersOverviewData({ allRelayersDataSource: [], assignedRelayersDataSource: [], loading: false });
-    };
-  }, [getRelayersOverviewData]);
-
-  useEffect(() => {
-    setRefresh(() => () => {
-      getRelayersOverviewData();
-    });
-  }, [setRefresh, getRelayersOverviewData]);
-
-  return { relayersOverviewData };
+  return { relayersOverview };
 };

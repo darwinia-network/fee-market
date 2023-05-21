@@ -1,5 +1,5 @@
 export * from "./chains";
-export * from "./graphql";
+export * from "./gql";
 export * from "./feemarket-section";
 export * from "./constant";
 export * from "./markets";

@@ -2,7 +2,7 @@ import { Button, Column, Input, PaginationProps, Table, OptionProps, Select, Mod
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { useLocation, Link } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
 import BlockRangeInput from "../BlockRangeInput";
@@ -14,10 +14,10 @@ import {
   formatUrlChainName,
   formatOrderId,
   isEthChain,
+  adaptSlotIndex,
 } from "../../utils";
-import { SlotIndex, OrderStatus } from "../../config";
-import { UrlSearchParamsKey } from "../../types";
-import { useAccountName, useMarket } from "../../hooks";
+import { UrlSearchParamsKey, SlotIndex, OrderStatus } from "../../types";
+import { useAccountName, useMarket, useOrders } from "../../hooks";
 import JazzIcon from "../JazzIcon";
 
 enum EnumAll {
@@ -138,29 +138,50 @@ const slotIndexOptions: OptionProps[] = [
   },
 ];
 
-interface Props {
-  loading?: boolean;
-  data: DataSource[];
-}
-
-const OrdersTable = ({ loading, data }: Props) => {
+const OrdersExplorer = () => {
   const location = useLocation();
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { sourceChain, destinationChain } = useMarket();
   const [filterModalVisible, setFilterModalVisibility] = useState(false);
 
-  const onPageChange = useCallback((currentPage: number) => {
-    setPagination((previous) => ({ ...previous, currentPage }));
-  }, []);
+  const chainConfig = isEthChain(sourceChain)
+    ? getEthChainConfig(sourceChain)
+    : isPolkadotChain(sourceChain)
+    ? getPolkadotChainConfig(sourceChain)
+    : null;
+
+  const { orders } = useOrders();
+  const originOrders = useMemo(
+    () =>
+      orders.data
+        .sort((a, b) => b.createBlockNumber - a.createBlockNumber)
+        .map((item, index) => {
+          return {
+            id: index.toString(),
+            lane: item.lane,
+            nonce: item.nonce,
+            sender: item.sender,
+            status: item.status,
+            slotIndex:
+              item.slotIndex || item.slotIndex === 0 ? adaptSlotIndex(sourceChain, item.slotIndex) : item.slotIndex,
+            deliveryRelayer: item.deliveryRelayers.length ? item.deliveryRelayers[0].address : null,
+            confirmationRelayer: item.confirmationRelayers.length ? item.confirmationRelayers[0].address : null,
+            createdAt: item.createBlockTime,
+            confirmedAt: item.finishBlockTime,
+            createBlock: item.createBlockNumber,
+            confirmedBlock: item.finishBlockNumber,
+          };
+        }),
+    [sourceChain, orders.data]
+  );
 
   // table
-  const dataSourceRef = useRef<DataSource[]>(data); // staging data for updating the total number of pages when filtering
+  const dataSourceRef = useRef<DataSource[]>(originOrders); // staging data for updating the total number of pages when filtering
   const [dataSource, setDataSource] = useState<DataSource[]>([]); // visible data
-  const [pagination, setPagination] = useState<PaginationProps>({
+  const [pagination, setPagination] = useState<Omit<PaginationProps, "onChange">>({
     pageSize: 10,
     currentPage: 1,
     totalPages: dataSourceRef.current.length,
-    onChange: onPageChange,
   });
 
   // order search
@@ -178,15 +199,6 @@ const OrdersTable = ({ loading, data }: Props) => {
   });
   const [status, setStatus] = useState<OrderStatusFilter>("All");
   const [slotIndex, setSlotIndex] = useState<SlotIndexFilter>(SlotIndexFilter.ALL);
-
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
-
-  const chainConfig = isEthChain(sourceChain)
-    ? getEthChainConfig(sourceChain)
-    : isPolkadotChain(sourceChain)
-    ? getPolkadotChainConfig(sourceChain)
-    : null;
 
   const columns: Column<DataSource>[] = [
     {
@@ -263,29 +275,29 @@ const OrdersTable = ({ loading, data }: Props) => {
     },
   ];
 
-  const onDimensionChange = useCallback((value: string | string[]) => {
+  const handleDimensionChange = useCallback((value: string | string[]) => {
     if (typeof value === "string") {
       setDimension(value as TimeDimension);
     }
   }, []);
 
-  const onStatusChange = useCallback((value: string | string[]) => {
+  const handleStatusChange = useCallback((value: string | string[]) => {
     if (typeof value === "string") {
       setStatus(value as OrderStatusFilter);
     }
   }, []);
 
-  const onSlotIndexChange = useCallback((value: string | string[]) => {
+  const handleSlotIndexChange = useCallback((value: string | string[]) => {
     if (typeof value === "string") {
       setSlotIndex(Number(value));
     }
   }, []);
 
-  const handleFilterClick = useCallback(() => {
+  const handleFilter = useCallback(() => {
     const minValue = 0;
     const maxValue = Number.MAX_SAFE_INTEGER;
 
-    dataSourceRef.current = data.filter((item) => {
+    dataSourceRef.current = originOrders.filter((item) => {
       if (duration.start || duration.end) {
         const filterStart = duration.start || minValue;
         const filterEnd = duration.end || maxValue;
@@ -358,22 +370,22 @@ const OrdersTable = ({ loading, data }: Props) => {
     });
 
     setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
-  }, [data, duration, blockRange, status, slotIndex]);
+  }, [originOrders, duration, blockRange, status, slotIndex]);
 
-  // handle order search
+  // Handle search
   useEffect(() => {
     if (keyword) {
-      dataSourceRef.current = data.filter(
+      dataSourceRef.current = originOrders.filter(
         (item) => item.nonce.includes(keyword) || (item.sender && item.sender.toLowerCase() === keyword.toLowerCase())
       );
     } else {
-      dataSourceRef.current = data;
+      dataSourceRef.current = originOrders;
     }
 
     setPagination((prev) => ({ ...prev, currentPage: 1, totalPages: dataSourceRef.current.length }));
-  }, [data, keyword]);
+  }, [originOrders, keyword]);
 
-  // handle page change
+  // Handle page change
   useEffect(() => {
     const start = (pagination.currentPage - 1) * pagination.pageSize;
     const end = start + pagination.pageSize;
@@ -415,7 +427,7 @@ const OrdersTable = ({ loading, data }: Props) => {
                   dropdownClassName={"text-12-bold"}
                   value={dimension}
                   options={dimensionOptions}
-                  onChange={onDimensionChange}
+                  onChange={handleDimensionChange}
                 />
               </div>
             </div>
@@ -434,7 +446,7 @@ const OrdersTable = ({ loading, data }: Props) => {
                   className={"text-12-bold"}
                   dropdownClassName={"text-12-bold"}
                   value={status}
-                  onChange={onStatusChange}
+                  onChange={handleStatusChange}
                   options={statusOptions}
                 />
               </div>
@@ -448,7 +460,7 @@ const OrdersTable = ({ loading, data }: Props) => {
                   className={"text-12-bold"}
                   dropdownClassName={"text-12-bold"}
                   value={`${slotIndex}`}
-                  onChange={onSlotIndexChange}
+                  onChange={handleSlotIndexChange}
                   options={slotIndexOptions}
                   dropdownHeight={150}
                 />
@@ -456,7 +468,7 @@ const OrdersTable = ({ loading, data }: Props) => {
             </div>
 
             {/*This button will only show in mobile devices since it's in the modal*/}
-            <Button className={"w-full"} onClick={handleFilterClick}>
+            <Button className={"w-full"} onClick={handleFilter}>
               {t(localeKeys.filter)}
             </Button>
           </div>
@@ -471,7 +483,7 @@ const OrdersTable = ({ loading, data }: Props) => {
             <Select
               value={dimension}
               options={dimensionOptions}
-              onChange={onDimensionChange}
+              onChange={handleDimensionChange}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
@@ -494,7 +506,7 @@ const OrdersTable = ({ loading, data }: Props) => {
             <Select
               options={statusOptions}
               value={status}
-              onChange={onStatusChange}
+              onChange={handleStatusChange}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
@@ -507,13 +519,13 @@ const OrdersTable = ({ loading, data }: Props) => {
             <Select
               options={slotIndexOptions}
               value={`${slotIndex}`}
-              onChange={onSlotIndexChange}
+              onChange={handleSlotIndexChange}
               dropdownHeight={dropdownMaxHeight}
               size={"small"}
             />
           </div>
         </div>
-        <Button onClick={handleFilterClick} className="lg:!h-[1.625rem]">
+        <Button onClick={handleFilter} className="lg:!h-[1.625rem]">
           {t(localeKeys.filter)}
         </Button>
       </div>
@@ -523,8 +535,9 @@ const OrdersTable = ({ loading, data }: Props) => {
           columns={columns}
           dataSource={dataSource}
           minWidth={"1120px"}
-          isLoading={loading}
+          isLoading={orders.loading}
           pagination={pagination}
+          onPageChange={(currentPage) => setPagination((prev) => ({ ...prev, currentPage }))}
         />
       </div>
     </div>
@@ -532,12 +545,12 @@ const OrdersTable = ({ loading, data }: Props) => {
 };
 
 const RelayerAccount = ({ address }: { address: string }) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
   const { displayName } = useAccountName(address);
 
   return (
     <div className={"flex items-center gap-[0.625rem] clickable"}>
-      {isPolkadotChain(currentMarket?.source) ? (
+      {isPolkadotChain(sourceChain) ? (
         <Identicon className={"rounded-full overflow-hidden bg-white"} value={address} size={22} theme="jdenticon" />
       ) : (
         <JazzIcon size={22} address={address} />
@@ -547,4 +560,4 @@ const RelayerAccount = ({ address }: { address: string }) => {
   );
 };
 
-export default OrdersTable;
+export default OrdersExplorer;

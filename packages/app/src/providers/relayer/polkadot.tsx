@@ -17,9 +17,9 @@ import { notifyTx } from "./common";
 import { useTranslation } from "react-i18next";
 import { BN_ZERO } from "@polkadot/util";
 
-export const usePolkadotRelayer = (relayerAddress: string, advanced: boolean) => {
+export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
   const { signerApi: api } = useApi();
-  const { currentMarket } = useMarket();
+  const { sourceChain, destinationChain } = useMarket();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
@@ -30,9 +30,6 @@ export const usePolkadotRelayer = (relayerAddress: string, advanced: boolean) =>
 
   const [minQuote, setMinQuote] = useState<bigint | null>(null);
   const [minCollateral, setMinCollateral] = useState<bigint | null>(null);
-
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
 
   const getRelayerInfo = useCallback(() => {
     if (advanced && isRegistered && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {

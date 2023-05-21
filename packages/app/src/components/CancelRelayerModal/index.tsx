@@ -4,22 +4,18 @@ import localeKeys from "../../locale/localeKeys";
 import { useCallback, useMemo, useState } from "react";
 import AccountMini from "../AccountMini";
 import { useRelayer, useBalance, useMarket, useApi } from "../../hooks";
-import { isPolkadotChain } from "../../utils";
 
 const CancelRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { currentMarket, sourceChain, destinationChain } = useMarket();
   const { signerApi: api } = useApi();
   const { relayerAddress, cancel } = useRelayer();
   const { refresh: refreshBalance } = useBalance(relayerAddress);
   const [busy, setBusy] = useState(false);
 
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
-
   const loadingModal = useMemo(() => {
-    return !relayerAddress || !currentMarket || (isPolkadotChain(sourceChain) && !api);
-  }, [relayerAddress, currentMarket, api, sourceChain]);
+    return !relayerAddress || !currentMarket || !api;
+  }, [relayerAddress, currentMarket, api]);
 
   const handleConfirm = useCallback(async () => {
     setBusy(true);

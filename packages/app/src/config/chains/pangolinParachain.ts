@@ -17,6 +17,7 @@ const config: PolkadotChainConfig = {
   },
   explorer: {
     url: "https://pangolin-parachain.subscan.io/",
+    name: "Subscan",
   },
 };
 

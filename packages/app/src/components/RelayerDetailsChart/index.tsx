@@ -1,29 +1,22 @@
 import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { utils as ethersUtils } from "ethers";
-import type { Market } from "../../types";
 import { BN } from "@polkadot/util";
-import { RewardAndSlashChart } from "../Chart/RewardAndSlashChart";
+import { RewardsSlashChart } from "../Chart/RewardsSlashChart";
 import { QuoteHistoryChart } from "../Chart/QuoteHistoryChart";
 import { useMemo } from "react";
 import { isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
+import { useMarket, useQuoteHistory, useRewardSlash } from "../../hooks";
 
 const convertItem = (item: [number, BN], decimals = 9): [number, number] => {
   return [item[0], Number(ethersUtils.formatUnits(item[1].toString(), decimals))];
 };
 
-interface Props {
-  currentMarket: Market | null;
-  rewardsData: [number, BN][];
-  slashesData: [number, BN][];
-  quoteHistoryData: [number, BN][];
-}
-
-const RelayerDetailsChart = ({ currentMarket, rewardsData, slashesData, quoteHistoryData }: Props) => {
+const RelayerDetailsChart = () => {
   const { t } = useTranslation();
-
-  const sourceChain = currentMarket?.source;
-  // const destinationChain = currentMarket?.destination;
+  const { sourceChain } = useMarket();
+  const { rewardSlash } = useRewardSlash();
+  const { quoteHistory } = useQuoteHistory();
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {
@@ -36,14 +29,16 @@ const RelayerDetailsChart = ({ currentMarket, rewardsData, slashesData, quoteHis
 
   return (
     <div className={"grid grid-cols-1 lg:grid-cols-2 gap-x-[0.9375rem] gap-y-[0.9375rem] lg:gap-y-[1.875rem]"}>
-      <RewardAndSlashChart
+      <RewardsSlashChart
         title={t(localeKeys.rewardsOrSlash, { currency: nativeToken?.symbol || "-" })}
-        rewardData={rewardsData.map((item) => convertItem(item, nativeToken?.decimals))}
-        slashData={slashesData.map((item) => convertItem(item, nativeToken?.decimals))}
+        rewards={rewardSlash.rewards.map((item) => convertItem(item, nativeToken?.decimals))}
+        slash={rewardSlash.slashs.map((item) => convertItem(item, nativeToken?.decimals))}
+        loading={rewardSlash.loading}
       />
       <QuoteHistoryChart
         title={t(localeKeys.quoteHistory, { currency: nativeToken?.symbol || "-" })}
-        data={quoteHistoryData.map((item) => convertItem(item, nativeToken?.decimals))}
+        data={quoteHistory.data.map((item) => convertItem(item, nativeToken?.decimals))}
+        loading={quoteHistory.loading}
       />
     </div>
   );

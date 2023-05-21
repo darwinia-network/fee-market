@@ -4,9 +4,7 @@ import { useMarket } from "../../hooks/market";
 import { isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
 
 export const GraphqlProvider = ({ children }: PropsWithChildren<unknown>) => {
-  const { currentMarket } = useMarket();
-
-  const sourceChain = currentMarket?.source;
+  const { sourceChain } = useMarket();
 
   const client = useMemo(() => {
     let uri = "";

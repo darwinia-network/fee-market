@@ -15,7 +15,7 @@ interface InputTips {
 
 const RegisterRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { currentMarket, sourceChain } = useMarket();
   const { signerApi: api } = useApi();
   const { relayerAddress, minQuote, minCollateral, register, getRelayerInfo } = useRelayer();
   const { balance: relayerBalance, refresh: refreshBalance } = useBalance(relayerAddress);
@@ -28,18 +28,11 @@ const RegisterRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onCl
   const [quoteTips, setQuoteTips] = useState<InputTips | null>(null);
   const [collteralTips, setCollateralTips] = useState<InputTips | null>(null);
 
-  const sourceChain = currentMarket?.source;
-
   const loadingModal = useMemo(() => {
-    return (
-      !relayerAddress ||
-      !currentMarket ||
-      (isPolkadotChain(sourceChain) && !api) ||
-      !relayerBalance ||
-      !minQuote ||
-      !minCollateral
-    );
-  }, [relayerAddress, currentMarket, api, relayerBalance, minQuote, minCollateral, sourceChain]);
+    return !relayerAddress || !currentMarket || !api || !relayerBalance || minQuote === null || !minCollateral;
+  }, [relayerAddress, currentMarket, api, relayerBalance, minQuote, minCollateral]);
+
+  console.log(minCollateral);
 
   const disableConfirm = useMemo(() => {
     return !quoteInput || !collateralInput || quoteTips?.error || collteralTips?.error;
@@ -145,7 +138,7 @@ const RegisterRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onCl
 
   // Quote input tips
   useEffect(() => {
-    if (nativeToken && minQuote) {
+    if (nativeToken && minQuote !== null) {
       const min = BigNumber.from(minQuote.toString());
       setQuoteTips({
         error: false,

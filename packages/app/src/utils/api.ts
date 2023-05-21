@@ -1,17 +1,31 @@
-import { providers } from "ethers";
 import { ApiPromise } from "@polkadot/api";
 import { FEE_MARKET_API_SECTIONS } from "../config";
-import type { FeeMarketApiSection } from "../config";
 import type { RuntimeVersion } from "@polkadot/types/interfaces";
-import type { FeeMarketPolkadotChain } from "../types";
+import type { FeeMarketPolkadotChain, FeeMarketApiSection } from "../types";
+import type { PublicClient, WalletClient } from "wagmi";
 
-export const isEthApi = (api: unknown): api is providers.Web3Provider => {
-  return (
-    api instanceof providers.Provider ||
-    api instanceof providers.Web3Provider ||
-    api instanceof providers.JsonRpcProvider ||
-    api instanceof providers.WebSocketProvider
-  );
+export const isEthApi = (api?: unknown): api is PublicClient | WalletClient => {
+  if (api && typeof api === "object" && Object.hasOwn(api, "type")) {
+    const { type } = api as { type?: unknown };
+    return type === "publicClient" || type === "walletClient";
+  }
+  return false;
+};
+
+export const isEthProviderApi = (api?: unknown): api is PublicClient => {
+  if (api && typeof api === "object" && Object.hasOwn(api, "type")) {
+    const { type } = api as { type?: unknown };
+    return type === "publicClient";
+  }
+  return false;
+};
+
+export const isEthSignerApi = (api?: unknown): api is WalletClient => {
+  if (api && typeof api === "object" && Object.hasOwn(api, "type")) {
+    const { type } = api as { type?: unknown };
+    return type === "walletClient";
+  }
+  return false;
 };
 
 export const isPolkadotApi = (api: unknown): api is ApiPromise => {

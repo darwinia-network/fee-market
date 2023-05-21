@@ -1,11 +1,18 @@
 import { useTranslation } from "react-i18next";
 import { formatDistanceStrict } from "date-fns";
-import { utils as ethersUtils, BigNumber } from "ethers";
+import { utils as ethersUtils } from "ethers";
 import type { BN } from "@polkadot/util";
 import localeKeys from "../../locale/localeKeys";
 import { formatBalance, getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain } from "../../utils";
 import { useMemo } from "react";
-import { useMarket } from "../../hooks";
+import {
+  useAverageSpeed,
+  useCurrentFee,
+  useMarket,
+  useRelayerAmount,
+  useTotalOrders,
+  useTotalReward,
+} from "../../hooks";
 import { Spinner } from "@darwinia/ui";
 
 const formatRelayers = (active?: number | null, total?: number | null): string => {
@@ -23,7 +30,7 @@ const formatSpeed = (speed?: number | string | null): string => {
   return "-";
 };
 
-const formatCurrentFee = (fee?: BN | BigNumber | null, decimals?: number | null, symbol?: string | null): string => {
+const formatCurrentFee = (fee?: BN | bigint | null, decimals?: number | null, symbol?: string | null): string => {
   if (fee && decimals && symbol) {
     return formatBalance(fee, decimals, symbol);
   }
@@ -44,34 +51,14 @@ const formatOrders = (orders?: number | null): string => {
   return "-";
 };
 
-interface Props {
-  averageSpeed: {
-    value: number | string | null | undefined;
-    loading: boolean;
-  };
-  totalOrders: {
-    value: number | null | undefined;
-    loading: boolean;
-  };
-  totalRelayers: {
-    total: number | null | undefined;
-    active: number | null | undefined;
-    loading: boolean;
-  };
-  totalReward: {
-    value: BN | null | undefined;
-    loading: boolean;
-  };
-  currentFee: {
-    value: BN | BigNumber | null | undefined;
-    loading: boolean;
-  };
-}
-
-export const OverviewSummary = ({ averageSpeed, totalOrders, totalRelayers, totalReward, currentFee }: Props) => {
+export const OverviewSummary = () => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
-  const sourceChain = currentMarket?.source;
+  const { relayerAmount } = useRelayerAmount();
+  const { currentFee } = useCurrentFee();
+  const { averageSpeed } = useAverageSpeed();
+  const { totalOrders } = useTotalOrders();
+  const { totalReward } = useTotalReward();
+  const { sourceChain } = useMarket();
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {
@@ -82,11 +69,11 @@ export const OverviewSummary = ({ averageSpeed, totalOrders, totalRelayers, tota
     return null;
   }, [sourceChain]);
 
-  const summary = [
+  const summaries = [
     {
       title: t(localeKeys.totalRelayers),
-      data: formatRelayers(totalRelayers.active, totalRelayers.total),
-      loading: totalRelayers.loading,
+      data: formatRelayers(relayerAmount.active, relayerAmount.total),
+      loading: relayerAmount.loading,
     },
     { title: t(localeKeys.averageSpeed), data: formatSpeed(averageSpeed.value), loading: averageSpeed.loading },
     {
@@ -104,7 +91,7 @@ export const OverviewSummary = ({ averageSpeed, totalOrders, totalRelayers, tota
 
   return (
     <div className="rounded-[0.625rem] bg-blackSecondary p-[0.9375rem] lg:p-[1.875rem] flex flex-col lg:flex-row lg:!gap-[2.5rem]">
-      {summary.map((item, index) => (
+      {summaries.map((item, index) => (
         <div
           key={index}
           className={
@@ -112,12 +99,8 @@ export const OverviewSummary = ({ averageSpeed, totalOrders, totalRelayers, tota
           }
         >
           <div className={"flex-1"}>{item.title}</div>
-          <Spinner
-            className="text-right lg:text-left flex-1 shrink-0 text-primary text-18-bold lg:text-24-bold w-fit"
-            size="small"
-            isLoading={item.loading}
-          >
-            <span>{item.data}</span>
+          <Spinner className="text-right lg:text-left flex-1 shrink-0 w-fit" size="small" isLoading={item.loading}>
+            <span className="text-primary text-18-bold lg:text-24-bold">{item.data}</span>
           </Spinner>
         </div>
       ))}

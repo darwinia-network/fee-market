@@ -1,13 +1,4 @@
-import type { FeeMarketPolkadotChain } from "../types/chain";
-
-export type FeeMarketApiSection =
-  | "feeMarket"
-  | "crabFeeMarket"
-  | "darwiniaFeeMarket"
-  | "pangolinFeeMarket"
-  | "pangoroFeeMarket"
-  | "crabParachainFeeMarket"
-  | "pangolinParachainFeeMarket";
+import type { FeeMarketPolkadotChain, FeeMarketApiSection } from "../types/chain";
 
 /**
  * this is for Polkadot

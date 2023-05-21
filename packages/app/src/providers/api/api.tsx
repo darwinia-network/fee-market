@@ -1,32 +1,31 @@
-import { providers } from "ethers";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { useMarket } from "../../hooks/market";
 import type { Account } from "../../types";
-import { isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
+import { isEthChain, isPolkadotChain, getPolkadotChainConfig, getEthChainConfig } from "../../utils";
 import { GraphqlProvider } from "./graphql";
-import { useNetwork } from "wagmi";
+import { getPublicClient, getWalletClient, watchPublicClient, watchWalletClient } from "@wagmi/core";
+import type { PublicClient, WalletClient } from "wagmi";
+import { Subscription, from } from "rxjs";
 
-const ACTIVE_ACCOUNT_KEY = "feemarket_active_account";
+const ACTIVE_ACCOUNT_STORAGE_KEY = "active:account";
 
 export interface ApiCtx {
-  isWalletInstalled: boolean;
-  signerApi: providers.Provider | ApiPromise | null;
-  providerApi: providers.Provider | ApiPromise | null;
+  hasWallet: boolean;
+  signerApi: WalletClient | ApiPromise | null;
+  providerApi: PublicClient | ApiPromise | null;
   accounts: Account[];
   currentAccount: Account | null;
-  currentChainId: number | null;
   setAccounts: (accounts: Account[]) => void;
   setCurrentAccount: (account: Account) => void;
 }
 
 const defaultValue: ApiCtx = {
-  isWalletInstalled: false,
+  hasWallet: false,
   signerApi: null,
   providerApi: null,
   accounts: [],
   currentAccount: null,
-  currentChainId: null,
   setAccounts: () => undefined,
   setCurrentAccount: () => undefined,
 };
@@ -34,38 +33,64 @@ const defaultValue: ApiCtx = {
 export const ApiContext = createContext<ApiCtx>(defaultValue);
 
 export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
-  const { currentMarket } = useMarket();
-  const { chain } = useNetwork();
-  const [isWalletInstalled, setIsWalletInstalled] = useState(false);
-  const [signerApi, setSignerApi] = useState<providers.Provider | ApiPromise | null>(null);
-  const [providerApi, setProviderApi] = useState<providers.Provider | ApiPromise | null>(null);
+  const { sourceChain } = useMarket();
+
+  const [hasWallet, setHasWallet] = useState(false);
+  const [signerApi, setSignerApi] = useState<WalletClient | ApiPromise | null>(null);
+  const [providerApi, setProviderApi] = useState<PublicClient | ApiPromise | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [currentAccount, _setCurrentAccount] = useState<Account | null>(null);
-  const [currentChainId, setCurrentChainId] = useState<number | null>(null);
-
-  const sourceChain = currentMarket?.source;
 
   const setCurrentAccount = useCallback((acc: Account | null) => {
     if (acc?.originAddress) {
-      localStorage.setItem(ACTIVE_ACCOUNT_KEY, acc.originAddress);
+      localStorage.setItem(ACTIVE_ACCOUNT_STORAGE_KEY, acc.originAddress);
     }
     _setCurrentAccount(acc);
   }, []);
 
+  // Update api
   useEffect(() => {
     let api: ApiPromise | null = null;
+    let walletInstalled = false;
+    let sub$$: Subscription | null = null;
+    let unwatchPublic: (() => void) | null = null;
+    let unwatchWallet: (() => void) | null = null;
+
+    const errorHandler = () => {
+      setSignerApi(null);
+      setProviderApi(null);
+    };
+    const readyHandler = () => {
+      if (walletInstalled) {
+        setSignerApi((prev) => prev ?? api);
+      }
+      setProviderApi((prev) => prev ?? api);
+    };
+    const disconnectedHandler = () => {
+      setSignerApi(null);
+      setProviderApi(null);
+    };
 
     if (isEthChain(sourceChain)) {
-      const rpc = getEthChainConfig(sourceChain).provider.rpc;
-      if (rpc.startsWith("ws")) {
-        setProviderApi(new providers.WebSocketProvider(rpc));
-      } else if (rpc.startsWith("http")) {
-        setProviderApi(new providers.JsonRpcProvider(rpc));
-      }
-      setIsWalletInstalled(true);
+      const chainConfig = getEthChainConfig(sourceChain);
+
+      // No matter how the network is switched, publicClient will allways keep this chain
+      setProviderApi(getPublicClient({ chainId: chainConfig.chainId }));
+      sub$$ = from(getWalletClient()).subscribe({
+        next: setSignerApi,
+        error: console.error,
+      });
+
+      // No matter how the network is switched, publicClient will allways keep this chain
+      unwatchPublic = watchPublicClient({ chainId: chainConfig.chainId }, setProviderApi);
+      unwatchWallet = watchWalletClient({}, setSignerApi);
+
+      // Since WalletConnect is used, the wallet is considered to exist all the time
+      walletInstalled = true;
+      setHasWallet(walletInstalled);
     } else if (isPolkadotChain(sourceChain)) {
       const injecteds = window.injectedWeb3;
-      const haveWallet =
+      walletInstalled =
         injecteds &&
         (injecteds["polkadot-js"] ||
           injecteds['"polkadot-js"'] ||
@@ -75,45 +100,48 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
           injecteds['"subwallet-js"'])
           ? true
           : false;
-      setIsWalletInstalled(haveWallet);
+      setHasWallet(walletInstalled);
 
       const rpc = getPolkadotChainConfig(sourceChain).provider.rpc;
       const provider = new WsProvider(rpc);
       api = new ApiPromise({ provider });
-      api.on("error", () => {
-        setSignerApi(null);
-        setProviderApi(null);
-      });
-      api.on("ready", () => {
-        if (haveWallet) {
-          setSignerApi((prev) => prev ?? api);
-        }
-        setProviderApi((prev) => prev ?? api);
-      });
-      api.on("disconnected", () => {
-        setSignerApi(null);
-        setProviderApi(null);
-      });
+      api.on("error", errorHandler);
+      api.on("ready", readyHandler);
+      api.on("disconnected", disconnectedHandler);
     }
 
     return () => {
       if (api) {
-        api.off("error", () => undefined);
-        api.off("ready", () => undefined);
-        api.off("connected", () => undefined);
-        api.off("disconnected", () => undefined);
+        api.off("error", errorHandler);
+        api.off("ready", readyHandler);
+        api.off("disconnected", disconnectedHandler);
+      }
+      if (sub$$) {
+        sub$$.unsubscribe();
+        sub$$ = null;
+      }
+      if (unwatchPublic) {
+        unwatchPublic();
+        unwatchPublic = null;
+      }
+      if (unwatchWallet) {
+        unwatchWallet();
+        unwatchWallet = null;
       }
 
-      setIsWalletInstalled(false);
-      setAccounts([]);
+      api = null;
+      walletInstalled = false;
+
+      setHasWallet(false);
       setSignerApi(null);
       setProviderApi(null);
+      setAccounts([]);
     };
   }, [sourceChain]);
 
   useEffect(() => {
     if (accounts.length) {
-      const storageAddress = localStorage.getItem(ACTIVE_ACCOUNT_KEY);
+      const storageAddress = localStorage.getItem(ACTIVE_ACCOUNT_STORAGE_KEY);
       setCurrentAccount(accounts.find((item) => item.originAddress === storageAddress) ?? accounts[0]);
     }
 
@@ -122,27 +150,15 @@ export const ApiProvider = ({ children }: PropsWithChildren<unknown>) => {
     };
   }, [accounts, setCurrentAccount]);
 
-  useEffect(() => {
-    if (isEthChain(sourceChain)) {
-      setCurrentChainId(chain?.id || null);
-    } else if (isPolkadotChain(sourceChain)) {
-      setCurrentChainId(null);
-    }
-    return () => {
-      setCurrentChainId(null);
-    };
-  }, [sourceChain, chain]);
-
   return (
     <GraphqlProvider>
       <ApiContext.Provider
         value={{
-          isWalletInstalled,
+          hasWallet,
           signerApi,
           providerApi,
           accounts,
           currentAccount,
-          currentChainId,
           setAccounts,
           setCurrentAccount,
         }}

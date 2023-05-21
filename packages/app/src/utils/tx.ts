@@ -2,9 +2,7 @@ import type { SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/promise/types";
 import { web3FromAddress } from "@polkadot/extension-dapp";
 import { from, tap, switchMap, Observable, Subscriber } from "rxjs";
-
-export type TxCallback = (status: SubmittableResult) => void;
-export type TxFailedCallback = (status: Error | SubmittableResult | null) => void;
+import type { TxCallback, TxFailedCallback } from "../types";
 
 interface Params {
   extrinsic: SubmittableExtrinsic;

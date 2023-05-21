@@ -17,6 +17,7 @@ const config: PolkadotChainConfig = {
   },
   explorer: {
     url: "https://crab-parachain.subscan.io/",
+    name: "Subscan",
   },
 };
 

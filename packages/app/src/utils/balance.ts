@@ -1,7 +1,9 @@
-import { providers, BigNumber, BigNumberish, utils as ethersUtils } from "ethers";
+import { BigNumber, BigNumberish, utils as ethersUtils } from "ethers";
 import { ApiPromise } from "@polkadot/api";
 import { u128, Struct, Vec, Enum } from "@polkadot/types";
 import { bnMax, BN_ZERO, BN } from "@polkadot/util";
+import type { PublicClient } from "wagmi";
+import { BalanceResult } from "../types";
 
 interface PalletBalancesReasons extends Enum {
   readonly isFee: boolean;
@@ -17,11 +19,6 @@ interface PolkadotAccountData extends Struct {
 interface PalletBalancesBalanceLock extends Struct {
   readonly amount: u128;
   readonly reasons: PalletBalancesReasons;
-}
-
-export interface BalanceResult<T> {
-  total: T;
-  available: T;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,8 +38,8 @@ const calcMax = (lockItem: any, current: BN) => {
   return max;
 };
 
-export const getEthBalance = async (api: providers.Provider, addressOrName: string | Promise<string>) => {
-  const balance = await api.getBalance(addressOrName);
+export const getEthBalance = async (api: PublicClient, address: string) => {
+  const balance = BigNumber.from(await api.getBalance({ address: address as `0x${string}` }));
 
   return { total: balance, available: balance } as BalanceResult<BigNumber>;
 };

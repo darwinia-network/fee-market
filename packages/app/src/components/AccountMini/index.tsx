@@ -8,10 +8,8 @@ interface Props {
 }
 
 const AccountMini = ({ address }: Props) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
   const { displayName } = useAccountName(address);
-
-  const sourceChain = currentMarket?.source;
 
   return (
     <div className={"flex items-center bg-divider rounded-[0.3125rem] px-[0.625rem] py-[0.4375rem] gap-[0.625rem]"}>

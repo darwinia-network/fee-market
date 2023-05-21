@@ -1,5 +1,6 @@
-import type { ContractInterface } from "ethers";
+// import type { ContractInterface } from "ethers";
 import { FEE_MARKET_ETH_CHAINS, FEE_MARKET_POLKADOT_CHAINS } from "../config/constant";
+import { ABI } from "./contract";
 
 export type FeeMarketEthChain = typeof FEE_MARKET_ETH_CHAINS[number];
 export type FeeMarketPolkadotChain = typeof FEE_MARKET_POLKADOT_CHAINS[number];
@@ -7,32 +8,43 @@ export type FeeMarketPolkadotChain = typeof FEE_MARKET_POLKADOT_CHAINS[number];
 export type FeeMarketChain = FeeMarketPolkadotChain | FeeMarketEthChain;
 
 export interface ChainConfig {
-  chainName: FeeMarketChain; // Can use as id
-  displayName: string;
-  chainLogo: string;
-  graphql: {
-    endpoint: string;
+  readonly chainName: FeeMarketChain; // Can use as id
+  readonly displayName: string;
+  readonly chainLogo: string;
+  readonly graphql: {
+    readonly endpoint: string;
   };
-  nativeToken: {
-    symbol: string;
-    decimals: number;
+  readonly nativeToken: {
+    readonly symbol: string;
+    readonly decimals: number;
   };
-  explorer: {
-    url: string;
+  readonly explorer: {
+    readonly url: string;
+    readonly name: string;
   };
-  provider: {
-    rpc: string;
+  readonly provider: {
+    readonly rpc: string;
   };
 }
 
 export interface PolkadotChainConfig extends ChainConfig {
-  chainName: FeeMarketPolkadotChain;
+  readonly chainName: FeeMarketPolkadotChain;
 }
 
 export interface EthChainConfig extends ChainConfig {
-  chainId: number;
-  chainName: FeeMarketEthChain;
-  contractAddress: `0x${string}`;
-  contractInterface: ContractInterface;
-  isSmartChain?: boolean;
+  readonly chainId: number;
+  readonly chainName: FeeMarketEthChain;
+  readonly contractAddress: `0x${string}`;
+  readonly contractInterface: ABI;
+  // readonly contractInterface: ContractInterface;
+  readonly isSmartChain?: boolean;
 }
+
+export type FeeMarketApiSection =
+  | "feeMarket"
+  | "crabFeeMarket"
+  | "darwiniaFeeMarket"
+  | "pangolinFeeMarket"
+  | "pangoroFeeMarket"
+  | "crabParachainFeeMarket"
+  | "pangolinParachainFeeMarket";

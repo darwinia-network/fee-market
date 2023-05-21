@@ -23,6 +23,11 @@
     justify-content: center;
     align-items: center;
     user-select: none;
+
+    &.justify-start {
+      justify-content: flex-start;
+      padding-top: 54px;
+    }
   }
 
   .dw-spinner-text {

@@ -17,6 +17,7 @@ const config: PolkadotChainConfig = {
   },
   explorer: {
     url: "https://pangoro.subscan.io/",
+    name: "Subscan",
   },
 };
 

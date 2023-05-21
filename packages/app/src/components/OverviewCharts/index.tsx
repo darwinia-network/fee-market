@@ -5,23 +5,18 @@ import { FeeHistoryChart } from "../Chart/FeeHistoryChart";
 import { getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain, formatBalance } from "../../utils";
 import { BN } from "@polkadot/util";
 import { useMemo } from "react";
-import { useMarket } from "../../hooks";
+import { useMarket, useOrdersCount } from "../../hooks";
+import { useFeeHistory } from "../../hooks/feeHistory";
 
 const convertItem = (item: [number, BN], decimals = 9): [number, number] => {
   return [item[0], Number(formatBalance(item[1], decimals))];
 };
 
-interface Props {
-  ordersCount: { data: [number, number][]; loading: boolean };
-  feeHistory: { data: [number, BN][]; loading: boolean };
-}
-
-const OverviewCharts = ({ ordersCount, feeHistory }: Props) => {
+const OverviewCharts = () => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
-
-  const sourceChain = currentMarket?.source;
-  // const destinationChain = currentMarket?.destination;
+  const { feeHistory } = useFeeHistory();
+  const { ordersCount } = useOrdersCount();
+  const { sourceChain } = useMarket();
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {

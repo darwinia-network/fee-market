@@ -1,23 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { createContext, PropsWithChildren, useState, useCallback, useEffect } from "react";
+import { createContext, PropsWithChildren, useState, useCallback, useEffect, useMemo } from "react";
 import { parseUrlChainName, formatUrlChainName } from "../utils";
-import { UrlSearchParamsKey, Market } from "../types";
+import { UrlSearchParamsKey, Market, FeeMarketChain } from "../types";
 interface MarketCtx {
   currentMarket: Market | null;
+  sourceChain: FeeMarketChain | undefined;
+  destinationChain: FeeMarketChain | undefined;
   setCurrentMarket: (market: Market) => void;
-  refresh: () => void;
-  setRefresh: (fn: () => void) => void;
-  cleanUp: () => void; // clean up some state of some pages
-  setCleanUp: (fn: () => void) => void;
 }
 
 const defaultValue: MarketCtx = {
   currentMarket: null,
+  sourceChain: undefined,
+  destinationChain: undefined,
   setCurrentMarket: () => undefined,
-  refresh: () => undefined,
-  setRefresh: () => undefined,
-  cleanUp: () => undefined,
-  setCleanUp: () => undefined,
 };
 
 export const MarketContext = createContext<MarketCtx>(defaultValue);
@@ -25,8 +21,10 @@ export const MarketContext = createContext<MarketCtx>(defaultValue);
 export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
   const navigate = useNavigate();
   const [currentMarket, _setCurrentMarket] = useState<Market | null>(null);
-  const [refresh, setRefresh] = useState<() => void>(() => () => undefined);
-  const [cleanUp, setCleanUp] = useState<() => void>(() => () => undefined);
+
+  const { sourceChain, destinationChain } = useMemo(() => {
+    return { sourceChain: currentMarket?.source, destinationChain: currentMarket?.destination };
+  }, [currentMarket]);
 
   const setCurrentMarket = useCallback(
     (market: Market | null) => {
@@ -69,11 +67,9 @@ export const MarketProvider = ({ children }: PropsWithChildren<unknown>) => {
     <MarketContext.Provider
       value={{
         currentMarket,
+        sourceChain,
+        destinationChain,
         setCurrentMarket,
-        refresh,
-        setRefresh,
-        cleanUp,
-        setCleanUp,
       }}
     >
       {children}

@@ -16,6 +16,7 @@ const config: EthChainConfig = {
   },
   explorer: {
     url: "https://etherscan.io/",
+    name: "Etherscan",
   },
   provider: {
     rpc: "https://eth-mainnet.g.alchemy.com/v2/1fYUXWGBTu0naj6Stf7Sh77VAO-J5j4v",

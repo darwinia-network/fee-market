@@ -16,6 +16,7 @@ const config: EthChainConfig = {
   },
   explorer: {
     url: "https://goerli.etherscan.io/",
+    name: "Etherscan",
   },
   provider: {
     rpc: "https://eth-goerli.g.alchemy.com/v2/oanvaPnbDzYvigj3O_67w3SBcvbDvim8",
