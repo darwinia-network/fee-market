@@ -6,7 +6,7 @@ import { useApi } from "../api";
 import { useMarket } from "../market";
 import { getEthChainConfig, isEthApi, isEthChain } from "../../utils";
 
-export const useWalletConnectWallet = () => {
+export const useWalletConnect = () => {
   const { sourceChain } = useMarket();
   const { signerApi, setAccounts } = useApi();
   const { open, setDefaultChain } = useWeb3Modal();

@@ -1,14 +1,14 @@
 import { useMemo } from "react";
-import { usePolkadotJsWallet } from "./polkadotJsWallet";
-import { useWalletConnectWallet } from "./walletConnectWallet";
+import { usePolkadotJs } from "./polkadotJs";
+import { useWalletConnect } from "./walletConnect";
 import { useMarket } from "../market";
 import { isEthChain, isPolkadotChain } from "../../utils";
 
 export const useWallet = () => {
   const { currentMarket } = useMarket();
 
-  const polkadotJs = usePolkadotJsWallet();
-  const walletConnect = useWalletConnectWallet();
+  const polkadotJs = usePolkadotJs();
+  const walletConnect = useWalletConnect();
 
   return useMemo(() => {
     const fallback = {

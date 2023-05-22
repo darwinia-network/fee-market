@@ -9,7 +9,7 @@ import { isPolkadotApi } from "../../utils";
 
 const DAPP_NAME = "darwinia/feemarket";
 
-export const usePolkadotJsWallet = () => {
+export const usePolkadotJs = () => {
   const { signerApi, setAccounts } = useApi();
 
   const connect = useCallback(async () => {
