@@ -17,13 +17,13 @@ export interface RelayerCtx {
   register: (
     quoteAmount: bigint,
     collateralAmount: bigint,
-    onFailed: (error: Error) => void,
+    onError: (error: Error) => void,
     onSuccess: () => void
   ) => Promise<void>;
-  cancel: (onFailed: (error: Error) => void, onSuccess: () => void) => Promise<void>;
+  cancel: (onError: (error: Error) => void, onSuccess: () => void) => Promise<void>;
   getRelayerInfo: () => Subscription;
-  updateQuote: (amount: bigint, onFailed: (error: Error) => void, onSuccess: () => void) => void;
-  updateCollateral: (amount: bigint, onFailed: (error: Error) => void, onSuccess: () => void) => void;
+  updateQuote: (amount: bigint, onError: (error: Error) => void, onSuccess: () => void) => void;
+  updateCollateral: (amount: bigint, onError: (error: Error) => void, onSuccess: () => void) => void;
 }
 
 const defaultValue: RelayerCtx = {

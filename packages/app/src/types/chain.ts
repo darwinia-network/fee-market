@@ -1,6 +1,7 @@
 // import type { ContractInterface } from "ethers";
 import { FEE_MARKET_ETH_CHAINS, FEE_MARKET_POLKADOT_CHAINS } from "../config/constant";
 import { ABI } from "./contract";
+import { WalletID } from "./wallet";
 
 export type FeeMarketEthChain = typeof FEE_MARKET_ETH_CHAINS[number];
 export type FeeMarketPolkadotChain = typeof FEE_MARKET_POLKADOT_CHAINS[number];
@@ -25,6 +26,7 @@ export interface ChainConfig {
   readonly provider: {
     readonly rpc: string;
   };
+  readonly wallets: WalletID[];
 }
 
 export interface PolkadotChainConfig extends ChainConfig {

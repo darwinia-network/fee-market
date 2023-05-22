@@ -2,25 +2,19 @@ import { ApiPromise } from "@polkadot/api";
 import { FEE_MARKET_API_SECTIONS } from "../config";
 import type { RuntimeVersion } from "@polkadot/types/interfaces";
 import type { FeeMarketPolkadotChain, FeeMarketApiSection } from "../types";
-import type { PublicClient, WalletClient } from "wagmi";
+import type { WalletClient } from "wagmi";
+import { ethers } from "ethers";
 
-export const isEthApi = (api?: unknown): api is PublicClient | WalletClient => {
-  if (api && typeof api === "object" && Object.hasOwn(api, "type")) {
-    const { type } = api as { type?: unknown };
-    return type === "publicClient" || type === "walletClient";
-  }
-  return false;
+export const isEthersApi = (api: unknown): api is ethers.providers.Web3Provider => {
+  return (
+    api instanceof ethers.providers.Provider ||
+    api instanceof ethers.providers.Web3Provider ||
+    api instanceof ethers.providers.JsonRpcProvider ||
+    api instanceof ethers.providers.WebSocketProvider
+  );
 };
 
-export const isEthProviderApi = (api?: unknown): api is PublicClient => {
-  if (api && typeof api === "object" && Object.hasOwn(api, "type")) {
-    const { type } = api as { type?: unknown };
-    return type === "publicClient";
-  }
-  return false;
-};
-
-export const isEthSignerApi = (api?: unknown): api is WalletClient => {
+export const isWalletClient = (api?: unknown): api is WalletClient => {
   if (api && typeof api === "object" && Object.hasOwn(api, "type")) {
     const { type } = api as { type?: unknown };
     return type === "walletClient";

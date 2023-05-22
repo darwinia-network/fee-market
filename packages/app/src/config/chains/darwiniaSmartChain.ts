@@ -24,6 +24,7 @@ const config: EthChainConfig = {
   contractAddress: "0xcA927Df15afb7629b79dA4713a871190315c7409",
   contractInterface,
   isSmartChain: true,
+  wallets: ["metamask", "wallet-connect"],
 };
 
 export default config;

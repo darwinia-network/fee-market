@@ -10,3 +10,4 @@ export * from "./transform";
 export * from "./tx";
 export * from "./url";
 export * from "./order";
+export * from "./contract";

@@ -1,12 +1,10 @@
 import ConnectWallet from "../components/ConnectWallet";
 import Dashboard from "../components/RelayerDashboard";
 import { RelayerProvider } from "../providers";
-import { useMarket, useApi } from "../hooks";
-import { isPolkadotChain } from "../utils";
+import { useApi } from "../hooks";
 
 const RelayerDashboard = () => {
-  const { sourceChain } = useMarket();
-  const { signerApi: api, currentAccount, hasWallet } = useApi();
+  const { currentAccount } = useApi();
 
   return (
     <>
@@ -15,7 +13,7 @@ const RelayerDashboard = () => {
           <Dashboard />
         </RelayerProvider>
       ) : (
-        <ConnectWallet loading={hasWallet && isPolkadotChain(sourceChain) && api === null} isInstalled={hasWallet} />
+        <ConnectWallet />
       )}
     </>
   );

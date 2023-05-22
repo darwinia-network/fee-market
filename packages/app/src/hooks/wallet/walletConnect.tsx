@@ -1,31 +1,31 @@
-import logo from "../../assets/images/wallet-connect-logo.svg";
-import { useCallback, useEffect } from "react";
+import logo from "../../assets/images/wallet/wallet-connect.svg";
+import { useCallback, useEffect, useState } from "react";
 import { useWeb3Modal } from "@web3modal/react";
-import { useAccount, useConnect } from "wagmi";
-import { useApi } from "../api";
+import { useConnect, useDisconnect } from "wagmi";
 import { useMarket } from "../market";
-import { getEthChainConfig, isEthApi, isEthChain } from "../../utils";
+import { getEthChainConfig, isEthChain } from "../../utils";
+import { Wallet } from "../../types";
+import { useApi } from "../api";
 
-export const useWalletConnect = () => {
+export const useWalletConnect = (): Wallet => {
   const { sourceChain } = useMarket();
-  const { signerApi, setAccounts } = useApi();
+  const { setActiveWallet } = useApi();
   const { open, setDefaultChain } = useWeb3Modal();
-  const { address } = useAccount();
   const { connectors } = useConnect();
+  const { disconnect: disconnectWallet } = useDisconnect();
+  const [loading, setLoading] = useState(false);
 
   const connect = useCallback(async () => {
+    setLoading(true);
     await open();
-  }, [open]);
+    setLoading(false);
+    setActiveWallet("wallet-connect");
+  }, [open, setActiveWallet]);
 
   const disconnect = useCallback(() => {
-    // TODO
-  }, []);
-
-  useEffect(() => {
-    if (isEthApi(signerApi)) {
-      setAccounts(address ? [{ address, originAddress: address, meta: {} }] : []);
-    }
-  }, [address, signerApi, setAccounts]);
+    disconnectWallet();
+    setActiveWallet(null);
+  }, [setActiveWallet, disconnectWallet]);
 
   useEffect(() => {
     if (isEthChain(sourceChain) && connectors.length) {
@@ -34,5 +34,9 @@ export const useWalletConnect = () => {
     }
   }, [connectors, sourceChain, setDefaultChain]);
 
-  return { logo, connect, disconnect };
+  useEffect(() => {
+    disconnect();
+  }, [disconnect]);
+
+  return { id: "wallet-connect", installed: true, logo, loading, name: "WalletConnect", connect, disconnect };
 };

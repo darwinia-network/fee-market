@@ -10,10 +10,12 @@ import { isEthChain, isPolkadotChain } from "../../utils";
 import { Identicon } from "@polkadot/react-identicon";
 import JazzIcon from "../JazzIcon";
 import { useRelayer, useMarket, useAccountName } from "../../hooks";
+import { useApi } from "../../providers";
 
 const Account = ({ advanced = false }: { advanced?: boolean }) => {
   const { t } = useTranslation();
   const { sourceChain } = useMarket();
+  const { setActiveWallet } = useApi();
   const { relayerAddress, isRegistered } = useRelayer();
   const { displayName } = useAccountName(relayerAddress);
 
@@ -75,14 +77,25 @@ const Account = ({ advanced = false }: { advanced?: boolean }) => {
       </div>
       {advanced && (
         <div className={"shrink-0 justify-end flex-wrap flex flex-1 flex-col lg:flex-row gap-[0.9375rem] items-center"}>
-          <Button
-            className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
-            btnType={"secondary"}
-            disabled={isEthChain(sourceChain)}
-            onClick={() => setCurrentAccountModalVisible(true)}
-          >
-            {t(localeKeys.switchAccount)}
-          </Button>
+          {isEthChain(sourceChain) ? (
+            <Button
+              className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
+              btnType={"secondary"}
+              onClick={() => {
+                setActiveWallet(null);
+              }}
+            >
+              {t(localeKeys.disconnect)}
+            </Button>
+          ) : (
+            <Button
+              className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
+              btnType={"secondary"}
+              onClick={() => setCurrentAccountModalVisible(true)}
+            >
+              {t(localeKeys.switchAccount)}
+            </Button>
+          )}
           <a
             rel="noopener noreferrer"
             target={"_blank"}

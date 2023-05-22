@@ -32,8 +32,6 @@ const RegisterRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onCl
     return !relayerAddress || !currentMarket || !api || !relayerBalance || minQuote === null || !minCollateral;
   }, [relayerAddress, currentMarket, api, relayerBalance, minQuote, minCollateral]);
 
-  console.log(minCollateral);
-
   const disableConfirm = useMemo(() => {
     return !quoteInput || !collateralInput || quoteTips?.error || collteralTips?.error;
   }, [quoteInput, collateralInput, quoteTips, collteralTips]);

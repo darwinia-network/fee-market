@@ -10,3 +10,4 @@ export * from "./balance";
 export * from "./tx";
 export * from "./graphql";
 export * from "./transform";
+export * from "./wallet";

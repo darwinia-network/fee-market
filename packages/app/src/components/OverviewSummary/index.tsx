@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { formatDistanceStrict } from "date-fns";
-import { utils as ethersUtils } from "ethers";
+import { BigNumber, utils as ethersUtils } from "ethers";
 import type { BN } from "@polkadot/util";
 import localeKeys from "../../locale/localeKeys";
 import { formatBalance, getEthChainConfig, getPolkadotChainConfig, isEthChain, isPolkadotChain } from "../../utils";
@@ -30,7 +30,7 @@ const formatSpeed = (speed?: number | string | null): string => {
   return "-";
 };
 
-const formatCurrentFee = (fee?: BN | bigint | null, decimals?: number | null, symbol?: string | null): string => {
+const formatCurrentFee = (fee?: BN | BigNumber | null, decimals?: number | null, symbol?: string | null): string => {
   if (fee && decimals && symbol) {
     return formatBalance(fee, decimals, symbol);
   }

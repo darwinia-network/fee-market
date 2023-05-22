@@ -19,6 +19,7 @@ const config: PolkadotChainConfig = {
     url: "https://crab.subscan.io/",
     name: "Subscan",
   },
+  wallets: ["polkadot-js"],
 };
 
 export default config;

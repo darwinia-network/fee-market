@@ -92,7 +92,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
     async (
       quoteAmount: bigint,
       collateralAmount: bigint,
-      onFailed: (error: Error) => void = () => undefined,
+      onError: (error: Error) => void = () => undefined,
       onSuccess: () => void = () => undefined
     ) => {
       if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
@@ -127,7 +127,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
               } else {
                 notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
               }
-              onFailed(error as Error);
+              onError(error as Error);
               console.error(error);
             },
           });
@@ -138,7 +138,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
   );
 
   const cancel = useCallback(
-    async (onFailed: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
+    async (onError: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
       if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
         const chainConfig = getPolkadotChainConfig(sourceChain);
         const apiSection = getFeeMarketApiSection(api, destinationChain);
@@ -168,7 +168,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
               } else {
                 notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
               }
-              onFailed(error as Error);
+              onError(error as Error);
               console.error(error);
             },
           });
@@ -179,7 +179,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
   );
 
   const updateQuote = useCallback(
-    (amount: bigint, onFailed: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
+    (amount: bigint, onError: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
       if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
         const chainConfig = getPolkadotChainConfig(sourceChain);
         const apiSection = getFeeMarketApiSection(api, destinationChain);
@@ -208,7 +208,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
               } else {
                 notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
               }
-              onFailed(error as Error);
+              onError(error as Error);
               console.error(error);
             },
           });
@@ -219,7 +219,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
   );
 
   const updateCollateral = useCallback(
-    (amount: bigint, onFailed: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
+    (amount: bigint, onError: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
       if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
         const chainConfig = getPolkadotChainConfig(sourceChain);
         const apiSection = getFeeMarketApiSection(api, destinationChain);
@@ -248,7 +248,7 @@ export const usePolkadot = (relayerAddress: string, advanced: boolean) => {
               } else {
                 notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
               }
-              onFailed(error as Error);
+              onError(error as Error);
               console.error(error);
             },
           });

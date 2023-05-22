@@ -6,7 +6,7 @@ import {
   getEthChainConfig,
   getFeeMarketApiSection,
   isEthChain,
-  isEthProviderApi,
+  isEthersApi,
   isPolkadotApi,
   isPolkadotChain,
   isVec,
@@ -15,6 +15,7 @@ import {
 import type { OrderBook, PalletFeeMarketRelayer } from "../types";
 import type { Vec, u128, Option } from "@polkadot/types";
 import type { AccountId32 } from "@polkadot/types/interfaces";
+import { BigNumber, Contract } from "ethers";
 
 interface State {
   total: number | null | undefined;
@@ -30,41 +31,26 @@ export const useRelayerAmount = () => {
   useEffect(() => {
     let sub$$: Subscription | null = null;
 
-    if (isEthChain(sourceChain) && isEthProviderApi(api)) {
-      const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
+    if (isEthChain(sourceChain) && isEthersApi(api)) {
+      const chainConfig = getEthChainConfig(sourceChain);
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
       setRelayerAmount((prev) => ({ ...prev, loading: true }));
 
-      sub$$ = from(
-        api.readContract({
-          address: contractAddress,
-          abi: contractInterface,
-          functionName: "relayerCount",
-        }) as Promise<bigint>
-      )
+      sub$$ = from(contract.relayerCount() as Promise<BigNumber>)
         .pipe(
           switchMap((relayerCount) =>
-            zip(
-              of(relayerCount),
-              from(
-                api.readContract({
-                  address: contractAddress,
-                  abi: contractInterface,
-                  functionName: "getOrderBook",
-                  args: [relayerCount, false],
-                }) as Promise<OrderBook>
-              )
-            )
+            zip(of(relayerCount), from(contract.getOrderBook(relayerCount, false) as Promise<OrderBook>))
           )
         )
         .subscribe({
           next: ([relayerCount, orderBook]) => {
             setRelayerAmount({
               active: orderBook[1].length,
-              total: Number(relayerCount),
+              total: relayerCount.toNumber(),
               loading: false,
             });
           },
-          complete: () => setRelayerAmount((prev) => ({ ...prev, loading: false })),
           error: () => setRelayerAmount({ active: null, total: null, loading: false }),
         });
     } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
@@ -124,7 +110,6 @@ export const useRelayerAmount = () => {
                 loading: false,
               });
             },
-            complete: () => setRelayerAmount((prev) => ({ ...prev, loading: false })),
             error: () => setRelayerAmount({ active: null, total: null, loading: false }),
           });
       }

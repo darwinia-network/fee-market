@@ -1,61 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { readContract, writeContract, waitForTransaction } from "@wagmi/core";
+import { writeContract, waitForTransaction } from "@wagmi/core";
 import { useMarket } from "../../hooks/market";
-import { getEthChainConfig, isEthChain, isEthProviderApi, isEthSignerApi } from "../../utils";
+import { getEthChainConfig, isEthChain, isEthersApi, isWalletClient, getQuotePrev, triggerContract } from "../../utils";
 import { from, EMPTY, Subscription, zip, of, forkJoin } from "rxjs";
 import { useTranslation } from "react-i18next";
 import { notifyTx } from "./common";
-import { ABI, OrderBook } from "../../types";
 import { useApi } from "../api";
-
-const getQuotePrev = async (contractAddress: `0x${string}`, contractInterface: ABI, relayer: string, quote = 0n) => {
-  let prevOld: string | null = null;
-  let prevNew: string | null = null;
-
-  try {
-    const relayerCount = (await readContract({
-      address: contractAddress,
-      abi: contractInterface,
-      functionName: "relayerCount",
-    })) as bigint;
-    const book = (await readContract({
-      address: contractAddress,
-      abi: contractInterface,
-      functionName: "getOrderBook",
-      args: [relayerCount, true],
-    })) as OrderBook;
-
-    const sentinelHead = "0x0000000000000000000000000000000000000001";
-
-    {
-      const idx = book[1].findIndex((item) => item.toLowerCase() === relayer.toLowerCase());
-      if (idx > 0) {
-        prevOld = book[1][idx - 1];
-      } else if (idx === 0) {
-        prevOld = sentinelHead;
-      }
-    }
-
-    {
-      const idx = book[2].findIndex((item) => quote < item);
-      if (idx === 0) {
-        prevNew = sentinelHead;
-      } else if (idx < 0) {
-        prevNew = book[1][book[1].length - 1];
-      } else {
-        prevNew = book[1][idx - 1];
-      }
-
-      if (prevNew.toLowerCase() === relayer.toLowerCase()) {
-        prevNew = prevOld;
-      }
-    }
-  } catch (error) {
-    console.error("Get quote prev:", error);
-  }
-
-  return { prevOld, prevNew };
-};
+import { BigNumber, Contract } from "ethers";
+import { CallbackType } from "../../types";
 
 export const useEth = (relayerAddress: string, advanced: boolean) => {
   const { sourceChain } = useMarket();
@@ -72,29 +24,22 @@ export const useEth = (relayerAddress: string, advanced: boolean) => {
   const [minCollateral, setMinCollateral] = useState<bigint | null>(null);
 
   const getRelayerInfo = useCallback(() => {
-    if (advanced && isRegistered && isEthChain(sourceChain) && isEthProviderApi(providerApi)) {
+    if (advanced && isRegistered && isEthChain(sourceChain) && isEthersApi(providerApi)) {
       setLoading(true);
-      const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
+      const chainConfig = getEthChainConfig(sourceChain);
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
 
-      const common = {
-        address: contractAddress,
-        abi: contractInterface,
-        args: [relayerAddress],
-      };
-
-      return forkJoin(
-        ["balanceOf", "lockedOf", "feeOf"].map(
-          (functionName) => readContract({ ...common, functionName: functionName }) as Promise<bigint>
-        )
-      ).subscribe({
+      return forkJoin([
+        from(contract.balanceOf(relayerAddress) as Promise<BigNumber>),
+        from(contract.lockedOf(relayerAddress) as Promise<BigNumber>),
+        from(contract.feeOf(relayerAddress) as Promise<BigNumber>),
+      ]).subscribe({
         next: ([collateral, locked, quote]) => {
-          setCollateralAmount(collateral);
-          setCurrentLockedAmount(locked);
-          setCurrentQuoteAmount(quote);
-          setLoading(false);
+          setCollateralAmount(collateral.toBigInt());
+          setCurrentLockedAmount(locked.toBigInt());
+          setCurrentQuoteAmount(quote.toBigInt());
         },
         error: (error) => {
-          setLoading(false);
           console.error("[collateral, locked, quote]:", error);
         },
       });
@@ -107,197 +52,339 @@ export const useEth = (relayerAddress: string, advanced: boolean) => {
     async (
       quoteAmount: bigint,
       collateralAmount: bigint,
-      onFailed: (error: Error) => void = () => undefined,
+      onError: (error: Error) => void = () => undefined,
       onSuccess: () => void = () => undefined
     ) => {
-      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
-        const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
+      if (isEthChain(sourceChain) && isEthersApi(providerApi)) {
+        const chainConfig = getEthChainConfig(sourceChain);
 
-        try {
-          const { prevNew } = await getQuotePrev(contractAddress, contractInterface, relayerAddress, quoteAmount);
-          const { hash } = await writeContract({
-            address: contractAddress,
-            abi: contractInterface as [],
-            functionName: "enroll" as never,
-            args: [prevNew, quoteAmount],
-            value: collateralAmount,
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
+        const { prevNew } = await getQuotePrev(contract, relayerAddress, BigNumber.from(quoteAmount));
+
+        if (isEthersApi(signerApi)) {
+          const callback: CallbackType = {
+            errorCallback: ({ error }) => {
+              if (error instanceof Error) {
+                notifyTx(t, {
+                  type: "error",
+                  msg: error.message,
+                });
+              } else {
+                notifyTx(t, {
+                  type: "error",
+                  msg: t("Transaction sending failed"),
+                });
+              }
+              onError(error as Error);
+              console.error(error);
+            },
+            responseCallback: ({ response }) => {
+              console.log(response);
+            },
+            successCallback: ({ receipt }) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              setRegistered(true);
+              onSuccess();
+            },
+          };
+
+          triggerContract(contract.connect(signerApi.getSigner()), "enroll", [prevNew, quoteAmount], callback, {
+            value: collateralAmount.toString(),
           });
-          const receipt = await waitForTransaction({ hash });
-          if (receipt.status === "success") {
-            notifyTx(t, {
-              type: "success",
-              explorer: explorer.url,
-              hash: receipt.transactionHash,
+        } else if (isWalletClient(signerApi)) {
+          try {
+            const { hash } = await writeContract({
+              address: chainConfig.contractAddress,
+              abi: chainConfig.contractInterface as [],
+              functionName: "enroll" as never,
+              args: [prevNew, quoteAmount],
+              value: collateralAmount,
             });
-            setRegistered(true);
-            onSuccess();
-          } else {
-            notifyTx(t, {
-              type: "error",
-              explorer: explorer.url,
-              hash: receipt.transactionHash,
-            });
-            onFailed(new Error(receipt.status));
+            const receipt = await waitForTransaction({ hash });
+            if (receipt.status === "success") {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              setRegistered(true);
+              onSuccess();
+            } else {
+              notifyTx(t, {
+                type: "error",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              onError(new Error(receipt.status));
+            }
+          } catch (error) {
+            notifyTx(t, { type: "error", msg: (error as Error).message });
+            onError(error as Error);
+            console.error(error);
           }
-        } catch (error) {
-          notifyTx(t, { type: "error", msg: (error as Error).message });
-          onFailed(error as Error);
-          console.error(error);
         }
       }
     },
-    [relayerAddress, sourceChain, t, signerApi]
+    [relayerAddress, sourceChain, t, signerApi, providerApi]
   );
 
   const cancel = useCallback(
-    async (onFailed: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
-      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
-        const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
+    async (onError: (error: Error) => void = () => undefined, onSuccess: () => void = () => undefined) => {
+      if (isEthChain(sourceChain) && isEthersApi(providerApi)) {
+        const chainConfig = getEthChainConfig(sourceChain);
 
-        try {
-          const { prevOld } = await getQuotePrev(
-            contractAddress,
-            contractInterface as [],
-            relayerAddress,
-            currentQuoteAmount
-          );
-          const { hash } = await writeContract({
-            address: contractAddress,
-            abi: contractInterface,
-            functionName: "leave",
-            args: [prevOld],
-          });
-          const receipt = await waitForTransaction({ hash });
-          if (receipt.status === "success") {
-            notifyTx(t, {
-              type: "success",
-              explorer: explorer.url,
-              hash: receipt.transactionHash,
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
+        const { prevOld } = await getQuotePrev(contract, relayerAddress, BigNumber.from(currentQuoteAmount));
+
+        if (isEthersApi(signerApi)) {
+          const callback: CallbackType = {
+            errorCallback: ({ error }) => {
+              if (error instanceof Error) {
+                notifyTx(t, {
+                  type: "error",
+                  msg: error.message,
+                });
+              } else {
+                notifyTx(t, {
+                  type: "error",
+                  msg: t("Transaction sending failed"),
+                });
+              }
+              onError(error as Error);
+              console.error(error);
+            },
+            responseCallback: ({ response }) => {
+              console.log(response);
+            },
+            successCallback: ({ receipt }) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              setRegistered(false);
+              onSuccess();
+            },
+          };
+
+          triggerContract(contract.connect(signerApi.getSigner()), "leave", [prevOld], callback);
+        } else if (isWalletClient(signerApi)) {
+          try {
+            const { hash } = await writeContract({
+              address: chainConfig.contractAddress,
+              abi: chainConfig.contractInterface,
+              functionName: "leave",
+              args: [prevOld],
             });
-            setRegistered(false);
-            onSuccess();
-          } else {
-            notifyTx(t, {
-              type: "error",
-              explorer: explorer.url,
-              hash: receipt.transactionHash,
-            });
-            onFailed(new Error(receipt.status));
+            const receipt = await waitForTransaction({ hash });
+            if (receipt.status === "success") {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              setRegistered(false);
+              onSuccess();
+            } else {
+              notifyTx(t, {
+                type: "error",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              onError(new Error(receipt.status));
+            }
+          } catch (error) {
+            notifyTx(t, { type: "error", msg: (error as Error).message });
+            onError(error as Error);
+            console.error(error);
           }
-        } catch (error) {
-          notifyTx(t, { type: "error", msg: (error as Error).message });
-          onFailed(error as Error);
-          console.error(error);
         }
       }
     },
-    [relayerAddress, sourceChain, currentQuoteAmount, t, signerApi]
+    [relayerAddress, sourceChain, currentQuoteAmount, t, signerApi, providerApi]
   );
 
   const updateQuote = useCallback(
     async (
       amount: bigint,
-      onFailed: (error: Error) => void = () => undefined,
+      onError: (error: Error) => void = () => undefined,
       onSuccess: () => void = () => undefined
     ) => {
-      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
-        const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
-        try {
-          const { prevOld, prevNew } = await getQuotePrev(
-            contractAddress,
-            contractInterface as [],
-            relayerAddress,
-            amount
-          );
-          const { hash } = await writeContract({
-            address: contractAddress,
-            abi: contractInterface as [],
-            functionName: "move" as never,
-            args: [prevOld, prevNew, amount],
-            value: 0n,
-          });
-          const receipt = await waitForTransaction({ hash });
-          if (receipt.status === "success") {
-            notifyTx(t, {
-              type: "success",
-              explorer: explorer.url,
-              hash: receipt.transactionHash,
-            });
-            onSuccess();
-          } else {
-            notifyTx(t, {
-              type: "error",
-              explorer: explorer.url,
-              hash: receipt.transactionHash,
-            });
-            onFailed(new Error(receipt.status));
-          }
-        } catch (error) {
-          notifyTx(t, { type: "error", msg: (error as Error).message });
-          onFailed(error as Error);
-          console.error(error);
-        }
-      }
-    },
-    [relayerAddress, sourceChain, t, signerApi]
-  );
+      if (isEthChain(sourceChain) && isEthersApi(providerApi)) {
+        const chainConfig = getEthChainConfig(sourceChain);
 
-  const updateCollateral = useCallback(
-    async (
-      amount: bigint,
-      onFailed: (error: Error) => void = () => undefined,
-      onSuccess: () => void = () => undefined
-    ) => {
-      if (isEthChain(sourceChain) && isEthSignerApi(signerApi)) {
-        const { contractAddress, contractInterface, explorer } = getEthChainConfig(sourceChain);
-        try {
-          let hash: `0x${string}` = "0x";
-          if (amount > collateralAmount) {
-            hash = (
-              await writeContract({
-                address: contractAddress,
-                abi: contractInterface as [],
-                functionName: "deposit" as never,
-                args: [],
-                value: amount - collateralAmount,
-              })
-            ).hash;
-          } else if (amount < collateralAmount) {
-            hash = (
-              await writeContract({
-                address: contractAddress,
-                abi: contractInterface,
-                functionName: "withdraw",
-                args: [collateralAmount - amount],
-              })
-            ).hash;
-          }
-          if (hash !== "0x") {
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
+        const { prevOld, prevNew } = await getQuotePrev(contract, relayerAddress, BigNumber.from(amount));
+
+        if (isEthersApi(signerApi)) {
+          const callback: CallbackType = {
+            errorCallback: ({ error }) => {
+              if (error instanceof Error) {
+                notifyTx(t, {
+                  type: "error",
+                  msg: error.message,
+                });
+              } else {
+                notifyTx(t, {
+                  type: "error",
+                  msg: t("Transaction sending failed"),
+                });
+              }
+              onError(error as Error);
+              console.error(error);
+            },
+            responseCallback: ({ response }) => {
+              console.log(response);
+            },
+            successCallback: ({ receipt }) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              onSuccess();
+            },
+          };
+
+          triggerContract(contract.connect(signerApi.getSigner()), "move", [prevOld, prevNew, amount], callback);
+        } else if (isWalletClient(signerApi)) {
+          try {
+            const { hash } = await writeContract({
+              address: chainConfig.contractAddress,
+              abi: chainConfig.contractInterface as [],
+              functionName: "move" as never,
+              args: [prevOld, prevNew, amount],
+              value: 0n,
+            });
             const receipt = await waitForTransaction({ hash });
             if (receipt.status === "success") {
               notifyTx(t, {
                 type: "success",
-                explorer: explorer.url,
+                explorer: chainConfig.explorer.url,
                 hash: receipt.transactionHash,
               });
               onSuccess();
             } else {
               notifyTx(t, {
                 type: "error",
-                explorer: explorer.url,
+                explorer: chainConfig.explorer.url,
                 hash: receipt.transactionHash,
               });
-              onFailed(new Error(receipt.status));
+              onError(new Error(receipt.status));
             }
+          } catch (error) {
+            notifyTx(t, { type: "error", msg: (error as Error).message });
+            onError(error as Error);
+            console.error(error);
           }
-        } catch (error) {
-          notifyTx(t, { type: "error", msg: (error as Error).message });
-          onFailed(error as Error);
-          console.error(error);
         }
       }
     },
-    [sourceChain, collateralAmount, t, signerApi]
+    [relayerAddress, sourceChain, t, signerApi, providerApi]
+  );
+
+  const updateCollateral = useCallback(
+    async (
+      amount: bigint,
+      onError: (error: Error) => void = () => undefined,
+      onSuccess: () => void = () => undefined
+    ) => {
+      if (isEthChain(sourceChain) && isEthersApi(providerApi)) {
+        const chainConfig = getEthChainConfig(sourceChain);
+
+        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
+
+        if (isEthersApi(signerApi)) {
+          const callback: CallbackType = {
+            errorCallback: ({ error }) => {
+              if (error instanceof Error) {
+                notifyTx(t, {
+                  type: "error",
+                  msg: error.message,
+                });
+              } else {
+                notifyTx(t, {
+                  type: "error",
+                  msg: t("Transaction sending failed"),
+                });
+              }
+              onError(error as Error);
+              console.error(error);
+            },
+            responseCallback: ({ response }) => {
+              console.log(response);
+            },
+            successCallback: ({ receipt }) => {
+              notifyTx(t, {
+                type: "success",
+                explorer: chainConfig.explorer.url,
+                hash: receipt.transactionHash,
+              });
+              onSuccess();
+            },
+          };
+
+          if (amount > collateralAmount) {
+            triggerContract(contract.connect(signerApi.getSigner()), "deposit", [], callback, {
+              value: (amount - collateralAmount).toString(),
+            });
+          } else if (amount < collateralAmount) {
+            triggerContract(contract.connect(signerApi.getSigner()), "withdraw", [collateralAmount - amount], callback);
+          }
+        } else if (isWalletClient(signerApi)) {
+          try {
+            let hash: `0x${string}` = "0x";
+            if (amount > collateralAmount) {
+              hash = (
+                await writeContract({
+                  address: chainConfig.contractAddress,
+                  abi: chainConfig.contractInterface as [],
+                  functionName: "deposit" as never,
+                  args: [],
+                  value: amount - collateralAmount,
+                })
+              ).hash;
+            } else if (amount < collateralAmount) {
+              hash = (
+                await writeContract({
+                  address: chainConfig.contractAddress,
+                  abi: chainConfig.contractInterface,
+                  functionName: "withdraw",
+                  args: [collateralAmount - amount],
+                })
+              ).hash;
+            }
+            if (hash !== "0x") {
+              const receipt = await waitForTransaction({ hash });
+              if (receipt.status === "success") {
+                notifyTx(t, {
+                  type: "success",
+                  explorer: chainConfig.explorer.url,
+                  hash: receipt.transactionHash,
+                });
+                onSuccess();
+              } else {
+                notifyTx(t, {
+                  type: "error",
+                  explorer: chainConfig.explorer.url,
+                  hash: receipt.transactionHash,
+                });
+                onError(new Error(receipt.status));
+              }
+            }
+          } catch (error) {
+            notifyTx(t, { type: "error", msg: (error as Error).message });
+            onError(error as Error);
+            console.error(error);
+          }
+        }
+      }
+    },
+    [sourceChain, collateralAmount, t, signerApi, providerApi]
   );
 
   useEffect(() => {
@@ -315,22 +402,15 @@ export const useEth = (relayerAddress: string, advanced: boolean) => {
   useEffect(() => {
     let sub$$: Subscription;
 
-    if (advanced && isEthChain(sourceChain) && isEthProviderApi(providerApi)) {
-      const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
-      sub$$ = from(
-        readContract({
-          address: contractAddress,
-          abi: contractInterface,
-          functionName: "isRelayer",
-          args: [relayerAddress],
-        })
-      ).subscribe({
-        next: (value) => {
-          setRegistered(value as boolean);
-        },
+    if (advanced && isEthChain(sourceChain) && isEthersApi(providerApi)) {
+      const chainConfig = getEthChainConfig(sourceChain);
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
+
+      sub$$ = from(contract.isRelayer(relayerAddress) as Promise<boolean>).subscribe({
+        next: setRegistered,
         error: (error) => {
           setRegistered(false);
-          console.error("check registered:", error);
+          console.error(error);
         },
       });
     }
@@ -345,22 +425,14 @@ export const useEth = (relayerAddress: string, advanced: boolean) => {
   useEffect(() => {
     let sub$$: Subscription;
 
-    if (advanced && isEthChain(sourceChain) && isEthProviderApi(providerApi)) {
-      const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
+    if (advanced && isEthChain(sourceChain) && isEthersApi(providerApi)) {
+      const chainConfig = getEthChainConfig(sourceChain);
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, providerApi);
 
-      sub$$ = zip(
-        of(0n),
-        from(
-          readContract({
-            address: contractAddress,
-            abi: contractInterface,
-            functionName: "COLLATERAL_PER_ORDER",
-          }) as Promise<bigint>
-        )
-      ).subscribe({
+      sub$$ = zip(of(0n), from(contract.COLLATERAL_PER_ORDER() as Promise<BigNumber>)).subscribe({
         next: ([quote, collateral]) => {
           setMinQuote(quote);
-          setMinCollateral(collateral);
+          setMinCollateral(collateral.toBigInt());
         },
         error: (error) => {
           console.log("Get minQuote and minCollateral:", error);

@@ -1,36 +1,49 @@
 import { useTranslation } from "react-i18next";
-import { Button, Spinner } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
-import { useWallet } from "../../hooks/wallet";
+import { useMetaMask, usePolkadotJs, useWalletConnect } from "../../hooks/wallet";
+import { useMarket } from "../../hooks";
+import { getChainConfig } from "../../utils";
+import { Spinner } from "@darwinia/ui";
 
-const ConnectWallet = ({ loading, isInstalled }: { loading?: boolean; isInstalled: boolean }) => {
+const ConnectWallet = () => {
   const { t } = useTranslation();
-  const { logo, connect } = useWallet();
+  const { sourceChain } = useMarket();
+  const metamask = useMetaMask();
+  const polkadotJs = usePolkadotJs();
+  const walletConnect = useWalletConnect();
+
+  const chainConfig = sourceChain ? getChainConfig(sourceChain) : null;
 
   return (
-    <Spinner isLoading={loading ?? false}>
-      <div
-        className={
-          "card lg:min-h-[25rem] lg:px-[18.625rem] flex flex-col justify-center items-center gap-[0.9375rem] lg:gap-[1.875reem]"
-        }
-      >
-        {isInstalled ? (
-          <>
-            <div className={"w-[5.3125rem] h-[5.3125rem]"}>
-              <img className={"w-full"} src={logo} alt="..." />
-            </div>
-            <div>
-              <Button className={"px-[0.9375rem]"} onClick={connect}>
-                {t(localeKeys.connectWallet)}
-              </Button>
-            </div>
-            <div className={"text-center"}>{t(localeKeys.loginInfo)}</div>
-          </>
-        ) : (
-          <p>No Wallet Found</p>
-        )}
+    <div
+      className={
+        "card lg:min-h-[25rem] lg:px-[18.625rem] flex flex-col justify-center items-center gap-[0.9375rem] lg:gap-[1.875rem]"
+      }
+    >
+      <div className="flex items-center justify-center gap-12">
+        {[metamask, walletConnect, polkadotJs].map(({ id, installed, logo, name, loading, connect }) => {
+          if (chainConfig?.wallets.includes(id)) {
+            return (
+              <Spinner isLoading={loading} size="small" key={id}>
+                <button
+                  className={`flex flex-col items-center justify-center gap-5 w-48 h-48 rounded-sm ${
+                    installed
+                      ? "border border-black bg-black transition hover:border-primary active:opacity-80"
+                      : "cursor-not-allowed bg-gray/20 opacity-80"
+                  }`}
+                  onClick={connect}
+                >
+                  <img alt="..." src={logo} />
+                  <span className="text-center">{name}</span>
+                </button>
+              </Spinner>
+            );
+          }
+          return null;
+        })}
       </div>
-    </Spinner>
+      <div className="text-center text-gray">{t(localeKeys.loginInfo)}</div>
+    </div>
   );
 };
 

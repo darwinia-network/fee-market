@@ -7,15 +7,16 @@ import {
   getEthChainConfig,
   getFeeMarketApiSection,
   isEthChain,
-  isEthProviderApi,
+  isEthersApi,
   isPolkadotApi,
   isPolkadotChain,
 } from "../utils";
 import type { Vec, Option } from "@polkadot/types";
 import type { PalletFeeMarketRelayer } from "../types";
+import { BigNumber, Contract } from "ethers";
 
 interface State {
-  value: BN | bigint | null | undefined;
+  value: BN | BigNumber | null | undefined;
   loading: boolean;
 }
 
@@ -31,24 +32,19 @@ export const useCurrentFee = () => {
   useEffect(() => {
     let sub$$: Subscription | null = null;
 
-    if (isEthProviderApi(api) && isEthChain(sourceChain)) {
-      const { contractAddress, contractInterface } = getEthChainConfig(sourceChain);
+    if (isEthersApi(api) && isEthChain(sourceChain)) {
+      const chainConfig = getEthChainConfig(sourceChain);
+      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
+
       setCurrentFee((prev) => ({ ...prev, loading: true }));
 
-      sub$$ = from(
-        api.readContract({
-          address: contractAddress,
-          abi: contractInterface,
-          functionName: "market_fee",
-        }) as Promise<bigint>
-      ).subscribe({
+      sub$$ = from(contract.market_fee() as Promise<BigNumber>).subscribe({
         next: (res) => {
           setCurrentFee({
             value: res,
             loading: false,
           });
         },
-        complete: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
         error: () => setCurrentFee({ value: null, loading: false }),
       });
     } else if (isPolkadotApi(api) && isPolkadotChain(destinationChain)) {
@@ -66,7 +62,6 @@ export const useCurrentFee = () => {
               setCurrentFee({ loading: false, value: BN_ZERO });
             }
           },
-          complete: () => setCurrentFee((prev) => ({ ...prev, loading: false })),
           error: () => setCurrentFee({ value: null, loading: false }),
         });
       }
