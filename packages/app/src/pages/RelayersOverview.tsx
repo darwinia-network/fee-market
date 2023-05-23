@@ -3,13 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import { useRelayersOverviewData, useAccountName } from "@feemarket/hooks";
+import { useRelayersOverview, useAccountName, useMarket } from "../hooks";
 import { BN, bnToBn } from "@polkadot/util";
 import { Identicon } from "@polkadot/react-identicon";
-import type {} from "@feemarket/types";
-import { UrlSearchParamsKey } from "@feemarket/types";
+import { UrlSearchParamsKey } from "../types";
 import {
   formatBalance,
   isPolkadotChain,
@@ -17,7 +14,7 @@ import {
   getPolkadotChainConfig,
   isEthChain,
   formatUrlChainName,
-} from "@feemarket/utils";
+} from "../utils";
 import { BigNumber } from "ethers";
 import JazzIcon from "../components/JazzIcon";
 
@@ -32,7 +29,7 @@ const renderBalance = (amount: BN | BigNumber, decimals?: number | null) => {
 interface Relayer {
   id: string;
   relayer: string;
-  count: number;
+  orders: number;
   collateral: BN | BigNumber;
   quote: BN | BigNumber;
   reward: BN | BigNumber;
@@ -45,11 +42,8 @@ const RelayersOverview = () => {
   const [keywords, setKeywords] = useState("");
   const [sortEvent, setSortEvent] = useState<SortEvent<Relayer> | undefined>();
 
-  const { currentMarket } = useMarket();
-  const { relayersOverviewData } = useRelayersOverviewData();
-
-  const sourceChain = currentMarket?.source;
-  // const destinationChain = currentMarket?.destination;
+  const { sourceChain } = useMarket();
+  const { relayersOverview } = useRelayersOverview();
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {
@@ -64,62 +58,55 @@ const RelayersOverview = () => {
     setKeywords(event.target.value);
   };
 
-  const onPageChange = useCallback((pageNumber: number) => {
-    setTablePagination((oldValues) => {
-      return {
-        ...oldValues,
-        currentPage: pageNumber,
-      };
-    });
-  }, []);
-
-  const [tablePagination, setTablePagination] = useState<PaginationProps>({
+  const [tablePagination, setTablePagination] = useState<Omit<PaginationProps, "onChange">>({
     currentPage: 1,
     pageSize: 10,
     totalPages: 0,
-    onChange: onPageChange,
   });
 
   useEffect(() => {
     if (activeTabId === "1") {
-      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverviewData.allRelayersDataSource.length }));
+      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverview.all.length }));
     } else if (activeTabId === "2") {
-      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverviewData.assignedRelayersDataSource.length }));
+      setTablePagination((prev) => ({ ...prev, totalPages: relayersOverview.assigned.length }));
     } else {
       setTablePagination((prev) => ({ ...prev, totalPages: 0 }));
     }
-  }, [activeTabId, relayersOverviewData]);
+  }, [activeTabId, relayersOverview]);
 
   const tabs: Tab[] = [
     {
       id: "1",
-      title: `${t([localeKeys.allRelayers])} (${relayersOverviewData.allRelayersDataSource.length})`,
+      title: `${t([localeKeys.allRelayers])} (${relayersOverview.all.length})`,
     },
     {
       id: "2",
-      title: `${t([localeKeys.assignedRelayers])} (${relayersOverviewData.assignedRelayersDataSource.length})`,
+      title: `${t([localeKeys.assignedRelayers])} (${relayersOverview.assigned.length})`,
     },
   ];
 
   const [dataSource, setDataSource] = useState<Relayer[]>([]);
 
-  const getSortedRelayers = (relayers: Relayer[]) => {
-    if (sortEvent) {
-      if (sortEvent.order === "ascend") {
-        return [...relayers].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key])));
-      } else if (sortEvent.order === "descend") {
-        return [...relayers].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key])));
+  const getSortedRelayers = useCallback(
+    (relayers: Relayer[]) => {
+      if (sortEvent) {
+        if (sortEvent.order === "ascend") {
+          return [...relayers].sort((a, b) => bnToBn(a[sortEvent.key]).cmp(bnToBn(b[sortEvent.key])));
+        } else if (sortEvent.order === "descend") {
+          return [...relayers].sort((a, b) => bnToBn(b[sortEvent.key]).cmp(bnToBn(a[sortEvent.key])));
+        }
       }
-    }
-    return [...relayers];
-  };
+      return [...relayers];
+    },
+    [sortEvent]
+  );
 
   useEffect(() => {
     const start = (tablePagination.currentPage - 1) * tablePagination.pageSize;
     const end = start + tablePagination.pageSize;
 
     if (activeTabId === "1") {
-      const sortedData: Relayer[] = getSortedRelayers(relayersOverviewData.allRelayersDataSource);
+      const sortedData: Relayer[] = getSortedRelayers(relayersOverview.all);
 
       const filteredData =
         keywords.trim() === ""
@@ -127,7 +114,7 @@ const RelayersOverview = () => {
           : sortedData.filter((item) => item.relayer.toLowerCase() === keywords.toLowerCase());
       setDataSource(filteredData);
     } else if (activeTabId === "2") {
-      const sortedData: Relayer[] = getSortedRelayers(relayersOverviewData.assignedRelayersDataSource);
+      const sortedData: Relayer[] = getSortedRelayers(relayersOverview.assigned);
 
       const filteredData =
         keywords.trim() === ""
@@ -137,7 +124,7 @@ const RelayersOverview = () => {
     } else {
       setDataSource([]);
     }
-  }, [relayersOverviewData, activeTabId, tablePagination, keywords, sortEvent]);
+  }, [relayersOverview, activeTabId, tablePagination, keywords, sortEvent, getSortedRelayers]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -153,7 +140,7 @@ const RelayersOverview = () => {
     },
     {
       id: "2",
-      key: "count",
+      key: "orders",
       title: (
         <div>
           {t([localeKeys.count])}({t([localeKeys.order])})
@@ -252,13 +239,14 @@ const RelayersOverview = () => {
       </div>
 
       <Table
-        isLoading={relayersOverviewData.loading}
+        isLoading={relayersOverview.loading}
         headerSlot={getTableTabs()}
         onSort={handleSort}
         minWidth={"1120px"}
         dataSource={dataSource}
         columns={columns}
         pagination={keywords.trim().length > 0 ? undefined : tablePagination}
+        onPageChange={(currentPage) => setTablePagination((prev) => ({ ...prev, currentPage }))}
       />
     </div>
   );

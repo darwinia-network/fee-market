@@ -137,6 +137,7 @@ Note that the collateral balance will return back to your account. But the locke
   [localeKeys.failed]: "failed",
   [localeKeys.successed]: "successed",
   [localeKeys.transaction]: "transaction",
+  [localeKeys.disconnect]: "disconnect",
 };
 
 export default enUs;

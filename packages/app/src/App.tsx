@@ -6,31 +6,32 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import localeKeys from "./locale/localeKeys";
 import { Spinner } from "@darwinia/ui";
-import { formatOrderId } from "@feemarket/utils";
-import { UrlSearchParamsKey } from "@feemarket/types";
+import { formatOrderId } from "./utils";
+import { UrlSearchParamsKey } from "./types";
 
 const App = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigation = useNavigation();
   const [pageTitle, setPageTitle] = useState("");
-  const pagesPathTitleMap = {
-    "/": t(localeKeys.overview),
-    "/relayers-overview": t(localeKeys.relayersOverview),
-    "/relayer-dashboard": t(localeKeys.relayerDashboard),
-    "/orders": t(localeKeys.orders),
-    "/relayers-overview/details": t(localeKeys.relayerDetails),
-    "/orders/details": () => {
-      const params = new URLSearchParams(location.search);
-      const orderId = params.get(UrlSearchParamsKey.NONCE) ?? "";
-      return t(localeKeys.orderNumberDetails, { orderNumber: formatOrderId(orderId) });
-    },
-  };
 
   useEffect(() => {
+    const pagesPathTitleMap = {
+      "/": t(localeKeys.overview),
+      "/relayers-overview": t(localeKeys.relayersOverview),
+      "/relayer-dashboard": t(localeKeys.relayerDashboard),
+      "/orders": t(localeKeys.orders),
+      "/relayers-overview/details": t(localeKeys.relayerDetails),
+      "/orders/details": () => {
+        const params = new URLSearchParams(location.search);
+        const orderId = params.get(UrlSearchParamsKey.NONCE) ?? "";
+        return t(localeKeys.orderNumberDetails, { orderNumber: formatOrderId(orderId) });
+      },
+    };
     const pathname = location.pathname as keyof typeof pagesPathTitleMap;
     setPageTitle(pagesPathTitleMap[pathname] ?? t(localeKeys.overview));
-  }, [location]);
+  }, [location, t]);
+
   /* Set this value to control the minimum content width on PC to avoid the
    * UI from collapsing on PC when the browser size is small */
   // const mainContentMinWidth = "lg:min-w-[1000px]";

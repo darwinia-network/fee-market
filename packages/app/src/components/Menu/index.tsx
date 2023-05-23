@@ -1,5 +1,5 @@
 import MenuItem from "../MenuItem";
-import { MenuItem as MenuObject } from "../../data/types";
+import { MenuItem as MenuObject } from "../../types";
 import { useRef, useState, TransitionEvent } from "react";
 
 interface Props {

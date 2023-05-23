@@ -3,45 +3,19 @@ import localeKeys from "../../locale/localeKeys";
 import helpIcon from "../../assets/images/help.svg";
 import editIcon from "../../assets/images/edit.svg";
 import ModifyQuoteModal from "../ModifyQuoteModal";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
 import { Tooltip } from "@darwinia/ui";
-import type { Option } from "@polkadot/types";
-import { BigNumber, Contract } from "ethers";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import {
-  isEthApi,
-  isEthChain,
-  formatBalance,
-  isPolkadotApi,
-  getFeeMarketApiSection,
-  isPolkadotChain,
-  isOption,
-  getEthChainConfig,
-  getPolkadotChainConfig,
-} from "@feemarket/utils";
-import type { PalletFeeMarketRelayer, PalletFeeMarketOrder } from "@feemarket/types";
-import { from, forkJoin, EMPTY } from "rxjs";
+import { isEthChain, formatBalance, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
+import { useRelayer, useMarket } from "../../hooks";
 
-interface Props {
-  registered?: boolean;
-  matchNetwork?: boolean;
-  relayerAddress: string;
-}
-
-const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
+const Balance = ({ matchNetwork }: { matchNetwork?: boolean }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
-  const { signerApi: api } = useApi();
+  const { sourceChain } = useMarket();
+  const { isRegistered, collateralAmount, currentLockedAmount, currentQuoteAmount } = useRelayer();
+
   const [isModifyQuoteModalVisible, setModifyQuoteModalVisible] = useState(false);
   const [isModifyCollateralBalanceModalVisible, setModifyCollateralBalanceModalVisible] = useState(false);
-  const [collateralAmount, setCollateralAmount] = useState<BigNumber>(BigNumber.from(0));
-  const [currentLockedAmount, setCurrentLockedAmount] = useState<BigNumber>(BigNumber.from(0));
-  const [currentQuoteAmount, setCurrentQuoteAmount] = useState<BigNumber>(BigNumber.from(0));
-
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {
@@ -51,102 +25,6 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
     }
     return null;
   }, [sourceChain]);
-
-  const onShowModifyQuoteModal = () => {
-    setModifyQuoteModalVisible(true);
-  };
-
-  const onModifyQuoteModalClose = () => {
-    setModifyQuoteModalVisible(false);
-  };
-
-  const onShowModifyCollateralBalanceModal = () => {
-    setModifyCollateralBalanceModalVisible(true);
-  };
-
-  const onModifyCollateralBalanceModalClose = () => {
-    setModifyCollateralBalanceModalVisible(false);
-  };
-
-  const getQuoteLockedCollateral = useCallback(() => {
-    if (matchNetwork && isEthChain(sourceChain) && isEthApi(api)) {
-      const chainConfig = getEthChainConfig(sourceChain);
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      return forkJoin([
-        from(contract.balanceOf(relayerAddress) as Promise<BigNumber>),
-        from(contract.lockedOf(relayerAddress) as Promise<BigNumber>),
-        from(contract.feeOf(relayerAddress) as Promise<BigNumber>),
-      ]).subscribe({
-        next: ([collateral, locked, quote]) => {
-          setCollateralAmount(collateral);
-          setCurrentLockedAmount(locked);
-          setCurrentQuoteAmount(quote);
-        },
-        error: (error) => {
-          console.error("[collateral, locked, quote]:", error);
-        },
-      });
-    } else if (registered && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
-      const apiSection = getFeeMarketApiSection(api, destinationChain);
-      if (apiSection) {
-        return forkJoin([
-          api.query[apiSection].relayersMap<PalletFeeMarketRelayer | Option<PalletFeeMarketRelayer>>(relayerAddress),
-          api.query[apiSection].orders<Option<PalletFeeMarketOrder>>({}),
-        ]).subscribe({
-          next: ([relayer, order]) => {
-            if (isOption(relayer)) {
-              if (relayer.isSome) {
-                const { collateral, fee, id } = relayer.unwrap();
-
-                if (order.isSome) {
-                  const { lockedCollateral, relayers } = order.unwrap();
-                  const count = relayers.reduce(
-                    (acc, cur) => (cur.id.toString().toLowerCase() === id.toString().toLowerCase() ? acc + 1 : acc),
-                    0
-                  );
-                  setCurrentLockedAmount(BigNumber.from(lockedCollateral.muln(count).toString()));
-                }
-
-                setCollateralAmount(BigNumber.from(collateral.toString()));
-                setCurrentQuoteAmount(BigNumber.from(fee.toString()));
-              }
-            } else if (relayer) {
-              const { collateral, fee, id } = relayer as PalletFeeMarketRelayer;
-
-              if (order.isSome) {
-                const { lockedCollateral, relayers } = order.unwrap();
-                const count = relayers.reduce(
-                  (acc, cur) => (cur.id.toString().toLowerCase() === id.toString().toLowerCase() ? acc + 1 : acc),
-                  0
-                );
-                setCurrentLockedAmount(BigNumber.from(lockedCollateral.muln(count).toString()));
-              }
-
-              setCollateralAmount(BigNumber.from(collateral.toString()));
-              setCurrentQuoteAmount(BigNumber.from(fee.toString()));
-            }
-          },
-          error: (error) => {
-            console.error("[collateral, locked, quote]:", error);
-          },
-        });
-      }
-      setCurrentLockedAmount(BigNumber.from(0));
-    }
-
-    return EMPTY.subscribe();
-  }, [sourceChain, destinationChain, api, relayerAddress, matchNetwork, registered]);
-
-  useEffect(() => {
-    const sub$$ = getQuoteLockedCollateral();
-    return () => {
-      sub$$.unsubscribe();
-      setCollateralAmount(BigNumber.from(0));
-      setCurrentLockedAmount(BigNumber.from(0));
-      setCurrentQuoteAmount(BigNumber.from(0));
-    };
-  }, [getQuoteLockedCollateral]);
 
   return (
     <div className={"flex flex-col lg:flex-row gap-[0.9375rem] lg:gap-[1.875rem]"}>
@@ -173,8 +51,8 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 {formatBalance(collateralAmount, nativeToken.decimals, nativeToken.symbol)}
               </div>
             )}
-            {matchNetwork && (registered || isEthChain(sourceChain)) ? (
-              <div onClick={onShowModifyCollateralBalanceModal} className={"flex pl-[0.625rem]"}>
+            {matchNetwork && (isRegistered || isEthChain(sourceChain)) ? (
+              <div onClick={() => setModifyCollateralBalanceModalVisible(true)} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
             ) : null}
@@ -223,8 +101,8 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
                 })}
               </div>
             )}
-            {matchNetwork && registered ? (
-              <div onClick={onShowModifyQuoteModal} className={"flex pl-[0.625rem]"}>
+            {matchNetwork && isRegistered ? (
+              <div onClick={() => setModifyQuoteModalVisible(true)} className={"flex pl-[0.625rem]"}>
                 <img className={"clickable w-[1.5rem] h-[1.5rem] self-center"} src={editIcon} alt="image" />
               </div>
             ) : null}
@@ -232,20 +110,11 @@ const Balance = ({ relayerAddress, registered, matchNetwork }: Props) => {
         </div>
       </div>
       {/*Modify quote modal*/}
-      <ModifyQuoteModal
-        onClose={onModifyQuoteModalClose}
-        onSuccess={getQuoteLockedCollateral}
-        relayerAddress={relayerAddress}
-        isVisible={isModifyQuoteModalVisible}
-        currentQuote={currentQuoteAmount || BigNumber.from(0)}
-      />
+      <ModifyQuoteModal onClose={() => setModifyQuoteModalVisible(false)} isVisible={isModifyQuoteModalVisible} />
       {/*Modify balance modal*/}
       <ModifyCollateralBalanceModal
-        onClose={onModifyCollateralBalanceModalClose}
-        onSuccess={getQuoteLockedCollateral}
-        relayerAddress={relayerAddress}
+        onClose={() => setModifyCollateralBalanceModalVisible(false)}
         isVisible={isModifyCollateralBalanceModalVisible}
-        currentCollateral={collateralAmount || BigNumber.from(0)}
       />
     </div>
   );

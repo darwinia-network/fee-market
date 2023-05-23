@@ -1,83 +1,23 @@
-import { Input, ModalEnhanced, notification } from "@darwinia/ui";
-import { useTranslation, TFunction } from "react-i18next";
+import { Input, ModalEnhanced } from "@darwinia/ui";
+import { useTranslation } from "react-i18next";
 import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import AccountMini from "../AccountMini";
-import { BigNumber, utils as ethersUtils, Contract } from "ethers";
-import {
-  isEthApi,
-  isPolkadotApi,
-  isEthChain,
-  isPolkadotChain,
-  signAndSendTx,
-  triggerContract,
-  getQuotePrev,
-  getFeeMarketApiSection,
-  formatBalance,
-  CallbackType,
-  getEthChainConfig,
-  getPolkadotChainConfig,
-} from "@feemarket/utils";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import { from, of, zip, Subscription } from "rxjs";
-import { BN } from "@polkadot/util";
-import { useBalance } from "@feemarket/hooks";
-import type { u128 } from "@polkadot/types";
+import { BigNumber, utils as ethersUtils } from "ethers";
+import { parseUnits } from "viem";
+import { isEthChain, isPolkadotChain, formatBalance, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
+import { useRelayer, useApi, useBalance, useMarket } from "../../hooks";
 
 interface InputTips {
   text: string;
   error?: boolean;
 }
 
-const notifyTx = (
-  t: TFunction,
-  {
-    type,
-    msg,
-    hash,
-    explorer,
-  }: {
-    type: "error" | "success";
-    msg?: string;
-    hash?: string;
-    explorer?: string;
-  }
-) => {
-  notification[type]({
-    message: (
-      <div className="flex flex-col gap-1.5">
-        <h5 className="capitalize text-14-bold">
-          {type === "success" ? t(localeKeys.successed) : t(localeKeys.failed)}
-        </h5>
-        {hash && explorer ? (
-          <a
-            className="text-12 underline text-primary break-all hover:opacity-80"
-            rel="noopener noreferrer"
-            target={"_blank"}
-            href={`${explorer}tx/${hash}`}
-          >
-            {hash}
-          </a>
-        ) : (
-          <p className="text-12 break-all">{msg}</p>
-        )}
-      </div>
-    ),
-  });
-};
-
-export interface Props {
-  isVisible: boolean;
-  relayerAddress: string;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
-
-const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = () => undefined }: Props) => {
+const RegisterRelayerModal = ({ isVisible, onClose }: { isVisible: boolean; onClose: () => void }) => {
   const { t } = useTranslation();
-  const { currentMarket } = useMarket();
+  const { currentMarket, sourceChain } = useMarket();
   const { signerApi: api } = useApi();
+  const { relayerAddress, minQuote, minCollateral, register, getRelayerInfo } = useRelayer();
   const { balance: relayerBalance, refresh: refreshBalance } = useBalance(relayerAddress);
 
   const [busy, setBusy] = useState(false);
@@ -88,14 +28,8 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
   const [quoteTips, setQuoteTips] = useState<InputTips | null>(null);
   const [collteralTips, setCollateralTips] = useState<InputTips | null>(null);
 
-  const [minQuote, setMinQuote] = useState<BN | BigNumber | null>(null);
-  const [minCollateral, setMinCollateral] = useState<BN | BigNumber | null>(null);
-
-  const sourceChain = currentMarket?.source;
-  const destinationChain = currentMarket?.destination;
-
   const loadingModal = useMemo(() => {
-    return !relayerAddress || !currentMarket || !api || !relayerBalance || !minQuote || !minCollateral;
+    return !relayerAddress || !currentMarket || !api || !relayerBalance || minQuote === null || !minCollateral;
   }, [relayerAddress, currentMarket, api, relayerBalance, minQuote, minCollateral]);
 
   const disableConfirm = useMemo(() => {
@@ -131,7 +65,7 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
         }
       }
     },
-    [t, nativeToken, minQuote]
+    [nativeToken, minQuote]
   );
 
   const handleCollateralChange = useCallback(
@@ -169,164 +103,40 @@ const RegisterRelayerModal = ({ isVisible, relayerAddress, onClose, onSuccess = 
   );
 
   const handleConfirm = useCallback(async () => {
-    if (
-      quoteTips?.error === false &&
-      collteralTips?.error === false &&
-      quoteInput &&
-      collateralInput &&
-      nativeToken &&
-      relayerAddress
-    ) {
-      const quoteAmount = ethersUtils.parseUnits(quoteInput, nativeToken.decimals);
-      const collateralAmount = ethersUtils.parseUnits(collateralInput, nativeToken.decimals);
+    if (quoteTips?.error === false && collteralTips?.error === false && quoteInput && collateralInput && nativeToken) {
+      const quoteAmount = parseUnits(`${Number(quoteInput)}`, nativeToken.decimals);
+      const collateralAmount = parseUnits(`${Number(collateralInput)}`, nativeToken.decimals);
 
-      if (isEthChain(sourceChain) && isEthApi(api)) {
-        setBusy(true);
-
-        const chainConfig = getEthChainConfig(sourceChain);
-        const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api.getSigner());
-
-        const { prevNew } = await getQuotePrev(contract, relayerAddress, quoteAmount);
-
-        const callback: CallbackType = {
-          errorCallback: ({ error }) => {
-            if (error instanceof Error) {
-              notifyTx(t, {
-                type: "error",
-                msg: error.message,
-              });
-            } else {
-              notifyTx(t, {
-                type: "error",
-                msg: t("Transaction sending failed"),
-              });
-            }
-            setBusy(false);
-            console.error("Call enroll:", error);
-          },
-          responseCallback: ({ response }) => {
-            console.log("Call enroll response:", response);
-          },
-          successCallback: ({ receipt }) => {
-            notifyTx(t, {
-              type: "success",
-              explorer: chainConfig.explorer.url,
-              hash: receipt.transactionHash,
-            });
-            onClose();
-            onSuccess();
-            refreshBalance();
-            setBusy(false);
-            console.log("Call enroll receipt:", receipt);
-          },
-        };
-
-        triggerContract(contract, "enroll", [prevNew, quoteAmount], callback, { value: collateralAmount.toString() });
-      } else if (isPolkadotChain(sourceChain) && isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
-        const chainConfig = getPolkadotChainConfig(sourceChain);
-        const apiSection = getFeeMarketApiSection(api, destinationChain);
-
-        if (apiSection) {
-          setBusy(true);
-
-          const extrinsic = api.tx[apiSection].enrollAndLockCollateral(
-            collateralAmount.toString(),
-            quoteAmount.toString()
-          );
-
-          signAndSendTx({
-            extrinsic,
-            requireAddress: relayerAddress,
-            txSuccessCb: (result) => {
-              notifyTx(t, {
-                type: "success",
-                explorer: chainConfig.explorer.url,
-                hash: result.txHash.toHex(),
-              });
-              onClose();
-              onSuccess();
-              refreshBalance();
-              setBusy(false);
-            },
-            txFailedCb: (error) => {
-              if (error) {
-                if (error instanceof Error) {
-                  notifyTx(t, { type: "error", msg: error.message });
-                } else {
-                  notifyTx(t, { type: "error", explorer: chainConfig.explorer.url, hash: error.txHash.toHex() });
-                }
-              } else {
-                notifyTx(t, { type: "error", msg: t("Transaction sending failed") });
-              }
-              setBusy(false);
-              console.error(error);
-            },
-          });
+      setBusy(true);
+      register(
+        quoteAmount,
+        collateralAmount,
+        () => {
+          setBusy(false);
+        },
+        () => {
+          refreshBalance();
+          getRelayerInfo();
+          setBusy(false);
+          onClose();
         }
-      }
+      );
     }
   }, [
     quoteTips,
     collteralTips,
     quoteInput,
     collateralInput,
-    sourceChain,
-    destinationChain,
-    api,
     nativeToken,
-    relayerAddress,
-    onSuccess,
+    onClose,
     refreshBalance,
+    register,
+    getRelayerInfo,
   ]);
-
-  // Get minQuote and minCollateral
-  useEffect(() => {
-    let sub$$: Subscription;
-
-    if (isEthChain(sourceChain) && isEthApi(api)) {
-      const chainConfig = getEthChainConfig(sourceChain);
-      const contract = new Contract(chainConfig.contractAddress, chainConfig.contractInterface, api);
-
-      sub$$ = zip(of(BigNumber.from(0)), from(contract.COLLATERAL_PER_ORDER() as Promise<BigNumber>)).subscribe({
-        next: ([quote, collateral]) => {
-          setMinQuote(quote);
-          setMinCollateral(collateral);
-        },
-        error: (error) => {
-          console.log("Get minQuote and minCollateral:", error);
-        },
-      });
-    } else if (isPolkadotChain(destinationChain) && isPolkadotApi(api)) {
-      const apiSection = getFeeMarketApiSection(api, destinationChain);
-
-      if (apiSection) {
-        sub$$ = zip(
-          of(api.consts[apiSection].minimumRelayFee as u128),
-          of(api.consts[apiSection].collateralPerOrder as u128)
-        ).subscribe({
-          next: ([quote, collateral]) => {
-            setMinQuote(quote);
-            setMinCollateral(collateral);
-          },
-          error: (error) => {
-            console.log("Get minQuote and minCollateral:", error);
-          },
-        });
-      }
-    }
-
-    return () => {
-      if (sub$$) {
-        sub$$.unsubscribe();
-      }
-      setMinQuote(null);
-      setMinCollateral(null);
-    };
-  }, [sourceChain, destinationChain, api]);
 
   // Quote input tips
   useEffect(() => {
-    if (nativeToken && minQuote) {
+    if (nativeToken && minQuote !== null) {
       const min = BigNumber.from(minQuote.toString());
       setQuoteTips({
         error: false,

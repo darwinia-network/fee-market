@@ -4,17 +4,9 @@ import localeKeys from "../../locale/localeKeys";
 import { useEffect, useState, useMemo } from "react";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { Scrollbars } from "react-custom-scrollbars";
-import {
-  formatBalance,
-  isEthChain,
-  isPolkadotChain,
-  getEthChainConfig,
-  getPolkadotChainConfig,
-} from "@feemarket/utils";
-import { useMarket } from "@feemarket/market";
-import { useApi } from "@feemarket/api";
-import { useBalance, useAccountName } from "@feemarket/hooks";
-import type { Account } from "@feemarket/types";
+import { formatBalance, isEthChain, isPolkadotChain, getEthChainConfig, getPolkadotChainConfig } from "../../utils";
+import { useBalance, useAccountName, useMarket, useApi } from "../../hooks";
+import type { Account } from "../../types";
 export interface AccountSelectionModalProps {
   isVisible: boolean;
   onClose: () => void;
@@ -26,11 +18,8 @@ const AccountName = ({ address }: { address: string }) => {
 };
 
 const AccountBalance = ({ address }: { address: string }) => {
-  const { currentMarket } = useMarket();
+  const { sourceChain } = useMarket();
   const { balance } = useBalance(address);
-
-  const sourceChain = currentMarket?.source;
-  // const destinationChain = currentMarket?.destination;
 
   const nativeToken = useMemo(() => {
     if (isEthChain(sourceChain)) {

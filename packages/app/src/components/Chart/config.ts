@@ -124,4 +124,9 @@ export const getCommonOpts = (title: string): Highcharts.Options => ({
     ],
     selected: 0,
   },
+  loading: {
+    style: {
+      backgroundColor: "#1A1D1F",
+    },
+  },
 });

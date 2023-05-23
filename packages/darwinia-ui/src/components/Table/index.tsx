@@ -30,7 +30,8 @@ export interface TableProps<T> {
   onSort?: (sortEvent: SortEvent<T>) => void;
   headerSlot?: JSX.Element;
   footerSlot?: JSX.Element;
-  pagination?: PaginationProps;
+  pagination?: Omit<PaginationProps, "onChange">;
+  onPageChange?: PaginationProps["onChange"];
   noDataText?: string;
   isLoading?: boolean;
   spinnerText?: string;
@@ -52,6 +53,7 @@ const Table = <T extends TableRow>({
   headerSlot,
   footerSlot,
   pagination,
+  onPageChange = () => undefined,
   noDataText,
   isLoading = false,
   spinnerText,
@@ -79,7 +81,7 @@ const Table = <T extends TableRow>({
     }
   };
   return (
-    <Spinner spinnerText={spinnerText} isLoading={isLoading}>
+    <Spinner spinnerText={spinnerText} isLoading={isLoading && !dataSource.length} maskClassName="justify-start">
       <div className={"dw-table"}>
         {headerSlot}
         <Scrollbars autoHeight={true} autoHeightMax={maxAutoHeight} className={"dw-table-scrollview"}>
@@ -126,7 +128,7 @@ const Table = <T extends TableRow>({
         </Scrollbars>
         {pagination && dataSource.length > 0 && (
           <div className={"dw-table-pagination"}>
-            <Pagination {...pagination} />
+            <Pagination {...pagination} onChange={onPageChange} />
           </div>
         )}
         {footerSlot}

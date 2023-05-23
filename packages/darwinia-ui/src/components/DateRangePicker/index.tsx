@@ -112,7 +112,7 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
           setEndDate(passedInEndDate);
         }
       }
-    }, []);
+    }, [passedInEndDate, passedInStartDate]);
 
     useEffect(() => {
       const onDocumentClick = () => {
@@ -128,7 +128,7 @@ const DateRangePicker = forwardRef<DateRangePickerRef, DateRangePickerProps>(
       if (!isCalendarVisible && lastDatePickEvent.current) {
         onDone(lastDatePickEvent.current);
       }
-    }, [isCalendarVisible]);
+    }, [isCalendarVisible, onDone]);
 
     const onToggleCalendar = () => {
       setCalendarVisibility((isVisible) => !isVisible);

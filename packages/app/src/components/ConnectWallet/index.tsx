@@ -1,52 +1,49 @@
 import { useTranslation } from "react-i18next";
-import metamaskLogo from "../../assets/images/metamask-logo.svg";
-import polkadotLogo from "../../assets/images/polkadot-logo.svg";
-import { Button, Spinner } from "@darwinia/ui";
 import localeKeys from "../../locale/localeKeys";
+import { useMetaMask, usePolkadotJs, useWalletConnect } from "../../hooks/wallet";
+import { useMarket } from "../../hooks";
+import { getChainConfig } from "../../utils";
+import { Spinner } from "@darwinia/ui";
 
-import { isPolkadotChain } from "@feemarket/utils";
-import type { FeeMarketChain } from "@feemarket/config";
-
-const ConnectWallet = ({
-  loading,
-  isInstalled,
-  sourceChain,
-  onConnected,
-}: {
-  sourceChain: FeeMarketChain | undefined;
-  loading?: boolean;
-  isInstalled: boolean;
-  onConnected: () => void;
-}) => {
+const ConnectWallet = () => {
   const { t } = useTranslation();
-  const onConnectWallet = () => {
-    onConnected();
-  };
+  const { sourceChain } = useMarket();
+  const metamask = useMetaMask();
+  const polkadotJs = usePolkadotJs();
+  const walletConnect = useWalletConnect();
+
+  const chainConfig = sourceChain ? getChainConfig(sourceChain) : null;
 
   return (
-    <Spinner isLoading={loading ?? false}>
-      <div
-        className={
-          "card lg:min-h-[25rem] lg:px-[18.625rem] flex flex-col justify-center items-center gap-[0.9375rem] lg:gap-[1.875reem]"
-        }
-      >
-        {isInstalled ? (
-          <>
-            <div className={"w-[5.3125rem] h-[5.3125rem]"}>
-              <img className={"w-full"} src={isPolkadotChain(sourceChain) ? polkadotLogo : metamaskLogo} alt="image" />
-            </div>
-            <div>
-              <Button className={"px-[0.9375rem]"} onClick={onConnectWallet}>
-                {isPolkadotChain(sourceChain) ? t(localeKeys.connectWallet) : t(localeKeys.connectMetamask)}
-              </Button>
-            </div>
-            <div className={"text-center"}>{t(localeKeys.loginInfo)}</div>
-          </>
-        ) : (
-          <p>No Wallet Found</p>
-        )}
+    <div
+      className={
+        "card lg:min-h-[25rem] lg:px-[18.625rem] flex flex-col justify-center items-center gap-[0.9375rem] lg:gap-[1.875rem]"
+      }
+    >
+      <div className="flex items-center justify-center gap-12">
+        {[metamask, walletConnect, polkadotJs].map(({ id, installed, logo, name, loading, connect }) => {
+          if (chainConfig?.wallets.includes(id)) {
+            return (
+              <Spinner isLoading={loading} size="small" key={id}>
+                <button
+                  className={`flex flex-col items-center justify-center gap-5 w-48 h-48 rounded-sm ${
+                    installed
+                      ? "border border-black bg-black transition hover:border-primary active:opacity-80"
+                      : "cursor-not-allowed bg-gray/20 opacity-80"
+                  }`}
+                  onClick={connect}
+                >
+                  <img alt="..." src={logo} />
+                  <span className="text-center">{name}</span>
+                </button>
+              </Spinner>
+            );
+          }
+          return null;
+        })}
       </div>
-    </Spinner>
+      <div className="text-center text-gray">{t(localeKeys.loginInfo)}</div>
+    </div>
   );
 };
 

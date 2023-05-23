@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import { Scrollbars } from "react-custom-scrollbars";
 import Menu from "../Menu";
 import logo from "../../assets/images/logo.png";
-import useMenuList from "../../data/useMenuList";
+import { useMenuList } from "../../hooks/menuList";
 
 const Sidebar = () => {
-  const { menuList } = useMenuList();
+  const menuList = useMenuList();
   return (
     <div className={"bg-blackSecondary h-screen w-[12.5rem] flex flex-col"}>
       <div className={"h-[3.125rem] px-[0.9375rem] lg:h-[5rem] shrink-0"}>

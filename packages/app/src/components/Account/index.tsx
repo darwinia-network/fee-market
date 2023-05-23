@@ -6,62 +6,31 @@ import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
-import { useAccountName } from "@feemarket/hooks";
-import { isEthChain, isPolkadotChain } from "@feemarket/utils";
-import type { FeeMarketChain } from "@feemarket/config";
+import { isEthChain, isPolkadotChain } from "../../utils";
 import { Identicon } from "@polkadot/react-identicon";
 import JazzIcon from "../JazzIcon";
+import { useRelayer, useMarket, useAccountName } from "../../hooks";
+import { useApi } from "../../providers";
 
-interface Props {
-  advanced?: boolean;
-  relayerAddress: string;
-  isRegistered?: boolean;
-  sourceChain?: FeeMarketChain;
-  onSuccess?: () => void;
-}
-
-const Account = ({
-  advanced = false,
-  relayerAddress,
-  sourceChain,
-  isRegistered,
-  onSuccess = () => undefined,
-}: Props) => {
+const Account = ({ advanced = false }: { advanced?: boolean }) => {
   const { t } = useTranslation();
+  const { sourceChain } = useMarket();
+  const { setActiveWallet } = useApi();
+  const { relayerAddress, isRegistered } = useRelayer();
   const { displayName } = useAccountName(relayerAddress);
 
-  const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);
+  const [isActiveAccountModalVisible, setCurrentAccountModalVisible] = useState(false);
   const [isRegisterRelayerModalVisible, setRegisterRelayerModalVisible] = useState(false);
   const [isCancelRelayerModalVisible, setCancelRelayerModalVisible] = useState(false);
-
-  const onSwitchAccount = () => {
-    setActiveAccountModalVisible(true);
-  };
-
-  const onSwitchNetworkModalClose = () => {
-    setActiveAccountModalVisible(false);
-  };
-
-  const onRegisterRelayer = () => {
-    setRegisterRelayerModalVisible(true);
-  };
-
-  const onRegisterRelayerModalClose = () => {
-    setRegisterRelayerModalVisible(false);
-  };
-
-  const onCancelRelayerModalClose = () => {
-    setCancelRelayerModalVisible(false);
-  };
-
-  const onCancelRelayer = () => {
-    setCancelRelayerModalVisible(true);
-  };
 
   const getMoreActionsDropdown = () => {
     return (
       <div>
-        <Button btnType={"secondary"} className={"!px-[0.9375rem] w-full min-w-[150px]"} onClick={onCancelRelayer}>
+        <Button
+          btnType={"secondary"}
+          className={"!px-[0.9375rem] w-full min-w-[150px]"}
+          onClick={() => setCancelRelayerModalVisible(true)}
+        >
           {t(localeKeys.cancelRelayer)}
         </Button>
       </div>
@@ -108,14 +77,25 @@ const Account = ({
       </div>
       {advanced && (
         <div className={"shrink-0 justify-end flex-wrap flex flex-1 flex-col lg:flex-row gap-[0.9375rem] items-center"}>
-          <Button
-            className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
-            btnType={"secondary"}
-            disabled={isEthChain(sourceChain)}
-            onClick={onSwitchAccount}
-          >
-            {t(localeKeys.switchAccount)}
-          </Button>
+          {isEthChain(sourceChain) ? (
+            <Button
+              className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
+              btnType={"secondary"}
+              onClick={() => {
+                setActiveWallet(null);
+              }}
+            >
+              {t(localeKeys.disconnect)}
+            </Button>
+          ) : (
+            <Button
+              className={"px-[0.9375rem] w-full lg:w-auto shrink-0"}
+              btnType={"secondary"}
+              onClick={() => setCurrentAccountModalVisible(true)}
+            >
+              {t(localeKeys.switchAccount)}
+            </Button>
+          )}
           <a
             rel="noopener noreferrer"
             target={"_blank"}
@@ -150,7 +130,7 @@ const Account = ({
             </Dropdown>
           ) : (
             <Button
-              onClick={onRegisterRelayer}
+              onClick={() => setRegisterRelayerModalVisible(true)}
               className={"px-[0.9375rem] w-full flex justify-center items-center lg:w-auto shrink-0 gap-[0.375rem]"}
             >
               <div>{t(localeKeys.registerRelayer)}</div>
@@ -168,21 +148,17 @@ const Account = ({
       )}
 
       {/*Account selection modal*/}
-      <AccountSelectionModal onClose={onSwitchNetworkModalClose} isVisible={isActiveAccountModalVisible} />
+      <AccountSelectionModal
+        onClose={() => setCancelRelayerModalVisible(true)}
+        isVisible={isActiveAccountModalVisible}
+      />
       {/*Register relayer modal*/}
       <RegisterRelayerModal
-        onClose={onRegisterRelayerModalClose}
-        onSuccess={onSuccess}
+        onClose={() => setRegisterRelayerModalVisible(false)}
         isVisible={isRegisterRelayerModalVisible}
-        relayerAddress={relayerAddress}
       />
       {/*Register relayer modal*/}
-      <CancelRelayerModal
-        onClose={onCancelRelayerModalClose}
-        onSuccess={onSuccess}
-        isVisible={isCancelRelayerModalVisible}
-        relayerAddress={relayerAddress}
-      />
+      <CancelRelayerModal onClose={() => setCancelRelayerModalVisible(false)} isVisible={isCancelRelayerModalVisible} />
     </div>
   );
 };

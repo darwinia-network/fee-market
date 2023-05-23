@@ -135,6 +135,7 @@ const localeKeys = {
   failed: "failed",
   successed: "successed",
   transaction: "transaction",
+  disconnect: "disconnect",
 };
 
 export default localeKeys;
