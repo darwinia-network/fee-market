@@ -1,6 +1,6 @@
 import { BigNumber, Contract } from "ethers";
 import { useEffect, useState } from "react";
-import { from, switchMap, forkJoin, map, zip, of, Observable, Subscription } from "rxjs";
+import { from, switchMap, forkJoin, map, zip, of, Observable, Subscription, catchError } from "rxjs";
 import { useApolloClient } from "@apollo/client";
 import { bnToBn, BN, BN_ZERO } from "@polkadot/util";
 import type { Vec, Option } from "@polkadot/types";
@@ -46,7 +46,7 @@ export const useRelayersOverview = () => {
       );
       const assignedObs = chainConfig.isSmartChain
         ? from(contract.getTopRelayers() as Promise<string[]>)
-        : forkJoin([contract.getTopRelayer() as Promise<string>]);
+        : forkJoin([contract.getTopRelayer() as Promise<string>]).pipe(catchError(() => of([])));
 
       setRelayersOverview((prev) => ({ ...prev, loading: true }));
 
@@ -67,17 +67,19 @@ export const useRelayersOverview = () => {
                   })
                 )
               ),
-              forkJoin(
-                assignedRelayers.map((relayer) =>
-                  apolloClient.query<
-                    { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
-                    { relayerId: string }
-                  >({
-                    query: RELAYER_OVERVIEW_DATA,
-                    variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
-                  })
-                )
-              )
+              assignedRelayers.length
+                ? forkJoin(
+                    assignedRelayers.map((relayer) =>
+                      apolloClient.query<
+                        { relayer: Pick<RelayerEntity, "totalOrders" | "totalRewards" | "totalSlashes"> | null },
+                        { relayerId: string }
+                      >({
+                        query: RELAYER_OVERVIEW_DATA,
+                        variables: { relayerId: `${destinationChain}-${relayer.toString().toLowerCase()}` },
+                      })
+                    )
+                  )
+                : of([])
             )
           )
         )
