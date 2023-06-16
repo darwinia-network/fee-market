@@ -21,7 +21,7 @@ const config: EthChainConfig = {
   provider: {
     rpc: "https://rpc.darwinia.network/",
   },
-  contractAddress: "0xcA927Df15afb7629b79dA4713a871190315c7409",
+  contractAddress: "0x9bd2F907B33E25126CD4e4342a75dE8F8eff76Bf",
   contractInterface,
   isSmartChain: true,
   wallets: ["metamask", "wallet-connect"],
