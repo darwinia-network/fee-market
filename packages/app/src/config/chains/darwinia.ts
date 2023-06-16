@@ -1,25 +1,30 @@
-import type { PolkadotChainConfig } from "../../types/chain";
+import type { EthChainConfig } from "../../types/chain";
 import chainLogo from "../../assets/images/network/darwinia.svg";
+import contractInterface from "../abi/smartChain.json";
 
-const config: PolkadotChainConfig = {
+const config: EthChainConfig = {
+  chainId: 46,
   chainName: "Darwinia",
-  displayName: "Darwinia Chain",
+  displayName: "Darwinia",
   chainLogo,
-  provider: {
-    rpc: "wss://rpc.darwinia.network",
-  },
   graphql: {
-    endpoint: "https://subql.darwinia.network/subql-apps-darwinia/",
+    endpoint: "https://thegraph.darwinia.network/feemarket/subgraphs/name/feemarket-darwinia-v1",
   },
   nativeToken: {
     symbol: "RING",
-    decimals: 9,
+    decimals: 18,
   },
   explorer: {
     url: "https://darwinia.subscan.io/",
     name: "Subscan",
   },
-  wallets: ["polkadot-js"],
+  provider: {
+    rpc: "https://rpc.darwinia.network/",
+  },
+  contractAddress: "0xcA927Df15afb7629b79dA4713a871190315c7409",
+  contractInterface,
+  isSmartChain: true,
+  wallets: ["metamask", "wallet-connect"],
 };
 
 export default config;
