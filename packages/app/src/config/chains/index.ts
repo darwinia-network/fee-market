@@ -9,19 +9,19 @@ import type {
 // Eth
 import goerli from "./goerli";
 import ethereum from "./ethereum";
-import pangoro from "./pangoro";
+import pangolin from "./pangolin";
 import darwinia from "./darwinia";
 
 // Polkadot
 import crabParachain from "./crabParachain";
 
-export const ALL_CHAINS: ChainConfig[] = [goerli, ethereum, darwinia, pangoro];
+export const ALL_CHAINS: ChainConfig[] = [goerli, ethereum, darwinia, pangolin];
 
 export const ETH_CHAIN_CONF: Record<FeeMarketEthChain, EthChainConfig> = {
   Goerli: goerli,
   Ethereum: ethereum,
   Darwinia: darwinia,
-  Pangoro: pangoro,
+  Pangolin: pangolin,
 };
 
 export const POLKADOT_CHAIN_CONF: Record<FeeMarketPolkadotChain, PolkadotChainConfig> = {

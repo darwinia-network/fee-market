@@ -3,8 +3,8 @@ export const FEE_MARKET_ETH_CHAINS = [
   "Ethereum",
   // "Crab",
   "Darwinia",
-  // "Pangolin",
-  "Pangoro",
+  "Pangolin",
+  // "Pangoro",
 ] as const;
 
 export const FEE_MARKET_POLKADOT_CHAINS = [

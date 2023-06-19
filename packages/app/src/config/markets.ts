@@ -6,7 +6,7 @@ export const markets: Record<NetworkType, { source: FeeMarketChain; destinations
     { source: "Darwinia", destinations: ["Ethereum"] },
   ],
   test: [
-    { source: "Goerli", destinations: ["Pangoro"] },
-    { source: "Pangoro", destinations: ["Goerli"] },
+    { source: "Goerli", destinations: ["Pangolin"] },
+    { source: "Pangolin", destinations: ["Goerli"] },
   ],
 };
