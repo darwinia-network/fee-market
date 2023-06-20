@@ -1,25 +1,30 @@
-import type { PolkadotChainConfig } from "../../types/chain";
+import type { EthChainConfig } from "../../types/chain";
 import chainLogo from "../../assets/images/network/pangolin.svg";
+import contractInterface from "../abi/smartChain.json";
 
-const config: PolkadotChainConfig = {
+const config: EthChainConfig = {
+  chainId: 43,
   chainName: "Pangolin",
-  displayName: "Pangolin Chain",
+  displayName: "Pangolin",
   chainLogo,
-  provider: {
-    rpc: "wss://pangolin-rpc.darwinia.network",
-  },
   graphql: {
-    endpoint: "https://subql.darwinia.network/subql-apps-pangolin/",
+    endpoint: "https://thegraph.darwinia.network/feemarket/subgraphs/name/feemarket-pangolin",
   },
   nativeToken: {
     symbol: "PRING",
-    decimals: 9,
+    decimals: 18,
   },
   explorer: {
     url: "https://pangolin.subscan.io/",
     name: "Subscan",
   },
-  wallets: ["polkadot-js"],
+  provider: {
+    rpc: "https://pangolin-rpc.darwinia.network",
+  },
+  contractAddress: "0x4DBdC9767F03dd078B5a1FC05053Dd0C071Cc005",
+  contractInterface,
+  isSmartChain: true,
+  wallets: ["metamask", "wallet-connect"],
 };
 
 export default config;

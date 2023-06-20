@@ -15,14 +15,19 @@ export const useMetaMask = (): Wallet => {
   const connect = useCallback(async () => {
     setLoading(true);
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const accs = ((await provider.send("eth_requestAccounts", [])) as string[]).map(
-      (address) => ({ address, originAddress: address } as Account)
-    );
-    setLoading(false);
-    setAccounts(accs);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accs = ((await provider.send("eth_requestAccounts", [])) as string[]).map(
+        (address) => ({ address, originAddress: address } as Account)
+      );
+      setAccounts(accs);
 
-    setActiveWallet("metamask");
+      setActiveWallet("metamask");
+    } catch (err) {
+      console.error(err);
+    }
+
+    setLoading(false);
   }, [setActiveWallet, setAccounts]);
 
   const disconnect = useCallback(() => {
