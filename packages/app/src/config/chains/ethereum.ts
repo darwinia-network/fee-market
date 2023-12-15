@@ -19,7 +19,7 @@ const config: EthChainConfig = {
     name: "Etherscan",
   },
   provider: {
-    rpc: "https://eth-mainnet.g.alchemy.com/v2/1fYUXWGBTu0naj6Stf7Sh77VAO-J5j4v",
+    rpc: "https://eth.llamarpc.com",
   },
   contractAddress: "0xC71593F6Cb1642DD95bd1330f7c0a59d9f66Db97",
   contractInterface,
