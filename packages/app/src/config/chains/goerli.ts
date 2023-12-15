@@ -19,7 +19,7 @@ const config: EthChainConfig = {
     name: "Etherscan",
   },
   provider: {
-    rpc: "https://eth-goerli.g.alchemy.com/v2/oanvaPnbDzYvigj3O_67w3SBcvbDvim8",
+    rpc: "https://ethereum-goerli.publicnode.com",
   },
   contractAddress: "0x6c73B30a48Bb633DC353ed406384F73dcACcA5C3",
   contractInterface,
