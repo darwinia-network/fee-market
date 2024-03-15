@@ -1,8 +1,7 @@
 import ReactDOM from "react-dom/client";
 import "./locale";
 import "./assets/styles/index.scss";
-import { RouterProvider } from "react-router-dom";
-import router from "./router";
+import App2 from "./App2";
 
 if (process.env.NODE_ENV === "production") {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -15,4 +14,4 @@ if (process.env.NODE_ENV === "production") {
   console.dir = () => {};
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<RouterProvider router={router} />);
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<App2 />);
